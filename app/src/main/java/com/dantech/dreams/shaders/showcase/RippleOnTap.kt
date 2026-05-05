@@ -21,9 +21,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChanged
@@ -34,7 +33,6 @@ import com.dantech.dreams.data.lesson.LessonRegistry
 import com.dantech.dreams.data.lesson.LessonRenderMode
 import com.dantech.dreams.shaders.agsl.rememberRuntimeShader
 import com.dantech.dreams.shaders.agsl.rememberShaderTime
-import com.dantech.dreams.shaders.agsl.runtimeShaderEffect
 
 private const val MAX_RIPPLES = 16
 private const val SLOT_FLOATS = 4                    // (x, y, t0, strength)
@@ -54,15 +52,39 @@ private const val MAX_STRENGTH = 1.5f
 //   • Schlick Fresnel → sky-blue tint at glancing wave faces (water reflectivity).
 //   • Foam line     → thin neutral-white band at the highest crests.
 private const val RIPPLE_TAP_SRC = """
-// SLOTS deliberately not named N — local `float3 N = normalize(...)` later in main()
-// would shadow it. SkSL accepts the shadow but it's a code smell and risks edge-case
-// miscompiles on some drivers.
+// BRUSH-mode shader: instead of sampling captured Compose content via RenderEffect
+// (which proved unreliable on this device — the offscreen buffer the AGSL was meant
+// to sample was always empty, leaving the screen blank), the pink/blue checkerboard
+// backdrop and the scrolling diagonal lines are generated *in-shader* by `backdrop()`.
+// The chromatic refraction then samples that procedural pattern at three slightly
+// offset positions, exactly like the previous content.eval() chain did.
+//
+// SLOTS deliberately not named N — local `float3 N = normalize(...)` later would
+// shadow it. SkSL accepts the shadow but it's a code smell.
 const int SLOTS = $MAX_RIPPLES;
 
-uniform shader content;
 uniform float2 iResolution;
 uniform float  iTime;
 uniform float  rip[${MAX_RIPPLES * SLOT_FLOATS}];
+
+// Procedural backdrop: scrolling pink/blue 64px checkerboard with 45° white-line
+// overlay. Stand-alone — no offscreen buffer, no RenderEffect.
+half3 backdrop(float2 coord) {
+    float cell = 64.0;
+    float scrollC = mod(iTime * 40.0, cell);
+    float2 idx = floor((coord + float2(scrollC)) / cell);
+    float dark = mod(idx.x + idx.y, 2.0);
+    half3 col = mix(half3(0.106, 0.165, 0.306), half3(1.0, 0.435, 0.639), half(dark));
+
+    float stp = 48.0;
+    float lineScroll = mod(iTime * 25.0, stp);
+    float diag = coord.x + coord.y - lineScroll;
+    float diagMod = mod(diag + stp * 0.5, stp) - stp * 0.5;
+    float lineMask = smoothstep(2.0, 0.0, abs(diagMod) * 0.7071);
+    col = mix(col, half3(1.0), half(lineMask * 0.35));
+
+    return col;
+}
 
 half4 main(float2 fragCoord) {
     float speed = 360.0;
@@ -159,10 +181,10 @@ half4 main(float2 fragCoord) {
     // Chromatic refraction — R bends a touch more than B, like a prism. On flat water
     // totalOff = 0 so all three samples coincide and the effect vanishes; magnitude
     // scales naturally with wave strength.
-    half4 baseG = content.eval(fragCoord - totalOff);
-    half  r     = content.eval(fragCoord - totalOff * 1.05).r;
-    half  b     = content.eval(fragCoord - totalOff * 0.95).b;
-    half3 baseRgb = half3(r, baseG.g, b);
+    half3 sampleR = backdrop(fragCoord - totalOff * 1.05);
+    half3 sampleG = backdrop(fragCoord - totalOff);
+    half3 sampleB = backdrop(fragCoord - totalOff * 0.95);
+    half3 baseRgb = half3(sampleR.r, sampleG.g, sampleB.b);
 
     // Fake caustics — surface that tilts toward the sun focuses light onto the floor
     // below, brightening the underlying texture. pow(., 10) keeps it confined to the
@@ -182,9 +204,7 @@ half4 main(float2 fragCoord) {
     float foamAmt = smoothstep(amp * 0.85, amp * 1.20, totalHeight);
     col += half3(foamAmt * 0.7);
 
-    // Force alpha 1.0 — the underlying checkerboard is opaque, and inheriting baseG.a
-    // would propagate any 0-alpha sample (e.g. from a not-yet-populated offscreen
-    // buffer on the first frame) all the way to the final composite, leaving a hole.
+    // Backdrop is fully procedural and opaque, so output is always opaque.
     return half4(col, 1.0);
 }
 """
@@ -216,25 +236,22 @@ fun RippleTapDemo() {
         slot.intValue = (s + 1) % MAX_RIPPLES
     }
 
-    // Outer Box owns the graphicsLayer + pointer input. The animated checkerboard
-    // backdrop is a *child* Box, not a same-chain drawBehind — Compose's graphicsLayer
-    // reliably captures children's drawings into the offscreen buffer that the AGSL's
-    // `content.eval(...)` samples. A drawBehind in the same modifier chain after
-    // graphicsLayer + pointerInput renders outside the layer on some configurations,
-    // leaving the layer empty → content samples (0,0,0,0) → blank screen.
+    // BRUSH mode — same pattern as every other showcase in this app:
+    //   .pointerInput(...) collects taps/drags into the `rip[]` ring buffer.
+    //   .drawBehind { ... } sets the shader's uniforms (snapshot reads of `time`
+    //     and `ripples` invalidate this block every frame, driving animation) and
+    //     paints a full-rect ShaderBrush. The shader generates the entire visual —
+    //     procedural backdrop + ripples + lighting — no offscreen buffer, no
+    //     graphicsLayer, no RenderEffect to misbehave.
+    //   The Text overlay composes on top of the brush.
     Box(
         Modifier
             .fillMaxSize()
-            .runtimeShaderEffect(shader) { size ->
-                shader.setFloatUniform("iResolution", size.width, size.height)
-                shader.setFloatUniform("iTime", time)
-                shader.setFloatUniform("rip", ripples)
-            }
             .pointerInput(Unit) {
-                // Multi-touch: each finger has its own throttled emit timer in `lastEmits`.
-                // New fingers that touch down during an existing gesture get an immediate
-                // emit + map entry; lifted fingers are removed but the gesture loop keeps
-                // running until ALL fingers are up.
+                // Multi-touch: each finger has its own throttled emit timer in
+                // `lastEmits`. New fingers that touch down during an existing gesture
+                // get an immediate emit + map entry; lifted fingers are removed but
+                // the gesture loop keeps running until ALL fingers are up.
                 awaitEachGesture {
                     val lastEmits = HashMap<PointerId, Float>()
                     val firstDown = awaitFirstDown(requireUnconsumed = false)
@@ -249,7 +266,6 @@ fun RippleTapDemo() {
                             if (change.pressed) {
                                 val last = lastEmits[id]
                                 if (last == null) {
-                                    // Newly arrived finger (2nd, 3rd, ...).
                                     emit(change.position, now, pressureToStrength(change.pressure))
                                     lastEmits[id] = now
                                 } else if (change.positionChanged() &&
@@ -264,42 +280,14 @@ fun RippleTapDemo() {
                         }
                     }
                 }
+            }
+            .drawBehind {
+                shader.setFloatUniform("iResolution", size.width, size.height)
+                shader.setFloatUniform("iTime", time)
+                shader.setFloatUniform("rip", ripples)
+                drawRect(brush = ShaderBrush(shader))
             },
     ) {
-        Box(
-            Modifier
-                .matchParentSize()
-                .drawBehind {
-                    val cell = 64f
-                    val scroll = (time * 40f) % cell
-                    val cols = (size.width / cell).toInt() + 3
-                    val rows = (size.height / cell).toInt() + 3
-                    for (y in -1 until rows) {
-                        for (x in -1 until cols) {
-                            val dark = (x + y) % 2 == 0
-                            drawRect(
-                                color = if (dark) Color(0xFF1B2A4E) else Color(0xFFFF6FA3),
-                                topLeft = Offset(x * cell - scroll, y * cell - scroll),
-                                size = Size(cell, cell),
-                            )
-                        }
-                    }
-                    val stroke = Stroke(width = 2f)
-                    val step = 48f
-                    val total = size.width + size.height
-                    val lineScroll = (time * 25f) % step
-                    var d = -step + lineScroll
-                    while (d < total) {
-                        drawLine(
-                            color = Color.White.copy(alpha = 0.35f),
-                            start = Offset(d, 0f),
-                            end = Offset(0f, d),
-                            strokeWidth = stroke.width,
-                        )
-                        d += step
-                    }
-                },
-        )
         Text(
             text = "Tap or drag — pure ripples on the surface",
             style = MaterialTheme.typography.headlineSmall,
