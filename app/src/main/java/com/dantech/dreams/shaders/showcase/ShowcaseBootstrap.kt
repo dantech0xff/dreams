@@ -6,5 +6,6 @@ object ShowcaseBootstrap {
         RaymarchedSphere.id
         LiquidGlass.id
         RippleOnPond.id
+        RippleOnTap.id
     }
 }

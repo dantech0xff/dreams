@@ -220,6 +220,12 @@ private fun LessonPreview(
                 lesson.postEffectContent?.invoke()
             }
         }
+
+        LessonRenderMode.CUSTOM -> {
+            // Self-contained preview: the composable owns its shader, time, gestures,
+            // and backdrop. The auto-uniform / pointer pipeline above is unused.
+            lesson.customPreview?.invoke()
+        }
     }
 }
 
