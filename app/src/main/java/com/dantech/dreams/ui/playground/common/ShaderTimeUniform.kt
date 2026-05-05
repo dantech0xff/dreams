@@ -1,32 +1,11 @@
 package com.dantech.dreams.ui.playground.common
 
-import android.view.accessibility.AccessibilityManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameNanos
-import androidx.compose.ui.platform.LocalContext
-import androidx.core.content.getSystemService
-
-@Composable
-fun rememberAnimationsEnabled(): Boolean {
-    val ctx = LocalContext.current
-    val am = remember(ctx) { ctx.getSystemService<AccessibilityManager>() }
-    return remember(am) {
-        try {
-            val m = AccessibilityManager::class.java.getMethod("isAnimatorDurationScaleNonZero")
-            m.invoke(am) as? Boolean ?: true
-        } catch (_: Throwable) {
-            android.provider.Settings.Global.getFloat(
-                ctx.contentResolver,
-                android.provider.Settings.Global.ANIMATOR_DURATION_SCALE,
-                1f,
-            ) > 0f
-        }
-    }
-}
 
 /**
  * Drives a Compose-observable shader time. Returns a State<Float> that ticks each frame.
@@ -37,16 +16,21 @@ fun rememberAnimationsEnabled(): Boolean {
  *
  * If the shader source does not declare a `time` uniform, the state stays at 0
  * (so callers can blindly read it without paying for unused recomposition).
+ *
+ * AGSL playback is graphical content, not a UI animation — the clock is intentionally
+ * NOT gated by AccessibilityManager.isAnimatorDurationScaleNonZero or the
+ * Settings.Global.ANIMATOR_DURATION_SCALE developer-options flag. Gating froze the
+ * showcases (and the touch-driven ripple, where touchTime - time stays 0) on devs who
+ * had animator scale disabled.
  */
 @Composable
 fun rememberShaderTime(shaderSource: String, uniformName: String = "time"): State<Float> {
     val declared = remember(shaderSource, uniformName) {
         Regex("""uniform\s+float\s+$uniformName\s*;""").containsMatchIn(shaderSource)
     }
-    val animationsOn = rememberAnimationsEnabled()
     val state = remember { mutableFloatStateOf(0f) }
-    LaunchedEffect(declared, animationsOn) {
-        if (!declared || !animationsOn) {
+    LaunchedEffect(declared) {
+        if (!declared) {
             state.floatValue = 0f
             return@LaunchedEffect
         }
