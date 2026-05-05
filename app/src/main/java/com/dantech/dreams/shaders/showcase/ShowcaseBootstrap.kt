@@ -5,5 +5,6 @@ object ShowcaseBootstrap {
         AuroraRibbons.id
         RaymarchedSphere.id
         LiquidGlass.id
+        RippleOnPond.id
     }
 }

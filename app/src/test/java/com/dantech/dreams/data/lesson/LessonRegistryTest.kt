@@ -38,6 +38,6 @@ class LessonRegistryTest {
         assertEquals(6, LessonRegistry.byCategory(LessonCategory.SDF).size)
         assertEquals(6, LessonRegistry.byCategory(LessonCategory.NOISE).size)
         assertEquals(6, LessonRegistry.byCategory(LessonCategory.POSTFX).size)
-        assertEquals(3, LessonRegistry.byCategory(LessonCategory.SHOWCASE).size)
+        assertEquals(4, LessonRegistry.byCategory(LessonCategory.SHOWCASE).size)
     }
 }

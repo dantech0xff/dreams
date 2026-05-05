@@ -1,6 +1,7 @@
 package com.dantech.dreams.ui.playground.lesson
 
 import android.graphics.RuntimeShader
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,12 +19,16 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.dantech.dreams.data.lesson.LessonControl
 import com.dantech.dreams.data.lesson.LessonModel
@@ -155,8 +160,19 @@ private fun LessonPreview(
             }
     }
 
+    val touchDeclared = remember(lesson.agslSource) {
+        Regex("""uniform\s+float2\s+touchPos\s*;""").containsMatchIn(lesson.agslSource) &&
+            Regex("""uniform\s+float\s+touchTime\s*;""").containsMatchIn(lesson.agslSource)
+    }
+    val touchPosUv = remember(lesson.id) { mutableStateOf(Offset(-1f, -1f)) }
+    val touchTime = remember(lesson.id) { mutableFloatStateOf(-1f) }
+
     val applyUniforms: (RuntimeShader) -> Unit = { shader ->
         if (timeDeclared) shader.setFloatUniform("time", timeState.value)
+        if (touchDeclared) {
+            shader.setFloatUniform("touchPos", touchPosUv.value.x, touchPosUv.value.y)
+            shader.setFloatUniform("touchTime", touchTime.floatValue)
+        }
         declaredFloats.forEach { c ->
             val v = controlValues[c.uniformName] as? Float ?: c.default
             shader.setFloatUniform(c.uniformName, v)
@@ -167,11 +183,30 @@ private fun LessonPreview(
         }
     }
 
+    val canvasModifier = if (touchDeclared) {
+        Modifier
+            .fillMaxSize()
+            .pointerInput(lesson.id) {
+                detectTapGestures(
+                    onPress = { offset ->
+                        val w = size.width.toFloat()
+                        val h = size.height.toFloat()
+                        if (w > 0f && h > 0f) {
+                            touchPosUv.value = Offset(offset.x / w, offset.y / h)
+                            touchTime.floatValue = timeState.value
+                        }
+                    },
+                )
+            }
+    } else {
+        Modifier.fillMaxSize()
+    }
+
     when (lesson.renderMode) {
         LessonRenderMode.BRUSH -> {
             AgslBrushCanvas(
                 shaderSrc = lesson.agslSource,
-                modifier = Modifier.fillMaxSize(),
+                modifier = canvasModifier,
                 setUniforms = applyUniforms,
             )
         }
@@ -179,7 +214,7 @@ private fun LessonPreview(
         LessonRenderMode.RENDER_EFFECT -> {
             AgslRenderEffectCanvas(
                 shaderSrc = lesson.agslSource,
-                modifier = Modifier.fillMaxSize(),
+                modifier = canvasModifier,
                 setUniforms = applyUniforms,
             ) {
                 lesson.postEffectContent?.invoke()
