@@ -25,7 +25,7 @@ import com.dantech.dreams.data.lesson.LessonRegistry
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GalleryScreen(onLessonClick: (String) -> Unit) {
-    val categories = LessonCategory.values().toList()
+    val categories = remember { LessonCategory.entries }
     var selected by remember { mutableIntStateOf(0) }
     val current = categories[selected]
     val lessons = remember(current) { LessonRegistry.byCategory(current) }

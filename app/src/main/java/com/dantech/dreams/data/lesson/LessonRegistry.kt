@@ -33,7 +33,6 @@ object LessonRegistry {
         com.dantech.dreams.shaders.showcase.ShowcaseBootstrap.touch()
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     fun validateAll(): List<Pair<String, String>> {
         val failures = mutableListOf<Pair<String, String>>()
         for (lesson in all) {
