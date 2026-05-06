@@ -5,6 +5,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.withFrameNanos
 
 /**
@@ -17,6 +18,11 @@ import androidx.compose.runtime.withFrameNanos
  * If the shader source does not declare a `time` uniform, the state stays at 0
  * (so callers can blindly read it without paying for unused recomposition).
  *
+ * Set `paused = true` to freeze the clock — useful during nav transitions
+ * (especially predictive back's scale-down) where the GPU needs to be free for
+ * the system's window animation. Resume is seamless: the next unpaused frame
+ * picks up from the paused value via delta accumulation rather than wall-clock.
+ *
  * AGSL playback is graphical content, not a UI animation — the clock is intentionally
  * NOT gated by AccessibilityManager.isAnimatorDurationScaleNonZero or the
  * Settings.Global.ANIMATOR_DURATION_SCALE developer-options flag. Gating froze the
@@ -24,20 +30,31 @@ import androidx.compose.runtime.withFrameNanos
  * had animator scale disabled.
  */
 @Composable
-fun rememberShaderTime(shaderSource: String, uniformName: String = "time"): State<Float> {
+fun rememberShaderTime(
+    shaderSource: String,
+    uniformName: String = "time",
+    paused: Boolean = false,
+): State<Float> {
     val declared = remember(shaderSource, uniformName) {
         Regex("""uniform\s+float\s+$uniformName\s*;""").containsMatchIn(shaderSource)
     }
+    val pausedState = rememberUpdatedState(paused)
     val state = remember { mutableFloatStateOf(0f) }
     LaunchedEffect(declared) {
         if (!declared) {
             state.floatValue = 0f
             return@LaunchedEffect
         }
-        val start = withFrameNanos { it }
+        var accumulatedNanos = 0L
+        var lastFrameNanos = withFrameNanos { it }
         while (true) {
             withFrameNanos { now ->
-                state.floatValue = ((now - start) / 1_000_000_000f) % 1000f
+                val delta = now - lastFrameNanos
+                lastFrameNanos = now
+                if (!pausedState.value) {
+                    accumulatedNanos += delta
+                    state.floatValue = (accumulatedNanos / 1_000_000_000f) % 1000f
+                }
             }
         }
     }

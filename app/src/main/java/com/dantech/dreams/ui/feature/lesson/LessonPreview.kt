@@ -1,6 +1,7 @@
 package com.dantech.dreams.ui.feature.lesson
 
 import android.graphics.RuntimeShader
+import androidx.compose.animation.EnterExitState
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -12,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.dantech.dreams.data.lesson.LessonModel
 import com.dantech.dreams.data.lesson.LessonRenderMode
 import com.dantech.dreams.ui.feature.common.AgslBrushCanvas
@@ -27,7 +29,13 @@ fun LessonPreview(
     floatValues: SnapshotStateMap<String, Float>,
     colorValues: SnapshotStateMap<String, Color>,
 ) {
-    val timeState = rememberShaderTime(lesson.agslSource)
+    // Pause shader during nav transitions (forward enter, predictive-back peek,
+    // and post-commit fade) so the GPU is free for the system's scale animation.
+    // Predictive back's scale-down was janking against full-rate shader redraws.
+    val transition = LocalNavAnimatedContentScope.current.transition
+    val paused = transition.currentState != EnterExitState.Visible ||
+        transition.targetState != EnterExitState.Visible
+    val timeState = rememberShaderTime(lesson.agslSource, paused = paused)
     val touchPosUv = remember(lesson.id) { mutableStateOf(Offset(-1f, -1f)) }
     val touchTime = remember(lesson.id) { mutableFloatStateOf(-1f) }
 
