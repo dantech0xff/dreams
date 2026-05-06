@@ -7,6 +7,7 @@ import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
@@ -47,6 +48,14 @@ fun MainShell() {
             } else {
                 tween(motion.transitionDurationMs, easing = LinearEasing)
             }
+            // Pop and predictive-pop must produce identical visual state at any
+            // transitionState fraction — otherwise the spec swap when the gesture
+            // commits causes a visible alpha jump (the "blink"). Both include
+            // scaleOut + fadeOut so the handoff from gesture-driven to animate-to-
+            // completion is seamless.
+            val popExit = scaleOut(animationSpec = animSpec, targetScale = 0.85f) +
+                fadeOut(animSpec)
+            val popEnter = fadeIn(animSpec)
             NavDisplay(
                 modifier = Modifier
                     .fillMaxSize()
@@ -58,7 +67,8 @@ fun MainShell() {
                     rememberViewModelStoreNavEntryDecorator(),
                 ),
                 transitionSpec = { fadeIn(animSpec) togetherWith fadeOut(animSpec) },
-                popTransitionSpec = { fadeIn(animSpec) togetherWith fadeOut(animSpec) },
+                popTransitionSpec = { popEnter togetherWith popExit },
+                predictivePopTransitionSpec = { _ -> popEnter togetherWith popExit },
                 entryProvider = entryProvider {
                     entry<Route.Main> {
                         TabsShell(onDrillDown = { backStack.add(it) })
