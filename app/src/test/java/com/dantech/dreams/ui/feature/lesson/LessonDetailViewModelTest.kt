@@ -5,6 +5,7 @@ import com.dantech.dreams.data.prefs.UserPrefs
 import com.dantech.dreams.support.FakeLessonRepository
 import com.dantech.dreams.support.FakeUserPrefsRepository
 import com.dantech.dreams.support.MainCoroutineRule
+import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runCurrent
@@ -53,7 +54,7 @@ class LessonDetailViewModelTest {
     @Test
     fun `init hydrates from saved overrides`() = runTest {
         val prefs = FakeUserPrefsRepository(
-            UserPrefs(paramOverrides = mapOf("test-basics-1" to mapOf("amplitude" to 0.9f))),
+            UserPrefs(paramOverrides = persistentMapOf("test-basics-1" to persistentMapOf("amplitude" to 0.9f))),
         )
         val vm = LessonDetailViewModel(FakeLessonRepository(), prefs, "test-basics-1")
         runCurrent()
@@ -66,7 +67,7 @@ class LessonDetailViewModelTest {
     @Test
     fun `resetOverrides clears local and remote`() = runTest {
         val prefs = FakeUserPrefsRepository(
-            UserPrefs(paramOverrides = mapOf("test-basics-1" to mapOf("amplitude" to 0.5f))),
+            UserPrefs(paramOverrides = persistentMapOf("test-basics-1" to persistentMapOf("amplitude" to 0.5f))),
         )
         val vm = LessonDetailViewModel(FakeLessonRepository(), prefs, "test-basics-1")
         runCurrent()

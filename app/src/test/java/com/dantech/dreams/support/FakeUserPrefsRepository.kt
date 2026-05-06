@@ -2,6 +2,8 @@ package com.dantech.dreams.support
 
 import com.dantech.dreams.data.prefs.UserPrefs
 import com.dantech.dreams.data.prefs.UserPrefsRepository
+import kotlinx.collections.immutable.toPersistentMap
+import kotlinx.collections.immutable.toPersistentSet
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,7 +24,8 @@ class FakeUserPrefsRepository(
         var nowFavorite = false
         state.update {
             nowFavorite = id !in it.favorites
-            it.copy(favorites = if (nowFavorite) it.favorites + id else it.favorites - id)
+            val next = if (nowFavorite) it.favorites + id else it.favorites - id
+            it.copy(favorites = next.toPersistentSet())
         }
         return nowFavorite
     }
@@ -31,13 +34,13 @@ class FakeUserPrefsRepository(
         state.update { p ->
             val current = p.paramOverrides.toMutableMap()
             val inner = (current[lessonId].orEmpty()).toMutableMap().apply { put(uniform, value) }
-            current[lessonId] = inner
-            p.copy(paramOverrides = current)
+            current[lessonId] = inner.toPersistentMap()
+            p.copy(paramOverrides = current.toPersistentMap())
         }
     }
 
     override suspend fun clearLessonOverrides(lessonId: String) {
-        state.update { it.copy(paramOverrides = it.paramOverrides - lessonId) }
+        state.update { it.copy(paramOverrides = (it.paramOverrides - lessonId).toPersistentMap()) }
     }
 
     override suspend fun setReducedMotion(enabled: Boolean) {

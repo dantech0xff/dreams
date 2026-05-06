@@ -39,8 +39,14 @@ class LessonRegistryTest {
     @Test
     fun `each category has expected lesson count`() {
         assertEquals(6, repo.byCategory(LessonCategory.BASICS).size)
+        assertEquals(4, repo.byCategory(LessonCategory.PATTERNS).size)
+        assertEquals(4, repo.byCategory(LessonCategory.COLOR).size)
         assertEquals(6, repo.byCategory(LessonCategory.SDF).size)
         assertEquals(6, repo.byCategory(LessonCategory.NOISE).size)
+        assertEquals(4, repo.byCategory(LessonCategory.MOTION).size)
+        assertEquals(4, repo.byCategory(LessonCategory.FRACTALS).size)
+        assertEquals(4, repo.byCategory(LessonCategory.LIGHTING).size)
+        assertEquals(4, repo.byCategory(LessonCategory.INTERACTIVE).size)
         assertEquals(6, repo.byCategory(LessonCategory.POSTFX).size)
         assertEquals(5, repo.byCategory(LessonCategory.SHOWCASE).size)
     }

@@ -30,6 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.dantech.dreams.core.motion.LocalSharedTransitionScope
@@ -72,7 +73,6 @@ fun LessonCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
             .then(sharedMod)
             .semantics { contentDescription = a11yLabel }
             .clickable(onClick = onClick),
@@ -124,6 +124,10 @@ private fun TitleRow(
             text = title,
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface,
+            // Cap to two lines so 2-col grid cells stay visually balanced;
+            // long shader names ellipsize rather than blow the layout.
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f),
         )
         IconButton(onClick = onToggleFavorite) {

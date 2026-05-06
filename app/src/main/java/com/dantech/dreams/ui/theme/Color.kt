@@ -42,8 +42,14 @@ val DayLine        = Color(0xFFD8DAE5)
 
 // Per-category accents — small dot/stripe on cards, helps users
 // scan a long list and gives each category a visual identity.
-val AccentBasics   = SignalCyan          // understanding the basics
-val AccentSdf      = NeonViolet          // geometry/math
-val AccentNoise    = Color(0xFF14B8A6)   // teal — organic
-val AccentPostFx   = FluxRose            // expressive
-val AccentShowcase = Color(0xFFF59E0B)   // amber — cinematic / hero
+val AccentBasics     = SignalCyan          // understanding the basics
+val AccentSdf        = NeonViolet          // geometry/math
+val AccentNoise      = Color(0xFF14B8A6)   // teal — organic
+val AccentPostFx     = FluxRose            // expressive
+val AccentShowcase   = Color(0xFFF59E0B)   // amber — cinematic / hero
+val AccentPatterns   = Color(0xFFEAB308)   // gold — rhythm and repetition
+val AccentColor      = Color(0xFFEC4899)   // hot pink — chromatic
+val AccentMotion     = Color(0xFF10B981)   // emerald — kinetic
+val AccentFractals   = Color(0xFF6366F1)   // indigo — recursive depth
+val AccentLighting   = Color(0xFFF97316)   // tangerine — illumination
+val AccentInteractive = Color(0xFF0EA5E9)  // sky — touch / responsive

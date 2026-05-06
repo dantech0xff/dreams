@@ -26,8 +26,14 @@ internal object LessonRegistry {
     fun bootstrap() {
         if (all.isNotEmpty()) return
         com.dantech.dreams.data.lesson.source.basics.BasicsBootstrap.touch()
+        com.dantech.dreams.data.lesson.source.patterns.PatternsBootstrap.touch()
+        com.dantech.dreams.data.lesson.source.colorlab.ColorBootstrap.touch()
         com.dantech.dreams.data.lesson.source.sdf.SdfBootstrap.touch()
         com.dantech.dreams.data.lesson.source.noise.NoiseBootstrap.touch()
+        com.dantech.dreams.data.lesson.source.motion.MotionBootstrap.touch()
+        com.dantech.dreams.data.lesson.source.fractals.FractalsBootstrap.touch()
+        com.dantech.dreams.data.lesson.source.lighting.LightingBootstrap.touch()
+        com.dantech.dreams.data.lesson.source.interactive.InteractiveBootstrap.touch()
         com.dantech.dreams.data.lesson.source.posteffect.PostFxBootstrap.touch()
         com.dantech.dreams.data.lesson.source.showcase.ShowcaseBootstrap.touch()
     }
