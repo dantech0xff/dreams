@@ -1,18 +1,17 @@
 package com.dantech.dreams.ui.feature.lessonlist
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -28,17 +27,12 @@ fun LessonCategoriesScreen(
     vm: LessonCategoriesViewModel = koinViewModel(),
 ) {
     val ui by vm.uiState.collectAsStateWithLifecycle()
-
-    Scaffold(
-        topBar = { TopAppBar(title = { Text("Lessons") }) },
-    ) { padding ->
-        LazyColumn(Modifier.fillMaxSize().padding(padding)) {
-            items(ui.categories, key = { it.category.name }) { item ->
-                CategoryCard(
-                    item = item,
-                    onClick = { onCategoryClick(item.category) },
-                )
-            }
+    LazyColumn(Modifier.fillMaxSize()) {
+        items(ui.categories, key = { it.category.name }) { item ->
+            CategoryCard(
+                item = item,
+                onClick = { onCategoryClick(item.category) },
+            )
         }
     }
 }
@@ -48,21 +42,21 @@ private fun CategoryCard(
     item: LessonCategoryItem,
     onClick: () -> Unit,
 ) {
-    Card(
-        modifier = Modifier
+    Column(
+        Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp)
-            .clickable(onClick = onClick),
+            .wrapContentHeight()
+            .padding(16.dp)
+            .background(MaterialTheme.colorScheme.surfaceContainerLow)
+            .clickable(onClick = onClick)
     ) {
-        Column(Modifier.padding(16.dp)) {
-            Text(
-                text = item.category.displayName,
-                style = MaterialTheme.typography.titleMedium,
-            )
-            Text(
-                text = "${item.count} lessons",
-                style = MaterialTheme.typography.bodySmall,
-            )
-        }
+        Text(
+            text = item.category.displayName,
+            style = MaterialTheme.typography.titleMedium,
+        )
+        Text(
+            text = "${item.count} lessons",
+            style = MaterialTheme.typography.bodySmall,
+        )
     }
 }
