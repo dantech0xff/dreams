@@ -15,7 +15,7 @@ data class AppMotionState(val reducedMotion: Boolean) {
     val transitionDurationMs: Int get() = if (reducedMotion) 0 else DEFAULT_DURATION_MS
 
     private companion object {
-        const val DEFAULT_DURATION_MS = 300
+        const val DEFAULT_DURATION_MS = 500
     }
 }
 

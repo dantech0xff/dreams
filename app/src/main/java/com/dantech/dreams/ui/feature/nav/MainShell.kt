@@ -34,7 +34,6 @@ import org.koin.core.parameter.parametersOf
 fun MainShell() {
     val motion = rememberAppMotionState()
     val backStack = rememberNavBackStack(Route.Main)
-    val durationMs = motion.transitionDurationMs
 
     SharedTransitionLayout {
         CompositionLocalProvider(LocalSharedTransitionScope provides this) {
@@ -49,14 +48,14 @@ fun MainShell() {
                     if (motion.reducedMotion) {
                         fadeIn(snap()) togetherWith fadeOut(snap())
                     } else {
-                        fadeIn(tween(durationMs)) togetherWith fadeOut(tween(durationMs))
+                        fadeIn(tween(motion.transitionDurationMs)) togetherWith fadeOut(tween(motion.transitionDurationMs))
                     }
                 },
                 popTransitionSpec = {
                     if (motion.reducedMotion) {
                         fadeIn(snap()) togetherWith fadeOut(snap())
                     } else {
-                        fadeIn(tween(durationMs)) togetherWith fadeOut(tween(durationMs))
+                        fadeIn(tween(motion.transitionDurationMs)) togetherWith fadeOut(tween(motion.transitionDurationMs))
                     }
                 },
                 entryProvider = entryProvider {
