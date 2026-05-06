@@ -7,6 +7,8 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
+import kotlinx.collections.immutable.toImmutableMap
+import kotlinx.collections.immutable.toImmutableSet
 import java.io.IOException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -30,8 +32,10 @@ internal class UserPrefsRepositoryImpl(
         .map { p ->
             UserPrefs(
                 lastLessonId = p[Keys.LAST_LESSON],
-                favorites = p[Keys.FAVORITES] ?: emptySet(),
-                paramOverrides = decodeOverrides(p[Keys.OVERRIDES] ?: ""),
+                favorites = (p[Keys.FAVORITES] ?: emptySet()).toImmutableSet(),
+                paramOverrides = decodeOverrides(p[Keys.OVERRIDES] ?: "").map {
+                    it.key to it.value.toImmutableMap()
+                }.toMap().toImmutableMap(),
                 reducedMotionOverride = p[Keys.REDUCED_MOTION] ?: false,
             )
         }

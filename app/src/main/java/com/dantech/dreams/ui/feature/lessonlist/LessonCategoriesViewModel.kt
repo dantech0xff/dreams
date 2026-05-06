@@ -1,5 +1,6 @@
 package com.dantech.dreams.ui.feature.lessonlist
 
+import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import com.dantech.dreams.data.lesson.LessonCategory
 import com.dantech.dreams.domain.lesson.LessonRepository
@@ -8,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+@Stable
 class LessonCategoriesViewModel(
     private val repo: LessonRepository,
 ) : ViewModel() {

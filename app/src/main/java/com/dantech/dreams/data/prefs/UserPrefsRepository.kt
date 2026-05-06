@@ -1,7 +1,9 @@
 package com.dantech.dreams.data.prefs
 
+import androidx.compose.runtime.Stable
 import kotlinx.coroutines.flow.Flow
 
+@Stable
 interface UserPrefsRepository {
     val prefsFlow: Flow<UserPrefs>
     suspend fun setLastLessonId(id: String)
