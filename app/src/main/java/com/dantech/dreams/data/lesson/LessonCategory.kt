@@ -1,11 +1,11 @@
 package com.dantech.dreams.data.lesson
 
-enum class LessonCategory(val displayName: String) {
-    BASICS("Basics"),
-    SDF("SDF"),
-    NOISE("Noise"),
-    POSTFX("Post-FX"),
-    SHOWCASE("Showcase"),
+enum class LessonCategory(val displayName: String, val tagline: String) {
+    BASICS("Basics", "Start where pixels meet math"),
+    SDF("SDF", "Crisp geometry sculpted from equations"),
+    NOISE("Noise", "Random fields that read as plasma, lava, smoke"),
+    POSTFX("Post-FX", "Bend, blur, and dissolve real Compose UI"),
+    SHOWCASE("Showcase", "Cinema-mode shaders, ready for the recorder"),
     ;
 
     companion object {

@@ -26,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dantech.dreams.data.lesson.LessonCategory
@@ -44,6 +45,7 @@ fun LessonCategoriesScreen(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        item(key = "header") { ScreenHeader() }
         items(ui.categories, key = { it.category.name }) { item ->
             CategoryCard(
                 item = item,
@@ -51,6 +53,19 @@ fun LessonCategoriesScreen(
             )
         }
     }
+}
+
+// Inline screen title — kept raw (no Scaffold/TopAppBar) so the header lives
+// inside the scroll, scrolls away naturally, and reads as a hero rather than
+// a chrome bar. displayMedium gives Roboto Slab the room to feel intentional.
+@Composable
+private fun ScreenHeader() {
+    Text(
+        text = "Lessons",
+        style = MaterialTheme.typography.displayMedium,
+        color = MaterialTheme.colorScheme.onBackground,
+        modifier = Modifier.padding(top = 12.dp, bottom = 4.dp),
+    )
 }
 
 @Composable
@@ -87,11 +102,13 @@ private fun CategoryCard(
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
-                Spacer(Modifier.size(2.dp))
+                Spacer(Modifier.size(4.dp))
                 Text(
-                    text = "${item.count} lessons",
-                    style = MaterialTheme.typography.labelMedium,
+                    text = item.category.tagline,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
             // Numeric readout tinted with the category accent.
