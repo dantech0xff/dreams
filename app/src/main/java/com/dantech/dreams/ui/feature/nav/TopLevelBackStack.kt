@@ -34,56 +34,70 @@ class TopLevelBackStack private constructor(
             }
         }
 
-    /** Flattened, observable back stack: concatenation of every tab's stack in LRU order. */
-    val backStack: SnapshotStateList<Route> = mutableStateListOf<Route>().also { rebuild(it) }
-
-    private fun rebuild(target: SnapshotStateList<Route>) {
-        target.clear()
+    /**
+     * Flattened, observable back stack: concatenation of every tab's stack in LRU order.
+     *
+     * Mutated surgically (single-element add/remove or contiguous range moves) — never
+     * cleared and rebuilt. Nav3's [rememberSaveableStateHolderNavEntryDecorator] tracks
+     * each NavKey across recompositions, so wiping and re-adding the same keys would drop
+     * saved per-entry state (LazyColumn scroll, rememberSaveable values).
+     */
+    val backStack: SnapshotStateList<Route> = mutableStateListOf<Route>().also { target ->
         topLevelStacks.values.forEach { target.addAll(it) }
     }
 
     fun switchTopLevel(root: Route) {
         if (topLevelKey == root) return
         if (root in topLevelStacks) {
-            // LRU re-order: move chosen tab to end so its top entry is the back-stack tail.
-            topLevelStacks.remove(root)?.let { topLevelStacks[root] = it }
+            // LRU re-order: move chosen tab's contiguous items from their current position
+            // in backStack to the tail. The items themselves stay continuously present, so
+            // the SaveableStateHolder keeps their state.
+            val items = topLevelStacks.remove(root)!!
+            topLevelStacks[root] = items
+            val startIdx = backStack.indexOf(items.first())
+            if (startIdx >= 0) {
+                val moved = ArrayList<Route>(items.size)
+                repeat(items.size) { moved.add(backStack.removeAt(startIdx)) }
+                backStack.addAll(moved)
+            }
         } else {
             // First visit this session: seed a fresh stack rooted at this tab.
             topLevelStacks[root] = mutableStateListOf<Route>().also { it.add(root) }
+            backStack.add(root)
         }
         topLevelKey = root
-        rebuild(backStack)
     }
 
     fun add(key: Route) {
         topLevelStacks[topLevelKey]?.add(key)
-        rebuild(backStack)
+        backStack.add(key)
     }
 
     fun removeLast() {
         val current = topLevelStacks[topLevelKey] ?: return
         if (current.size > 1) {
             current.removeAt(current.lastIndex)
-            rebuild(backStack)
+            backStack.removeAt(backStack.lastIndex)
             return
         }
-        // At a tab root: drop this tab and fall back to the previous LRU tab.
-        // When only one tab is seeded, this is a no-op so the flattened backStack stays
-        // at size 1 — NavDisplay disables its BackHandler and system back exits the activity.
+        // At a tab root: drop this tab's stack and fall back to the LRU previous tab.
+        // When only one tab is seeded, this is a no-op so the flattened backStack stays at
+        // size 1 — NavDisplay disables its BackHandler and system back exits the activity.
         if (topLevelStacks.size > 1) {
             topLevelStacks.remove(topLevelKey)
+            backStack.removeAt(backStack.lastIndex)
             topLevelKey = topLevelStacks.keys.last()
-            rebuild(backStack)
         }
     }
 
     fun popToRoot() {
         val current = topLevelStacks[topLevelKey] ?: return
         if (current.size <= 1) return
-        val root = current.first()
-        current.clear()
-        current.add(root)
-        rebuild(backStack)
+        val popCount = current.size - 1
+        repeat(popCount) {
+            current.removeAt(current.lastIndex)
+            backStack.removeAt(backStack.lastIndex)
+        }
     }
 
     internal fun snapshotForSaver(): Pair<Route, Map<Route, List<Route>>> =
