@@ -37,27 +37,32 @@ Dreams is a curated, swipeable Jetpack Compose gallery for learning **Android Gr
 
 ### Functional Requirements
 
-#### F1: Lesson Gallery
-- Display lessons in swipeable tabs by category (Basics, SDF, Noise, Post-FX)
+#### F1: Lesson Browsing (Bottom Tab Navigation)
+- 3-tab bottom navigation shell: Lesson | Showcase | Settings
+- **Lesson tab:** Category selection → Lessons by category → Interactive detail screen
 - Each lesson card shows title, shader preview, and favorite toggle
 - Favorites persist across app restarts via DataStore
-- Last viewed lesson remembered; gallery auto-scrolls to it on cold start
+- Last viewed lesson remembered; auto-shows on app restart
 
 #### F2: Lesson Detail Screen
-- Full-screen AGSL shader with interactive controls (sliders for parameters)
+- Full-screen AGSL shader with interactive parameter sliders
 - Slider value changes persist with 200ms debounce
-- Smooth shared-element transition from gallery card to detail screen
-- Back navigation returns to gallery at last-viewed position
+- Smooth shared-element transition from lesson card to detail screen
+- Bottom bar hides on detail screen (fullscreen mode)
+- Back navigation returns to lesson list at last-viewed category
 
-#### F3: Showcase Screens
-- Three full-screen, tap-responsive shader demos (liquid glass, aurora, raymarched sphere)
+#### F3: Showcase Tab
+- Showcase selection screen showing 3 full-screen demos (liquid glass, aurora, raymarched sphere)
+- Each demo renders as interactive, tap-responsive shader display
 - Reduced-motion users see instant swaps instead of animated transitions
-- Touchable regions trigger visual feedback (ripples, parameter shifts)
+- Bottom bar hides when viewing a showcase (fullscreen mode)
 
-#### F4: Settings & Preferences
-- Modal bottom sheet with reduced-motion toggle
-- Toggle persists via DataStore
-- Reduced-motion overrides system `ANIMATOR_DURATION_SCALE`
+#### F4: Settings Tab & Preferences
+- Full-screen settings page (replaces modal bottom sheet) with sections:
+  - **Display:** Reduced-motion toggle
+  - **About:** App version, About AGSL bottom sheet, GitHub link, License sheet
+- All preferences persist via DataStore
+- Reduced-motion overrides system `ANIMATOR_DURATION_SCALE` for transitions
 
 ### Non-Functional Requirements
 
@@ -94,26 +99,28 @@ com.dantech.dreams/
 │   ├── di/             # Koin modules (AppModule, DataModule, FeatureModule)
 │   └── motion/         # Motion utilities (reduced-motion logic)
 ├── data/
-│   ├── lesson/         # LessonRepositoryImpl, Lesson entity, lesson sources
+│   ├── lesson/         # LessonRepositoryImpl, Lesson entity, lesson sources, showcases() accessor
 │   └── prefs/          # UserPrefsRepositoryImpl, Prefs data class
 ├── domain/
 │   └── lesson/         # LessonRepository interface (repo contract)
 └── ui/
     ├── feature/
-    │   ├── landing/    # Landing (onboarding) screen + VM
-    │   ├── gallery/    # Gallery + VM
-    │   ├── lesson/     # LessonDetail + VM (with slider persistence)
-    │   ├── showcase/   # Showcase + VM
-    │   ├── settings/   # Settings bottom sheet (reduced-motion toggle)
+    │   ├── nav/        # Navigation shell: MainShell, TopLevelBackStack, DreamsBottomBar, TabKey, Route
+    │   ├── lessonlist/ # LessonCategoriesScreen/VM/UiState, LessonListScreen/VM/UiState
+    │   ├── lesson/     # LessonDetailScreen + VM (with slider persistence)
+    │   ├── showcase/   # ShowcaseListScreen/VM/UiState, ShowcaseScreen/VM/UiState
+    │   ├── settings/   # SettingsScreen, AboutAgslSheet
     │   ├── common/     # Shared Composables (LessonCard, shared-element logic)
-    │   └── nav/        # Route definitions, NavDisplay, nav logic
+    │   └── (deleted: landing/, gallery/)
     └── theme/          # Tokens, colors, typography, spacing
 ```
 
 ### Dependency Graph
 
 ```
-ui/feature/{landing,gallery,lesson,showcase,settings}
+MainActivity → MainShell → NavDisplay + DreamsBottomBar
+    ↓
+ui/feature/{lessonlist,lesson,showcase,settings} (3 bottom tabs)
     ↓
 domain/lesson (LessonRepository interface)
     ↓

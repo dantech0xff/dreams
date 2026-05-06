@@ -15,8 +15,8 @@ app/src/main/java/com/dantech/dreams/
 │   ├── di/                         # Koin DI modules (3 total)
 │   └── motion/                     # Motion & reduced-motion logic
 ├── data/                           # Data layer (repos, entities, persistence)
-│   ├── lesson/                     # LessonRepositoryImpl, Lesson entity
-│   │   └── source/                 # Lesson sources (6 categories × 19 lessons + 3 showcases)
+│   ├── lesson/                     # LessonRepositoryImpl, Lesson entity, showcases() accessor
+│   │   └── source/                 # Lesson sources (4 educational + 1 showcase categories)
 │   │       ├── basics/             # 6 basic AGSL lessons
 │   │       ├── sdf/                # 6 SDF lessons
 │   │       ├── noise/              # 6 noise lessons
@@ -26,14 +26,14 @@ app/src/main/java/com/dantech/dreams/
 ├── domain/                         # Domain layer (interfaces only)
 │   └── lesson/                     # LessonRepository interface
 └── ui/                             # UI layer (Composables, ViewModels)
-    ├── feature/                    # Feature screens (4 screens + settings)
-    │   ├── landing/                # Landing screen + LandingViewModel
-    │   ├── gallery/                # Gallery screen + GalleryViewModel + GalleryUiState
-    │   ├── lesson/                 # LessonDetail screen + LessonDetailViewModel
-    │   ├── showcase/               # Showcase screen + ShowcaseViewModel
-    │   ├── settings/               # Settings bottom sheet
+    ├── feature/                    # Feature screens (bottom-tab shell + per-tab screens)
+    │   ├── nav/                    # Navigation shell: MainShell, TopLevelBackStack, DreamsBottomBar, TabKey, Route
+    │   ├── lessonlist/             # LessonCategories + LessonList screens + VMs + UiStates
+    │   ├── lesson/                 # LessonDetail screen + ViewModel
+    │   ├── showcase/               # ShowcaseList + Showcase screens + VMs + UiStates
+    │   ├── settings/               # Settings screen + AboutAgslSheet
     │   ├── common/                 # Shared Composables (LessonCard, transitions)
-    │   └── nav/                    # Navigation (Route sealed interface, nav logic)
+    │   └── (deleted: landing/, gallery/)
     └── theme/                      # Design tokens (Tokens.kt, colors, typography)
 
 app/src/test/java/com/dantech/dreams/        # JVM unit tests (mirror structure)
@@ -70,10 +70,11 @@ app/src/androidTest/java/com/dantech/dreams/ # Instrumented tests + test runner
 - `single<UserPrefsRepository>` — Resolves UserPrefsRepositoryImpl(dataStore)
 
 **FeatureModule.kt**
-- `viewModel { LandingViewModel() }` — Landing screen VM
-- `viewModel { GalleryViewModel(repo, prefs, handle) }` — Gallery VM (3 constructor deps)
-- `viewModel { (lessonId) -> LessonDetailViewModel(repo, prefs, lessonId) }` — Parameterized VM
-- `viewModel { (lessonId) -> ShowcaseViewModel(repo, lessonId) }` — Parameterized VM
+- `viewModel { LessonCategoriesViewModel(repo) }` — Category selection VM
+- `viewModel { (categoryName) -> LessonListViewModel(repo, prefs, categoryName) }` — Parameterized lesson list VM
+- `viewModel { (lessonId) -> LessonDetailViewModel(repo, prefs, lessonId) }` — Parameterized detail VM
+- `viewModel { ShowcaseListViewModel(repo) }` — Showcase list VM
+- `viewModel { (lessonId) -> ShowcaseViewModel(repo, lessonId) }` — Parameterized showcase VM
 
 ### Repositories (domain/ + data/)
 
@@ -83,6 +84,7 @@ interface LessonRepository {
     fun allLessons(): List<Lesson>
     fun byCategory(category: LessonCategory): List<Lesson>
     fun byId(lessonId: String): Lesson?
+    fun showcases(): List<Lesson>  // Returns lessons with SHOWCASE category
 }
 ```
 
@@ -139,14 +141,13 @@ data class Uniform(
 **Route** (sealed interface, @Serializable)
 ```kotlin
 sealed interface Route : NavKey {
-    @Serializable data object Landing : Route
-    @Serializable data object Gallery : Route
+    @Serializable data object LessonCategoriesRoot : Route
+    @Serializable data class LessonList(val categoryName: String) : Route
     @Serializable data class LessonDetail(val lessonId: String) : Route
+    @Serializable data object ShowcaseListRoot : Route
     @Serializable data class Showcase(val lessonId: String) : Route
+    @Serializable data object SettingsRoot : Route
 }
-
-fun routeForLessonId(id: String): Route =
-    if (id.startsWith("showcase-")) Route.Showcase(id) else Route.LessonDetail(id)
 ```
 
 ### ViewModels (ui/feature/{feature}/)
@@ -175,29 +176,35 @@ Each ViewModel exposes `StateFlow<XUiState>` and handles user actions:
 
 Immutable state classes used by Composables:
 
-**GalleryUiState**
-- categories, selectedTabIndex, lessons, favorites, lastLessonId, isLoading, error
+**LessonCategoriesUiState**
+- categories (4 educational), isLoading, error
+
+**LessonListUiState**
+- categoryName, lessons, favorites, lastLessonId, isLoading, error
 
 **LessonDetailUiState**
 - lesson, paramValues (SnapshotStateMap), isLoading, error
 
+**ShowcaseListUiState**
+- showcases (3 items), isLoading, error
+
 **ShowcaseUiState**
 - lesson, paramValues, isLoading, error
-
-**LandingUiState**
-- Minimal (ready, loading, error)
 
 ### Composables (ui/feature/)
 
 **Screens** (public, injectable ViewModel)
-- `GalleryScreen()` — Tabbed gallery of lessons
-- `LessonDetailScreen()` — Full-screen shader + sliders
-- `ShowcaseScreen()` — Full-screen demo
-- `LandingScreen()` — Onboarding
+- `LessonCategoriesScreen()` — Selectable list of 4 lesson categories
+- `LessonListScreen(categoryName)` — Tabbed or flat list of lessons in category
+- `LessonDetailScreen(lessonId)` — Full-screen shader + interactive sliders
+- `ShowcaseListScreen()` — List of 3 showcase demos
+- `ShowcaseScreen(lessonId)` — Full-screen interactive demo
+- `SettingsScreen()` — Settings page (reduced-motion toggle, app info, GitHub link, license)
 
 **Components** (private or shared, state hoisted)
-- `LessonCard()` — Gallery card (sharedBounds animation)
-- `SettingsSheet()` — ModalBottomSheet with reduced-motion toggle
+- `LessonCard()` — Lesson card with preview + title + favorite toggle (moved to common/)
+- `AboutAgslSheet()` — Bottom sheet explaining AGSL (moved to settings/)
+- `DreamsBottomBar()` — 3-tab navigation bar (Lesson | Showcase | Settings)
 - Shared animation specs, motion utilities
 
 ---
@@ -297,13 +304,15 @@ Lessons loaded once on app startup via LessonRepositoryImpl init:
 
 | Concern | Package | Notes |
 |---------|---------|-------|
-| **DI Setup** | core/di | 3 modules (app, data, feature) |
-| **Lesson Data** | data/lesson + domain/lesson | Repo interface + impl + 26 lessons |
+| **DI Setup** | core/di | 3 modules (app, data, feature); includes new lesson/showcase/settings VMs |
+| **Lesson Data** | data/lesson + domain/lesson | Repo interface + impl + 26 lessons + showcases() accessor |
 | **Preferences** | data/prefs | UserPrefs entity + repo interface + impl |
-| **Navigation** | ui/feature/nav | Route sealed interface + nav logic |
-| **Screens** | ui/feature/{landing,gallery,lesson,showcase} | Composables + VMs + UiState |
-| **Settings** | ui/feature/settings | Reduced-motion toggle |
-| **Shared UI** | ui/feature/common | LessonCard, transitions, animations |
+| **Navigation Shell** | ui/feature/nav | MainShell, TopLevelBackStack, DreamsBottomBar, TabKey, Route (3-tab bottom nav) |
+| **Lesson Screens** | ui/feature/lessonlist | LessonCategoriesScreen/VM/UiState, LessonListScreen/VM/UiState |
+| **Lesson Detail** | ui/feature/lesson | LessonDetailScreen, ViewModel, UiState |
+| **Showcase Screens** | ui/feature/showcase | ShowcaseListScreen/VM/UiState, ShowcaseScreen/VM/UiState |
+| **Settings** | ui/feature/settings | SettingsScreen, AboutAgslSheet (moved from landing) |
+| **Shared UI** | ui/feature/common | LessonCard (moved from gallery), transitions, animations |
 | **Theme** | ui/theme | Tokens, colors, typography |
 | **Core Utils** | core/agsl + core/motion | AGSL RuntimeShader utils, motion logic |
 
@@ -331,10 +340,13 @@ Lessons loaded once on app startup via LessonRepositoryImpl init:
 ```
 
 ### Key Files to Know
-- **DI:** `app/src/main/java/com/dantech/dreams/core/di/*.kt`
-- **Navigation:** `app/src/main/java/com/dantech/dreams/ui/feature/nav/Route.kt`
-- **Lessons:** `app/src/main/java/com/dantech/dreams/data/lesson/source/`
-- **Tests:** `app/src/test/` and `app/src/androidTest/`
+- **DI:** `app/src/main/java/com/dantech/dreams/core/di/*.kt` (FeatureModule has 5 VMs)
+- **Navigation Shell:** `app/src/main/java/com/dantech/dreams/ui/feature/nav/` (MainShell, TopLevelBackStack, DreamsBottomBar, Route)
+- **Lesson Screens:** `app/src/main/java/com/dantech/dreams/ui/feature/lessonlist/`
+- **Showcase Screens:** `app/src/main/java/com/dantech/dreams/ui/feature/showcase/`
+- **Settings:** `app/src/main/java/com/dantech/dreams/ui/feature/settings/`
+- **Lessons Data:** `app/src/main/java/com/dantech/dreams/data/lesson/source/`
+- **Tests:** `app/src/test/` and `app/src/androidTest/` (updated to remove GalleryViewModelTest, LandingViewModelTest)
 - **Standards:** See `docs/code-standards.md`
 - **Architecture:** See `docs/system-architecture.md`
 
@@ -342,7 +354,8 @@ Lessons loaded once on app startup via LessonRepositoryImpl init:
 
 ## References
 
-- **Refactor Plan:** `plans/260506-0052-production-refactor-koin-nav3/plan.md`
+- **Bottom Tab Navigation Rework Plan:** `plans/260506-0724-bottom-tab-navigation-rework/plan.md`
+- **Code Review Report:** `plans/reports/code-reviewer-260506-0759-bottom-tab-rework.md`
 - **Android AGSL Docs:** https://developer.android.com/develop/ui/views/graphics/agsl
 - **Compose Navigation3:** https://developer.android.com/jetpack/compose/navigation
 - **Koin:** https://insert-koin.io/

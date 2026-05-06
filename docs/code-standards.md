@@ -199,9 +199,10 @@ val dataModule = module {
 
 // core/di/FeatureModule.kt
 val featureModule = module {
-    viewModel { LandingViewModel() }
-    viewModel { GalleryViewModel(get(), get(), get()) }
+    viewModel { LessonCategoriesViewModel(get()) }
+    viewModel { (categoryName: String) -> LessonListViewModel(get(), get(), categoryName) }
     viewModel { (lessonId: String) -> LessonDetailViewModel(get(), get(), lessonId) }
+    viewModel { ShowcaseListViewModel(get()) }
     viewModel { (lessonId: String) -> ShowcaseViewModel(get(), lessonId) }
 }
 

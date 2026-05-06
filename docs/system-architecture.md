@@ -6,8 +6,8 @@
 ┌─────────────────────────────────────────────────────────┐
 │              Compose UI Layer (Feature)                 │
 ├─────────────────────────────────────────────────────────┤
-│ Landing | Gallery | LessonDetail | Showcase | Settings  │
-│ (Each owns a ViewModel + UiState)                        │
+│ LessonCategories | LessonList | LessonDetail | Showcase │
+│ ShowcaseList | Settings (Each owns ViewModel + UiState) │
 └────────────┬────────────────────────────┬────────────────┘
              │                            │
     Navigation3 Routes (@Serializable)    │
@@ -29,10 +29,11 @@
 │ LessonRepositoryImpl  │              │ RuntimeShader   │
 │ • LessonRegistry     │              │ • AGSL utils    │
 │ • 23 lesson sources  │              │ • Uniforms      │
-│                      │              │                 │
-│ UserPrefsRepoImpl     │              │ Motion          │
-│ • DataStore backing  │              │ • Reduced-motion│
-│ • Prefs flow         │              │ • Tween → snap  │
+│ • showcases()        │              │                 │
+│                      │              │ Motion          │
+│ UserPrefsRepoImpl     │              │ • Reduced-motion│
+│ • DataStore backing  │              │ • Tween → snap  │
+│ • Prefs flow         │              │                 │
 └───────────┬──────────┘              └────────────────┘
             │
     ┌───────▴──────────┐
@@ -68,9 +69,10 @@ val dataModule = module {
 
 // core/di/FeatureModule.kt
 val featureModule = module {
-    viewModel { LandingViewModel() }
-    viewModel { GalleryViewModel(get(), get(), get()) }
+    viewModel { LessonCategoriesViewModel(get()) }
+    viewModel { (categoryName: String) -> LessonListViewModel(get(), get(), categoryName) }
     viewModel { (lessonId: String) -> LessonDetailViewModel(get(), get(), lessonId) }
+    viewModel { ShowcaseListViewModel(get()) }
     viewModel { (lessonId: String) -> ShowcaseViewModel(get(), lessonId) }
 }
 ```
@@ -87,40 +89,74 @@ val featureModule = module {
 
 ---
 
-## Navigation (Navigation3 1.1.1)
+## Navigation (Navigation3 1.1.1 + Bottom Tab Shell)
+
+### Architecture: MainShell + TopLevelBackStack
+```
+MainActivity
+    ↓
+MainShell()
+    ├── SharedTransitionLayout (single layout for all shared-element transitions)
+    ├── Scaffold
+    │   ├── bottomBar: AnimatedVisibility(
+    │   │              visible = !isFullscreenRoute(currentRoute),
+    │   │              content = DreamsBottomBar)
+    │   └── content: NavDisplay(backStack, ...)
+    │       └── currentRoute → appropriate Screen Composable
+    │
+    └── TopLevelBackStack (singleton helper)
+        ├── topLevelKey: TabKey (LESSON | SHOWCASE | SETTINGS)
+        ├── topLevelStacks: Map<TabKey, List<Route>> (per-tab stack)
+        └── Operations: switchTopLevel(), popToRoot(), removeLast()
+```
+
+Three bottom tabs with per-tab back stacks:
+- **Lesson tab:** LessonCategories → LessonList(categoryName) → LessonDetail(lessonId)
+- **Showcase tab:** ShowcaseList → ShowcaseScreen(lessonId)
+- **Settings tab:** SettingsScreen (single page, modal About sheet)
 
 ### Route Definition
 ```kotlin
 sealed interface Route : NavKey {
     @Serializable
-    data object Landing : Route
+    data object LessonCategoriesRoot : Route
     
     @Serializable
-    data object Gallery : Route
+    data class LessonList(val categoryName: String) : Route
     
     @Serializable
     data class LessonDetail(val lessonId: String) : Route
     
     @Serializable
+    data object ShowcaseListRoot : Route
+    
+    @Serializable
     data class Showcase(val lessonId: String) : Route
+    
+    @Serializable
+    data object SettingsRoot : Route
 }
-
-fun routeForLessonId(id: String): Route =
-    if (id.startswith("showcase-")) Route.Showcase(id) else Route.LessonDetail(id)
 ```
 
 ### Navigation Flow
-1. **Landing** (entry point) → tap → **Gallery**
-2. **Gallery** (tab-swipeable) → tap card → **LessonDetail** (via shared-element transition)
-3. **LessonDetail** → back → **Gallery** (at last-viewed tab + scroll position)
-4. **Gallery** → tap showcase card → **Showcase** (fullscreen, immediate AGSL)
-5. **Showcase** → back or tap → **Gallery**
+1. **App launch:** MainActivity → MainShell → Lesson tab shows LessonCategories
+2. **Lesson tab drill-down:** LessonCategories → LessonList(categoryName) → LessonDetail(lessonId)
+3. **Showcase tab:** ShowcaseList → ShowcaseScreen(lessonId) (full-screen, bar hidden)
+4. **Settings tab:** SettingsScreen (full-screen settings page)
+5. **Tap current tab:** Pop to root of current tab (platform-standard behavior)
+6. **System back from home route:** Exit app (vs. switch tabs)
+
+### Bottom Bar Visibility
+- **Animated route-driven logic:** `AnimatedVisibility` in Scaffold receives a `derivedStateOf { backStack.lastOrNull() }`
+- **Hidden on:** LessonDetail, Showcase (fullscreen routes)
+- **Visible on:** LessonCategories, LessonList, ShowcaseList, SettingsScreen
+- **Reduced-motion:** Respects system setting; snap vs. slide+fade animation
 
 ### State Preservation
-- **SavedStateHandle:** GalleryViewModel stores `selectedTabIndex` key; recovers tab position on config change
-- **rememberNavBackStack:** Custom composable manages back-stack across destination changes
-- **rememberSaveableStateHolderNavEntryDecorator:** Preserves nested Compose state per nav entry
-- **Process death:** Navigation state + ViewModel state restored via system Bundle serialization
+- **Per-tab stacks saved:** TopLevelBackStack.Saver encodes all route stacks (requires fixes for unknown routes + back-to-exit behavior per code review)
+- **rememberNavBackStack:** Manages flattened back-stack across all routes
+- **rememberViewModelStoreNavEntryDecorator:** Preserves per-route ViewModel across config change
+- **Process death:** All route stacks + ViewModel state restored via Bundle serialization (with fallback on saver decode error)
 
 ---
 
@@ -130,17 +166,18 @@ fun routeForLessonId(id: String): Route =
 
 Each screen owns a ViewModel exposing `StateFlow<UiState>`:
 
-#### LandingViewModel
+#### LessonCategoriesViewModel
 ```kotlin
-val uiState: StateFlow<LandingUiState>
-// Minimal state: ready, loading, error
+val uiState: StateFlow<LessonCategoriesUiState>
+// State: categories (4 educational; excludes SHOWCASE), isLoading, error
+// Actions: onSelectCategory(categoryName) [navigates via callback]
 ```
 
-#### GalleryViewModel
+#### LessonListViewModel
 ```kotlin
-val uiState: StateFlow<GalleryUiState>
-// State: selectedTabIndex, categories, lessons, favorites, lastLessonId
-// Actions: selectTab(index), toggleFavorite(lessonId)
+val uiState: StateFlow<LessonListUiState>
+// State: categoryName, lessons (filtered by category), favorites, lastLessonId, isLoading
+// Actions: toggleFavorite(lessonId), markLessonViewed(lessonId) [debounced]
 ```
 
 #### LessonDetailViewModel
@@ -148,6 +185,13 @@ val uiState: StateFlow<GalleryUiState>
 val uiState: StateFlow<LessonDetailUiState>
 // State: lesson, paramValues (SnapshotStateMap), lastLessonId update
 // Actions: setParamValue(key, value) [debounced], markLessonViewed()
+```
+
+#### ShowcaseListViewModel
+```kotlin
+val uiState: StateFlow<ShowcaseListUiState>
+// State: showcases (3 items), isLoading, error
+// Actions: onSelectShowcase(lessonId) [navigates via callback]
 ```
 
 #### ShowcaseViewModel
@@ -410,12 +454,15 @@ fun AGSLRenderer(
 | **DI** | `core/di` | AppModule, DataModule, FeatureModule, KoinModulesCheckTest |
 | **AGSL** | `core/agsl` | RuntimeShader utils, shader sources (assets) |
 | **Motion** | `core/motion` | Reduced-motion logic, animation spec resolution |
-| **Lesson data** | `data/lesson` | LessonRepositoryImpl, Lesson entity, lesson sources (Basics, SDF, Noise, PostEffect, Showcase) |
+| **Lesson data** | `data/lesson` | LessonRepositoryImpl, Lesson entity, lesson sources (Basics, SDF, Noise, PostEffect, Showcase), showcases() accessor |
 | **Prefs** | `data/prefs` | UserPrefsRepositoryImpl, UserPrefs data class |
 | **Domain interfaces** | `domain/lesson` | LessonRepository interface (sealed, impl hidden) |
-| **Navigation** | `ui/feature/nav` | Route sealed interface, routeForLessonId(), NavDisplay, back-stack logic |
-| **UI Features** | `ui/feature/{landing,gallery,lesson,showcase,settings}` | Screens, ViewModels, UiState classes |
-| **Shared UI** | `ui/feature/common` | LessonCard, SharedTransitionLayout helpers, animation specs |
+| **Navigation shell** | `ui/feature/nav` | MainShell, TopLevelBackStack, DreamsBottomBar, TabKey, Route sealed interface |
+| **Lesson screens** | `ui/feature/lessonlist` | LessonCategoriesScreen/VM/UiState, LessonListScreen/VM/UiState |
+| **Lesson detail** | `ui/feature/lesson` | LessonDetailScreen, LessonDetailViewModel, LessonDetailUiState |
+| **Showcase screens** | `ui/feature/showcase` | ShowcaseListScreen/VM/UiState, ShowcaseScreen/VM/UiState |
+| **Settings** | `ui/feature/settings` | SettingsScreen, AboutAgslSheet (moved from landing) |
+| **Shared UI** | `ui/feature/common` | LessonCard (moved from gallery), SharedTransitionLayout helpers, animation specs |
 | **Theme** | `ui/theme` | Tokens.kt, colors, typography, spacing, Material3 defaults |
 
 ---
