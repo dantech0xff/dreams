@@ -42,7 +42,7 @@ fun MainShell() {
     val topLevel = rememberTopLevelBackStack(Route.LessonRoot)
 
     val showBar by remember(topLevel) {
-        derivedStateOf { isTabRootRoute(topLevel.backStack.lastOrNull()) }
+        derivedStateOf { isBarVisibleRoute(topLevel.backStack.lastOrNull()) }
     }
 
     SharedTransitionLayout {
@@ -127,9 +127,13 @@ fun MainShell() {
     }
 }
 
-/** Bottom bar visible on tab roots and the lesson list (intermediate); hidden on fullscreen detail/showcase. */
-private fun isTabRootRoute(route: Route?): Boolean = when (route) {
-    is Route.LessonRoot, is Route.LessonList,
+/**
+ * Bottom bar visible on every Lesson-tab destination (root/list/detail) and on each
+ * tab root. Hidden only on the Showcase fullscreen route, which renders an edge-to-edge
+ * shader and would otherwise have its hint banner clipped by the bar.
+ */
+private fun isBarVisibleRoute(route: Route?): Boolean = when (route) {
+    is Route.LessonRoot, is Route.LessonList, is Route.LessonDetail,
     is Route.ShowcaseRoot, is Route.SettingsRoot -> true
-    else -> false
+    is Route.Showcase, null -> false
 }
