@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Night override for window background; matches Midnight in Color.kt. -->
+    <color name="dreams_window_bg">#0B0B1A</color>
+</resources>

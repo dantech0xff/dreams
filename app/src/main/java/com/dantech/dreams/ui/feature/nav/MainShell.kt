@@ -2,13 +2,18 @@ package com.dantech.dreams.ui.feature.nav
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -37,27 +42,23 @@ fun MainShell() {
 
     SharedTransitionLayout {
         CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+            val animSpec = if (motion.reducedMotion) {
+                snap<Float>()
+            } else {
+                tween(motion.transitionDurationMs, easing = LinearEasing)
+            }
             NavDisplay(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background),
                 backStack = backStack,
                 onBack = { backStack.removeLastOrNull() },
                 entryDecorators = listOf(
                     rememberSaveableStateHolderNavEntryDecorator(),
                     rememberViewModelStoreNavEntryDecorator(),
                 ),
-                transitionSpec = {
-                    if (motion.reducedMotion) {
-                        fadeIn(snap()) togetherWith fadeOut(snap())
-                    } else {
-                        fadeIn(tween(motion.transitionDurationMs)) togetherWith fadeOut(tween(motion.transitionDurationMs))
-                    }
-                },
-                popTransitionSpec = {
-                    if (motion.reducedMotion) {
-                        fadeIn(snap()) togetherWith fadeOut(snap())
-                    } else {
-                        fadeIn(tween(motion.transitionDurationMs)) togetherWith fadeOut(tween(motion.transitionDurationMs))
-                    }
-                },
+                transitionSpec = { fadeIn(animSpec) togetherWith fadeOut(animSpec) },
+                popTransitionSpec = { fadeIn(animSpec) togetherWith fadeOut(animSpec) },
                 entryProvider = entryProvider {
                     entry<Route.Main> {
                         TabsShell(onDrillDown = { backStack.add(it) })

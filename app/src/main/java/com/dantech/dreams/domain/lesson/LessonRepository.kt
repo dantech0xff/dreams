@@ -1,9 +1,11 @@
 package com.dantech.dreams.domain.lesson
 
+import androidx.compose.runtime.Stable
 import com.dantech.dreams.data.lesson.LessonCategory
 import com.dantech.dreams.data.lesson.LessonModel
 import kotlinx.collections.immutable.ImmutableList
 
+@Stable
 interface LessonRepository {
     fun all(): ImmutableList<LessonModel>
     fun byCategory(category: LessonCategory): ImmutableList<LessonModel>

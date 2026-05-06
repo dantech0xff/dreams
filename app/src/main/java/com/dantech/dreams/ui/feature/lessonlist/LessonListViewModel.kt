@@ -1,5 +1,6 @@
 package com.dantech.dreams.ui.feature.lessonlist
 
+import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dantech.dreams.data.lesson.LessonCategory
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+@Stable
 class LessonListViewModel(
     private val repo: LessonRepository,
     private val prefs: UserPrefsRepository,
