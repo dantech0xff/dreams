@@ -22,6 +22,9 @@ class FakeLessonRepository(
     override fun byId(id: String): LessonModel? = seed.firstOrNull { it.id == id }
 
     override fun validate(): List<Pair<String, String>> = emptyList()
+
+    override fun showcases(): ImmutableList<LessonModel> =
+        seed.filter { it.category == LessonCategory.SHOWCASE }.toImmutableList()
 }
 
 fun sampleLessons(): List<LessonModel> = listOf(

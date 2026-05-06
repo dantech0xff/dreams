@@ -1,4 +1,4 @@
-package com.dantech.dreams.ui.feature.landing
+package com.dantech.dreams.ui.feature.settings
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -7,14 +7,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutAgslSheet(onDismiss: () -> Unit) {
-    rememberCoroutineScope()
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(Modifier.padding(24.dp)) {
             Text("About AGSL", style = MaterialTheme.typography.titleLarge)

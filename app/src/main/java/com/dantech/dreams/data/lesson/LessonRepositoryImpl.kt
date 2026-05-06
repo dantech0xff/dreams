@@ -17,4 +17,7 @@ internal class LessonRepositoryImpl : LessonRepository {
     override fun byId(id: String): LessonModel? = LessonRegistry.byId(id)
 
     override fun validate(): List<Pair<String, String>> = LessonRegistry.validateAll()
+
+    override fun showcases(): ImmutableList<LessonModel> =
+        LessonRegistry.byCategory(LessonCategory.SHOWCASE)
 }

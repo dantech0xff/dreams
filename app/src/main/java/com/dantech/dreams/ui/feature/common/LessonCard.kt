@@ -1,4 +1,4 @@
-package com.dantech.dreams.ui.feature.gallery
+package com.dantech.dreams.ui.feature.common
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.clickable

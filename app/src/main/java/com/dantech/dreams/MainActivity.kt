@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.dantech.dreams.ui.feature.nav.PlaygroundApp
+import com.dantech.dreams.ui.feature.nav.MainShell
 import com.dantech.dreams.ui.theme.DreamsTheme
 
 class MainActivity : ComponentActivity() {
@@ -13,7 +13,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             DreamsTheme {
-                PlaygroundApp()
+                MainShell()
             }
         }
     }

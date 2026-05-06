@@ -9,4 +9,6 @@ interface LessonRepository {
     fun byCategory(category: LessonCategory): ImmutableList<LessonModel>
     fun byId(id: String): LessonModel?
     fun validate(): List<Pair<String, String>>
+    /** Lessons in [LessonCategory.SHOWCASE] — surfaced as the Showcase tab data source. */
+    fun showcases(): ImmutableList<LessonModel>
 }

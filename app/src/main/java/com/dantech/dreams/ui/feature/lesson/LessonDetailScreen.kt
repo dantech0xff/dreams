@@ -40,7 +40,7 @@ import com.dantech.dreams.data.lesson.LessonRenderMode
 import com.dantech.dreams.ui.feature.common.AgslBrushCanvas
 import com.dantech.dreams.ui.feature.common.AgslRenderEffectCanvas
 import com.dantech.dreams.ui.feature.common.rememberShaderTime
-import com.dantech.dreams.ui.feature.gallery.lessonSharedKey
+import com.dantech.dreams.ui.feature.common.lessonSharedKey
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)

@@ -6,11 +6,18 @@ import kotlinx.serialization.Serializable
 sealed interface Route : NavKey {
 
     @Serializable
-    data object Landing : Route
+    data object LessonRoot : Route
 
     @Serializable
-    data object Gallery : Route
+    data class LessonList(val categoryName: String) : Route
 
+    @Serializable
+    data object ShowcaseRoot : Route
+
+    @Serializable
+    data object SettingsRoot : Route
+
+    // Drill-down destinations (shared between old & new shell during transition).
     @Serializable
     data class LessonDetail(val lessonId: String) : Route
 
