@@ -69,6 +69,10 @@ fun SettingsScreen(
                 checked = prefs.reducedMotionOverride,
                 onChecked = { v -> scope.launch { prefsRepo.setReducedMotion(v) } },
             )
+            DynamicColorRow(
+                checked = prefs.useDynamicColor,
+                onChecked = { v -> scope.launch { prefsRepo.setUseDynamicColor(v) } },
+            )
 
             HorizontalDivider(Modifier.padding(vertical = 8.dp))
 
@@ -108,6 +112,31 @@ private fun SectionHeader(text: String) {
 
 @Composable
 private fun ReduceMotionRow(checked: Boolean, onChecked: (Boolean) -> Unit) {
+    SwitchRow(
+        title = "Reduce motion",
+        subtitle = "Skip transitions and shared element morphs.",
+        checked = checked,
+        onChecked = onChecked,
+    )
+}
+
+@Composable
+private fun DynamicColorRow(checked: Boolean, onChecked: (Boolean) -> Unit) {
+    SwitchRow(
+        title = "Material You theme",
+        subtitle = "Tint UI from your wallpaper. Off keeps the brand palette.",
+        checked = checked,
+        onChecked = onChecked,
+    )
+}
+
+@Composable
+private fun SwitchRow(
+    title: String,
+    subtitle: String,
+    checked: Boolean,
+    onChecked: (Boolean) -> Unit,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -115,11 +144,8 @@ private fun ReduceMotionRow(checked: Boolean, onChecked: (Boolean) -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f)) {
-            Text("Reduce motion", style = MaterialTheme.typography.titleMedium)
-            Text(
-                "Skip transitions and shared element morphs.",
-                style = MaterialTheme.typography.bodySmall,
-            )
+            Text(title, style = MaterialTheme.typography.titleMedium)
+            Text(subtitle, style = MaterialTheme.typography.bodySmall)
         }
         Switch(checked = checked, onCheckedChange = onChecked)
     }

@@ -12,6 +12,7 @@ data class UserPrefs(
     val favorites: ImmutableSet<String> = persistentSetOf(),
     val paramOverrides: ImmutableMap<String, ImmutableMap<String, Float>> = persistentMapOf(),
     val reducedMotionOverride: Boolean = false,
+    val useDynamicColor: Boolean = false,
 ) {
     companion object {
         val DEFAULT = UserPrefs()

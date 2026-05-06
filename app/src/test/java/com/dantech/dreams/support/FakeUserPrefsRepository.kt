@@ -43,4 +43,8 @@ class FakeUserPrefsRepository(
     override suspend fun setReducedMotion(enabled: Boolean) {
         state.update { it.copy(reducedMotionOverride = enabled) }
     }
+
+    override suspend fun setUseDynamicColor(enabled: Boolean) {
+        state.update { it.copy(useDynamicColor = enabled) }
+    }
 }
