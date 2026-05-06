@@ -1,5 +1,6 @@
 package com.dantech.dreams.ui.feature.lesson
 
+import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dantech.dreams.data.prefs.UserPrefsRepository
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+@Stable
 class LessonDetailViewModel(
     private val repo: LessonRepository,
     private val prefs: UserPrefsRepository,

@@ -44,6 +44,7 @@ import com.dantech.dreams.ui.feature.common.AgslBrushCanvas
 import com.dantech.dreams.ui.feature.common.AgslRenderEffectCanvas
 import com.dantech.dreams.ui.feature.common.rememberShaderTime
 import com.dantech.dreams.ui.feature.common.lessonSharedKey
+import kotlinx.collections.immutable.ImmutableMap
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
@@ -155,7 +156,7 @@ fun LessonDetailScreen(
 @Composable
 private fun rememberControlValues(
     lesson: LessonModel,
-    overrides: Map<String, Float>,
+    overrides: ImmutableMap<String, Float>,
 ): SnapshotStateMap<String, Any> {
     return remember(lesson.id) {
         val m = mutableStateMapOf<String, Any>()
