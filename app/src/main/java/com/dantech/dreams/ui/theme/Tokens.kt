@@ -1,7 +1,6 @@
 package com.dantech.dreams.ui.theme
 
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 
 // Semantic aliases that don't have an M3 colorScheme slot or a typography slot.
@@ -22,8 +21,4 @@ object Tokens {
     // Legacy aliases — kept so existing call sites compile. Prefer spaceSm/Lg above.
     val spaceCompact = spaceSm
     val spaceComfortable = spaceLg
-
-    // Mono family for parameter readouts, AGSL source, and numeric counts.
-    // Backed by the system's monospace face (Roboto Mono on Android).
-    val mono: FontFamily = FontFamily.Monospace
 }

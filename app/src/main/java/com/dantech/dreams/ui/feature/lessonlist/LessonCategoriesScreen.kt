@@ -29,7 +29,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dantech.dreams.data.lesson.LessonCategory
-import com.dantech.dreams.ui.theme.Tokens
 import com.dantech.dreams.ui.theme.accent
 import org.koin.androidx.compose.koinViewModel
 
@@ -59,8 +58,6 @@ private fun CategoryCard(
     item: LessonCategoryItem,
     onClick: () -> Unit,
 ) {
-    val accent = item.category.accent
-
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
@@ -81,7 +78,7 @@ private fun CategoryCard(
                     .width(4.dp)
                     .height(40.dp)
                     .clip(RoundedCornerShape(2.dp))
-                    .background(accent),
+                    .background(item.category.accent),
             )
             Spacer(Modifier.width(16.dp))
             Column(Modifier.weight(1f)) {
@@ -97,11 +94,11 @@ private fun CategoryCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            // Mono count — numeric readout in monospace, tinted with the category accent.
+            // Numeric readout tinted with the category accent.
             Text(
                 text = "%02d".format(item.count),
-                style = MaterialTheme.typography.titleLarge.copy(fontFamily = Tokens.mono),
-                color = accent,
+                style = MaterialTheme.typography.titleLarge,
+                color = item.category.accent,
             )
         }
     }

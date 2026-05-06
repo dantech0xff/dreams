@@ -85,7 +85,7 @@ fun DreamsTheme(
 ) {
     val prefsRepo: UserPrefsRepository = koinInject()
     val prefs by prefsRepo.prefsFlow.collectAsStateWithLifecycle(initialValue = UserPrefs.DEFAULT)
-    val useDynamicColor = prefs.useDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+    val useDynamicColor = prefs.useDynamicColor
 
     val colorScheme = when {
         useDynamicColor -> {

@@ -12,7 +12,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.dantech.dreams.data.lesson.LessonControl
-import com.dantech.dreams.ui.theme.Tokens
 
 @Composable
 fun ParameterSlider(
@@ -29,12 +28,11 @@ fun ParameterSlider(
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f),
             )
-            // Mono + tabular figures: the readout sits in a fixed column and
-            // doesn't jitter horizontally as the user drags the slider.
+            // tabular figures keep the readout from jittering horizontally as
+            // the user drags the slider — same brand face, fixed-width digits.
             Text(
                 text = "%.2f".format(value),
                 style = MaterialTheme.typography.bodyMedium.copy(
-                    fontFamily = Tokens.mono,
                     fontFeatureSettings = "tnum",
                 ),
                 color = MaterialTheme.colorScheme.primary,

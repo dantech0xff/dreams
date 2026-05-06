@@ -32,7 +32,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dantech.dreams.data.lesson.LessonModel
-import com.dantech.dreams.ui.theme.Tokens
 import com.dantech.dreams.ui.theme.accent
 import org.koin.androidx.compose.koinViewModel
 
@@ -125,7 +124,7 @@ private fun RecordingHint(hint: String, accent: androidx.compose.ui.graphics.Col
         Spacer(Modifier.width(8.dp))
         Text(
             text = "REC  $hint",
-            style = MaterialTheme.typography.labelSmall.copy(fontFamily = Tokens.mono),
+            style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }

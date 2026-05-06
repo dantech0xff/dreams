@@ -1,36 +1,46 @@
+@file:OptIn(androidx.compose.ui.text.ExperimentalTextApi::class)
+
 package com.dantech.dreams.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.googlefonts.Font
-import androidx.compose.ui.text.googlefonts.GoogleFont
 import androidx.compose.ui.unit.sp
 import com.dantech.dreams.R
 
-// Downloadable Roboto Slab via the GMS Fonts provider. Certs are declared in
-// res/values/font_certs.xml. First app launch fetches the font asynchronously;
-// system falls back to a serif face until the download completes (typically
-// once, persisted by the system font cache).
-private val provider = GoogleFont.Provider(
-    providerAuthority = "com.google.android.gms.fonts",
-    providerPackage = "com.google.android.gms",
-    certificates = R.array.com_google_android_gms_fonts_certs,
-)
-
-private val RobotoSlabName = GoogleFont("Roboto Slab")
-
+// Roboto Slab is bundled as a variable font (one TTF, all weights via the
+// `wght` axis). Bundling avoids the GMS Fonts provider — works offline, on
+// AOSP emulators, and doesn't depend on Google Play Services availability.
+// Cost: ~250 KB APK delta for the variable font file.
 val RobotoSlab: FontFamily = FontFamily(
-    Font(googleFont = RobotoSlabName, fontProvider = provider, weight = FontWeight.Normal),
-    Font(googleFont = RobotoSlabName, fontProvider = provider, weight = FontWeight.Medium),
-    Font(googleFont = RobotoSlabName, fontProvider = provider, weight = FontWeight.SemiBold),
-    Font(googleFont = RobotoSlabName, fontProvider = provider, weight = FontWeight.Bold),
+    Font(
+        R.font.roboto_slab,
+        weight = FontWeight.Normal,
+        variationSettings = FontVariation.Settings(FontVariation.weight(400)),
+    ),
+    Font(
+        R.font.roboto_slab,
+        weight = FontWeight.Medium,
+        variationSettings = FontVariation.Settings(FontVariation.weight(500)),
+    ),
+    Font(
+        R.font.roboto_slab,
+        weight = FontWeight.SemiBold,
+        variationSettings = FontVariation.Settings(FontVariation.weight(600)),
+    ),
+    Font(
+        R.font.roboto_slab,
+        weight = FontWeight.Bold,
+        variationSettings = FontVariation.Settings(FontVariation.weight(700)),
+    ),
 )
 
-// Roboto Slab is the brand face for prose, titles, and labels. Numeric readouts
-// and shader source still use Tokens.mono (system monospace) — slab serif glyphs
-// don't read as well for digits at small sizes.
+// Roboto Slab is the brand face for everything that goes through MaterialTheme.typography.
+// Code views (e.g. AGSL source viewer) opt into FontFamily.Monospace explicitly when the
+// content is genuinely code — that's a semantic choice, not a chrome override.
 private val Brand: FontFamily = RobotoSlab
 
 val Typography = Typography(

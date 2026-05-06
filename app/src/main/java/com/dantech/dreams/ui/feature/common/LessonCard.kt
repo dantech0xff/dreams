@@ -141,7 +141,7 @@ private fun FooterRow(category: String, complexity: Int, accent: Color) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = category.uppercase(),
-            style = MaterialTheme.typography.labelSmall.copy(fontFamily = Tokens.mono),
+            style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f),
         )
