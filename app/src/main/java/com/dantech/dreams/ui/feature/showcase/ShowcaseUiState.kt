@@ -6,5 +6,4 @@ import com.dantech.dreams.data.lesson.LessonModel
 @Immutable
 data class ShowcaseUiState(
     val lesson: LessonModel? = null,
-    val hideUi: Boolean = false,
 )
