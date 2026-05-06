@@ -1,13 +1,11 @@
 package com.dantech.dreams.data.lesson
 
 import android.graphics.RuntimeShader
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 
-object LessonRegistry {
+internal object LessonRegistry {
 
     private val all = mutableListOf<LessonModel>()
 
@@ -26,11 +24,12 @@ object LessonRegistry {
     fun byId(id: String): LessonModel? = all.firstOrNull { it.id == id }
 
     fun bootstrap() {
-        com.dantech.dreams.shaders.basics.BasicsBootstrap.touch()
-        com.dantech.dreams.shaders.sdf.SdfBootstrap.touch()
-        com.dantech.dreams.shaders.noise.NoiseBootstrap.touch()
-        com.dantech.dreams.shaders.posteffect.PostFxBootstrap.touch()
-        com.dantech.dreams.shaders.showcase.ShowcaseBootstrap.touch()
+        if (all.isNotEmpty()) return
+        com.dantech.dreams.data.lesson.source.basics.BasicsBootstrap.touch()
+        com.dantech.dreams.data.lesson.source.sdf.SdfBootstrap.touch()
+        com.dantech.dreams.data.lesson.source.noise.NoiseBootstrap.touch()
+        com.dantech.dreams.data.lesson.source.posteffect.PostFxBootstrap.touch()
+        com.dantech.dreams.data.lesson.source.showcase.ShowcaseBootstrap.touch()
     }
 
     fun validateAll(): List<Pair<String, String>> {
