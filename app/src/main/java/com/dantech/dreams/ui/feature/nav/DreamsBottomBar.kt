@@ -7,15 +7,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 
 @Composable
-fun DreamsBottomBar(topLevel: TopLevelBackStack) {
+fun DreamsBottomBar(
+    currentTab: TabKey,
+    onTabSelected: (TabKey) -> Unit,
+) {
     NavigationBar {
         TabKey.entries.forEach { tab ->
-            val selected = topLevel.topLevelKey == tab.root
             NavigationBarItem(
-                selected = selected,
-                onClick = {
-                    if (selected) topLevel.popToRoot() else topLevel.switchTopLevel(tab.root)
-                },
+                selected = tab == currentTab,
+                onClick = { onTabSelected(tab) },
                 icon = { Icon(tab.icon, contentDescription = tab.label) },
                 label = { Text(tab.label) },
                 alwaysShowLabel = true,

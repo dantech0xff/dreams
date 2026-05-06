@@ -7,20 +7,14 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.ui.graphics.vector.ImageVector
 
 /**
- * Bottom-bar tab descriptor: maps a tab to its root [Route], display label, and icon.
- * Each [TabKey.root] is the entry that lives at depth 0 of that tab's per-tab back stack.
+ * Bottom-bar tab descriptor: visual identity only. Tabs are content slots inside the
+ * Main shell, NOT navigation destinations — they do not appear on the outer back stack.
  */
 enum class TabKey(
-    val root: Route,
     val label: String,
     val icon: ImageVector,
 ) {
-    LESSON(Route.LessonRoot, "Lesson", Icons.AutoMirrored.Filled.List),
-    SHOWCASE(Route.ShowcaseRoot, "Showcase", Icons.Filled.Star),
-    SETTINGS(Route.SettingsRoot, "Settings", Icons.Filled.Settings),
-    ;
-
-    companion object {
-        fun forRoot(root: Route): TabKey? = entries.firstOrNull { it.root == root }
-    }
+    LESSON("Lesson", Icons.AutoMirrored.Filled.List),
+    SHOWCASE("Showcase", Icons.Filled.Star),
+    SETTINGS("Settings", Icons.Filled.Settings),
 }

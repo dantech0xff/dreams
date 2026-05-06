@@ -5,22 +5,19 @@ import kotlinx.serialization.Serializable
 
 sealed interface Route : NavKey {
 
+    /** The 3-tab shell — root entry of the outer NavDisplay backStack. */
     @Serializable
-    data object LessonRoot : Route
+    data object Main : Route
 
+    /** Fullscreen list of lessons in a category, pushed on top of [Main]. */
     @Serializable
     data class LessonList(val categoryName: String) : Route
 
-    @Serializable
-    data object ShowcaseRoot : Route
-
-    @Serializable
-    data object SettingsRoot : Route
-
-    // Drill-down destinations (shared between old & new shell during transition).
+    /** Fullscreen lesson detail, pushed on top. */
     @Serializable
     data class LessonDetail(val lessonId: String) : Route
 
+    /** Fullscreen showcase shader, pushed on top. */
     @Serializable
     data class Showcase(val lessonId: String) : Route
 }
