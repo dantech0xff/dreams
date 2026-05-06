@@ -128,12 +128,11 @@ fun MainShell() {
 }
 
 /**
- * Bottom bar visible on every Lesson-tab destination (root/list/detail) and on each
- * tab root. Hidden only on the Showcase fullscreen route, which renders an edge-to-edge
- * shader and would otherwise have its hint banner clipped by the bar.
+ * Bottom bar visible only on the three tab roots. Every drill-down destination
+ * (lesson list, lesson detail, showcase fullscreen) renders edge-to-edge with no bar
+ * — it isn't a child of the tab chrome, it's a fullscreen Compose screen.
  */
 private fun isBarVisibleRoute(route: Route?): Boolean = when (route) {
-    is Route.LessonRoot, is Route.LessonList, is Route.LessonDetail,
-    is Route.ShowcaseRoot, is Route.SettingsRoot -> true
-    is Route.Showcase, null -> false
+    is Route.LessonRoot, is Route.ShowcaseRoot, is Route.SettingsRoot -> true
+    is Route.LessonList, is Route.LessonDetail, is Route.Showcase, null -> false
 }
