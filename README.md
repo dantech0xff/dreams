@@ -12,7 +12,9 @@ Android engineers who already write Compose UI and want a runnable, bite-sized i
 
 ## Demo
 
-<video src="https://github.com/dantech0xff/dreams/releases/download/v0.1.0-preview/edited_screen_recording_20260507_224344.mp4" controls width="600" muted></video>
+![Dreams demo — swiping through AGSL lessons](docs/media/demo.gif)
+
+> Full-resolution clip with audio: [v0.1.0-preview release asset](https://github.com/dantech0xff/dreams/releases/download/v0.1.0-preview/edited_screen_recording_20260507_224344.mp4).
 
 ## App Shell
 
