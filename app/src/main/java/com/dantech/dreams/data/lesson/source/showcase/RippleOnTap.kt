@@ -10,29 +10,22 @@ import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChanged
-import androidx.compose.ui.unit.dp
+import com.dantech.dreams.core.agsl.rememberRuntimeShader
+import com.dantech.dreams.core.agsl.rememberShaderTime
+import com.dantech.dreams.core.agsl.runtimeShaderEffect
 import com.dantech.dreams.data.lesson.LessonCategory
 import com.dantech.dreams.data.lesson.LessonModel
 import com.dantech.dreams.data.lesson.LessonRegistry
 import com.dantech.dreams.data.lesson.LessonRenderMode
-import com.dantech.dreams.core.agsl.rememberRuntimeShader
-import com.dantech.dreams.core.agsl.rememberShaderTime
 
 private const val MAX_RIPPLES = 16
 private const val SLOT_FLOATS = 4                    // (x, y, t0, strength)
@@ -52,38 +45,32 @@ private const val MAX_STRENGTH = 1.5f
 //   • Schlick Fresnel → sky-blue tint at glancing wave faces (water reflectivity).
 //   • Foam line     → thin neutral-white band at the highest crests.
 private const val RIPPLE_TAP_SRC = """
-// BRUSH-mode shader: instead of sampling captured Compose content via RenderEffect
-// (which proved unreliable on this device — the offscreen buffer the AGSL was meant
-// to sample was always empty, leaving the screen blank), the pink/blue checkerboard
-// backdrop and the scrolling diagonal lines are generated *in-shader* by `backdrop()`.
-// The chromatic refraction then samples that procedural pattern at three slightly
-// offset positions, exactly like the previous content.eval() chain did.
+// RENDER_EFFECT-style shader: the surface beneath is a real Compose subtree
+// (see RippleBackdrop). We bind it as `uniform shader content;` and the
+// chromatic refraction samples three slightly-offset coordinates from it.
+//
+// Earlier versions of this lesson generated the backdrop procedurally in-shader
+// because attempts at content.eval() came back blank. Root cause turned out to
+// be the missing `compositingStrategy = Offscreen` on the wrapping
+// graphicsLayer — without an offscreen buffer there's nothing for the runtime
+// shader effect to sample. `Modifier.runtimeShaderEffect` (ShaderModifiers.kt)
+// sets that strategy and is what we use here.
 //
 // SLOTS deliberately not named N — local `float3 N = normalize(...)` later would
 // shadow it. SkSL accepts the shadow but it's a code smell.
 const int SLOTS = $MAX_RIPPLES;
 
+uniform shader content;
 uniform float2 iResolution;
 uniform float  iTime;
 uniform float  rip[${MAX_RIPPLES * SLOT_FLOATS}];
 
-// Procedural backdrop: scrolling pink/blue 64px checkerboard with 45° white-line
-// overlay. Stand-alone — no offscreen buffer, no RenderEffect.
-half3 backdrop(float2 coord) {
-    float cell = 64.0;
-    float scrollC = mod(iTime * 40.0, cell);
-    float2 idx = floor((coord + float2(scrollC)) / cell);
-    float dark = mod(idx.x + idx.y, 2.0);
-    half3 col = mix(half3(0.106, 0.165, 0.306), half3(1.0, 0.435, 0.639), half(dark));
-
-    float stp = 48.0;
-    float lineScroll = mod(iTime * 25.0, stp);
-    float diag = coord.x + coord.y - lineScroll;
-    float diagMod = mod(diag + stp * 0.5, stp) - stp * 0.5;
-    float lineMask = smoothstep(2.0, 0.0, abs(diagMod) * 0.7071);
-    col = mix(col, half3(1.0), half(lineMask * 0.35));
-
-    return col;
+// Clamp sample coords to the layer bounds — at high ripple amplitudes near the
+// edges, totalOff can pull samples past the offscreen buffer. The default
+// out-of-bounds result is transparent black, which would show as dark fringes.
+half3 sampleSurface(float2 coord) {
+    float2 c = clamp(coord, float2(0.0), iResolution - float2(1.0));
+    return content.eval(c).rgb;
 }
 
 half4 main(float2 fragCoord) {
@@ -180,10 +167,11 @@ half4 main(float2 fragCoord) {
 
     // Chromatic refraction — R bends a touch more than B, like a prism. On flat water
     // totalOff = 0 so all three samples coincide and the effect vanishes; magnitude
-    // scales naturally with wave strength.
-    half3 sampleR = backdrop(fragCoord - totalOff * 1.05);
-    half3 sampleG = backdrop(fragCoord - totalOff);
-    half3 sampleB = backdrop(fragCoord - totalOff * 0.95);
+    // scales naturally with wave strength. Now sampling the live Compose surface
+    // bound as `content` instead of a procedural pattern.
+    half3 sampleR = sampleSurface(fragCoord - totalOff * 1.05);
+    half3 sampleG = sampleSurface(fragCoord - totalOff);
+    half3 sampleB = sampleSurface(fragCoord - totalOff * 0.95);
     half3 baseRgb = half3(sampleR.r, sampleG.g, sampleB.b);
 
     // Fake caustics — surface that tilts toward the sun focuses light onto the floor
@@ -236,14 +224,16 @@ fun RippleTapDemo() {
         slot.intValue = (s + 1) % MAX_RIPPLES
     }
 
-    // BRUSH mode — same pattern as every other showcase in this app:
-    //   .pointerInput(...) collects taps/drags into the `rip[]` ring buffer.
-    //   .drawBehind { ... } sets the shader's uniforms (snapshot reads of `time`
-    //     and `ripples` invalidate this block every frame, driving animation) and
-    //     paints a full-rect ShaderBrush. The shader generates the entire visual —
-    //     procedural backdrop + ripples + lighting — no offscreen buffer, no
-    //     graphicsLayer, no RenderEffect to misbehave.
-    //   The Text overlay composes on top of the brush.
+    // RENDER_EFFECT pattern via Modifier.runtimeShaderEffect:
+    //   • pointerInput collects taps/drags into the `rip[]` ring buffer.
+    //   • runtimeShaderEffect wraps the children in a graphicsLayer with
+    //     compositingStrategy = Offscreen and binds the shader as a RenderEffect.
+    //     Children (RippleBackdrop) are rasterized into the offscreen buffer; the
+    //     shader's `uniform shader content` reads from it via content.eval(coord).
+    //   • The onFrame block re-runs every frame thanks to the `time` snapshot
+    //     read — that re-creates the runtime shader effect with current uniform
+    //     values (Skia's RuntimeShaderEffect freezes uniforms at construction,
+    //     so we must rebuild it per frame).
     Box(
         Modifier
             .fillMaxSize()
@@ -281,21 +271,13 @@ fun RippleTapDemo() {
                     }
                 }
             }
-            .drawBehind {
-                shader.setFloatUniform("iResolution", size.width, size.height)
+            .runtimeShaderEffect(shader) { layerSize ->
+                shader.setFloatUniform("iResolution", layerSize.width, layerSize.height)
                 shader.setFloatUniform("iTime", time)
                 shader.setFloatUniform("rip", ripples)
-                drawRect(brush = ShaderBrush(shader))
             },
     ) {
-        Text(
-            text = "Tap or drag — pure ripples on the surface",
-            style = MaterialTheme.typography.headlineSmall,
-            color = Color.White,
-            modifier = Modifier
-                .align(Alignment.Center)
-                .padding(24.dp),
-        )
+        RippleBackdrop(Modifier.fillMaxSize())
     }
 }
 
@@ -309,7 +291,7 @@ object RippleOnTap {
                 title = "Ripple on Tap",
                 category = LessonCategory.SHOWCASE,
                 complexity = 5,
-                conceptIntro = "Multi-touch + drag emit into a 16-slot ripple ring buffer over a scrolling backdrop. Anisotropic specular streaks along crests, chromatic refraction (R bends more than B), Schlick fresnel sky-tint, foam fringe at peaks.",
+                conceptIntro = "Multi-touch + drag emit into a 16-slot ripple ring buffer that distorts a live Compose surface (gradient + bokeh + typography). Anisotropic specular streaks along crests, chromatic refraction (R bends more than B), Schlick fresnel sky-tint, foam fringe at peaks.",
                 agslSource = RIPPLE_TAP_SRC.trimIndent(),
                 renderMode = LessonRenderMode.CUSTOM,
                 customPreview = { RippleTapDemo() },
