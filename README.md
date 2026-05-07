@@ -74,7 +74,7 @@ Covers Koin module verification, repository fakes, and ViewModel state via Turbi
 
 ## License
 
-Apache-2.0 — see `LICENSE`.
+MIT — see `LICENSE`. Use it for anything, commercial or otherwise; just keep the copyright notice.
 
 ## References
 
