@@ -15,3 +15,4 @@
 local.properties
 /.idea
 /resources
+.claude/settings.local.json
