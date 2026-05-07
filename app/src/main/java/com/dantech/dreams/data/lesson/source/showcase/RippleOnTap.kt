@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -213,6 +214,10 @@ fun RippleTapDemo() {
         }
     }
     val slot = remember { mutableIntStateOf(0) }
+    // Most recent pressed-pointer position. Drives the AndroidBot's eye
+    // tracking. Window-root coords (= this Box's local coords since the
+    // Box is screen-fill at the root of the screen).
+    val activeTouch = remember { mutableStateOf<Offset?>(null) }
 
     fun emit(pos: Offset, t: Float, strength: Float) {
         val s = slot.intValue
@@ -245,6 +250,7 @@ fun RippleTapDemo() {
                 awaitEachGesture {
                     val lastEmits = HashMap<PointerId, Float>()
                     val firstDown = awaitFirstDown(requireUnconsumed = false)
+                    activeTouch.value = firstDown.position
                     emit(firstDown.position, time, pressureToStrength(firstDown.pressure))
                     lastEmits[firstDown.id] = time
 
@@ -254,6 +260,7 @@ fun RippleTapDemo() {
                         for (change in event.changes) {
                             val id = change.id
                             if (change.pressed) {
+                                activeTouch.value = change.position
                                 val last = lastEmits[id]
                                 if (last == null) {
                                     emit(change.position, now, pressureToStrength(change.pressure))
@@ -269,6 +276,7 @@ fun RippleTapDemo() {
                             }
                         }
                     }
+                    activeTouch.value = null
                 }
             }
             .runtimeShaderEffect(shader) { layerSize ->
@@ -277,7 +285,10 @@ fun RippleTapDemo() {
                 shader.setFloatUniform("rip", ripples)
             },
     ) {
-        RippleBackdrop(Modifier.fillMaxSize())
+        RippleBackdrop(
+            activeTouch = activeTouch,
+            modifier = Modifier.fillMaxSize(),
+        )
     }
 }
 

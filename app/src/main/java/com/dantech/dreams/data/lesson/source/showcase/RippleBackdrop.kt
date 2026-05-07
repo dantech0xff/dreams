@@ -19,21 +19,17 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.dantech.dreams.R
 import kotlin.math.PI
 import kotlin.math.sin
 
@@ -41,15 +37,21 @@ private const val TAU = (2.0 * PI).toFloat()
 private const val BREATH_PERIOD_MS = 7_000
 
 // The surface RippleOnTap distorts. Deliberately minimal: pure black so
-// specular streaks (additive white) and foam pop maximally, with the app
-// launcher icon as the single chromatic feature at center. The launcher's
-// own gradient gives refraction real R/G/B variation to spread at its edges.
+// specular streaks (additive white) and foam pop maximally, with a hand-
+// drawn Android mascot at center whose eyes track the user's active touch.
 //
-// One slow breath loop (7s) drives a low-amplitude alpha pulse on the logo
+// `activeTouch` is plumbed down from RippleTapDemo (window-root coords) so
+// the bot can convert touch position → bot-local UV without a redundant
+// pointerInput layer that would compete with the ripple gesture loop.
+//
+// One slow breath loop (7s) drives a low-amplitude alpha pulse on the bot
 // and a counter-phase pulse on the caption. Read inside graphicsLayer so
 // the layer invalidates without recomposition.
 @Composable
-internal fun RippleBackdrop(modifier: Modifier = Modifier) {
+internal fun RippleBackdrop(
+    activeTouch: State<Offset?>,
+    modifier: Modifier = Modifier,
+) {
     val transition = rememberInfiniteTransition(label = "ripple-backdrop")
     val breath = transition.animateFloat(
         initialValue = 0f,
@@ -70,31 +72,14 @@ internal fun RippleBackdrop(modifier: Modifier = Modifier) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
-            // R.mipmap.ic_launcher is an <adaptive-icon> XML, which painterResource
-            // refuses to load (it accepts only VectorDrawables / rasterized bitmaps).
-            // Composite the adaptive icon manually: background + foreground vectors,
-            // clipped to a circle the way the system's round mask would render it.
-            Box(
-                Modifier
+            AndroidBot(
+                activeTouch = activeTouch,
+                modifier = Modifier
                     .size(240.dp)
                     .graphicsLayer {
                         alpha = 0.88f + 0.12f * sin(breath.value)
-                    }
-                    .clip(CircleShape),
-            ) {
-                Image(
-                    painter = painterResource(R.drawable.ic_launcher_background),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize(),
-                )
-                Image(
-                    painter = painterResource(R.drawable.ic_launcher_foreground),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            }
+                    },
+            )
             Spacer(Modifier.height(28.dp))
             Text(
                 text = "TAO TO DISTURB THE SURFACE",
