@@ -10,6 +10,10 @@ AGSL ships with Android 13+ and lets you author GLSL/Skia-flavoured fragment sha
 
 Android engineers who already write Compose UI and want a runnable, bite-sized intro to runtime shaders.
 
+## Demo
+
+<video src="https://github.com/dantech0xff/dreams/releases/download/v0.1.0-preview/edited_screen_recording_20260507_224344.mp4" controls width="600" muted></video>
+
 ## App Shell
 
 Three-tab bottom navigation:
