@@ -1,21 +1,53 @@
-# AGSL Engineer Playground
+# Dreams — AGSL Engineer Playground
 
-A curated, swipeable Jetpack Compose gallery for learning **Android Graphics Shading Language (AGSL)** by example, plus three full-screen "wow" showcase demos engineered for screen-recording.
+A swipeable Jetpack Compose gallery for learning **Android Graphics Shading Language (AGSL)** by example, plus a fullscreen Showcase tab for screen-recording-grade demos.
 
 ## Why
 
-AGSL ships with Android 13+ and lets you write GLSL/Skia-like fragment shaders that run as a Compose `ShaderBrush` or `RenderEffect`. There is no shortage of GLSL theory online — this project translates it into idiomatic Compose lessons on a real device.
+AGSL ships with Android 13+ and lets you author GLSL/Skia-flavoured fragment shaders that drive a Compose `ShaderBrush`, `RuntimeShader`, or `RenderEffect`. There is no shortage of shader theory online — this project translates it into idiomatic Compose lessons that run on a real device.
 
 ## Audience
 
 Android engineers who already write Compose UI and want a runnable, bite-sized intro to runtime shaders.
 
+## App Shell
+
+Three-tab bottom navigation:
+
+- **Lesson** — pick a category, swipe through lessons, tweak uniforms with sliders.
+- **Showcase** — fullscreen, recorder-ready demos.
+- **Settings** — reduced-motion toggle, About AGSL, license, GitHub.
+
+Last-viewed lesson, favourites, and slider values persist across cold start via DataStore.
+
+## Lesson Map
+
+| Category     | Count | Theme                                           |
+|--------------|-------|-------------------------------------------------|
+| Basics       | 6     | uniforms, fragCoord, gradients, polar coords    |
+| Patterns     | 4     | tiles, stripes, repetition                      |
+| Color        | 4     | palettes, gradients, tone curves                |
+| SDF          | 6     | circle, rounded box, metaballs, breathing grid  |
+| Noise        | 6     | hash, value, fBm, voronoi, plasma, lava         |
+| Motion       | 4     | time-driven curves, easing, oscillators         |
+| Fractals     | 4     | self-similar zooms                              |
+| Lighting     | 4     | Lambert, specular, faked depth                  |
+| Interactive  | 4     | touch-driven shader experiments                 |
+| Post-FX      | 6     | blur, aberration, ripple, dissolve, glass       |
+| Showcase     | 1     | ripple-on-tap with starfield + bot halo backdrop |
+
+Categories live in `app/src/main/java/com/dantech/dreams/data/lesson/source/`.
+
 ## Stack
 
 - Kotlin / Jetpack Compose / Material3 (BOM `2026.02.01`)
-- `minSdk = 33` (`RuntimeShader` requirement)
-- `targetSdk = 36`, JVM 11
-- Single-module app, no DI
+- `minSdk = 33` (`RuntimeShader` requirement), `targetSdk = 36`, JVM 11
+- **DI:** Koin (BOM 4.2.0) — Compose + Nav3 integrations
+- **Navigation:** Navigation3 (`@Serializable` routes)
+- **Persistence:** DataStore Preferences + kotlinx.serialization
+- **Tests:** JUnit, Turbine, Koin verify, kotlinx-coroutines-test
+
+Single Gradle module, layered packages: `core/` (agsl, di, motion), `data/`, `domain/`, `ui/feature/`.
 
 ## Build & Run
 
@@ -23,21 +55,22 @@ Android engineers who already write Compose UI and want a runnable, bite-sized i
 ./gradlew :app:installDebug
 ```
 
-Open on any Android 13+ device or emulator.
+Open on any Android 13+ device or emulator. CI emulators without GPU may render AGSL stubs.
 
-## Lesson Map
+## Test
 
-| Category  | Count | Highlights                                        |
-|-----------|-------|---------------------------------------------------|
-| Basics    | 6     | uniforms, fragCoord, gradients, polar coords      |
-| SDF       | 6     | circle, rounded box, metaballs, breathing grid    |
-| Noise     | 6     | hash, value noise, fBM, voronoi, plasma, lava     |
-| Post-FX   | 6     | blur, aberration, ripple-tap, dissolve, glass     |
-| Showcase  | 3     | liquid glass, aurora, raymarched sphere           |
+```bash
+./gradlew test
+```
 
-## Showcase Recordings
+Covers Koin module verification, repository fakes, and ViewModel state via Turbine.
 
-Hosted out-of-repo (YouTube unlisted) — links coming once recorded.
+## Docs
+
+- `docs/project-overview-pdr.md` — vision, PDR, architecture
+- `docs/system-architecture.md` — package layering and dependency graph
+- `docs/code-standards.md` — conventions
+- `docs/codebase-summary.md` — at-a-glance file map
 
 ## License
 
