@@ -26,7 +26,7 @@ fun CodexSplashDemo() {
     val time = rememberShaderTime()
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val compact = maxWidth < 360.dp || maxHeight < 560.dp
-        val iconSize = if (compact) 164.dp else 210.dp
+        val iconSize = if (compact) 200.dp else 300.dp
 
         AgslShaderLayer(
             shaderSrc = CODEX_SPLASH_BACKGROUND_SRC,
