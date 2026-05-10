@@ -476,7 +476,7 @@ fun AGSLRenderer(
 | **Showcase screens** | `ui/feature/showcase` | ShowcaseListScreen/VM/UiState, ShowcaseScreen/VM/UiState |
 | **Settings** | `ui/feature/settings` | SettingsScreen, DisplaySettingsSection, AboutAgslSheet |
 | **Shared UI** | `ui/feature/common` | LessonCard (moved from gallery), SharedTransitionLayout helpers, animation specs |
-| **Theme** | `ui/theme` | Shader Lab Material3 schemes, Tokens.kt, typography, spacing |
+| **Theme** | `ui/theme` | Oscilloscope Workbench Material3 schemes, Tokens.kt, typography, spacing |
 
 ---
 

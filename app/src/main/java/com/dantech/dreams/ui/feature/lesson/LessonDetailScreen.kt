@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
@@ -88,6 +89,7 @@ fun LessonDetailScreen(
             Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .padding(horizontal = 16.dp)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
@@ -99,7 +101,14 @@ fun LessonDetailScreen(
                     .then(heroSharedMod)
                     .shadow(elevation = 18.dp, shape = previewShape, clip = false)
                     .clip(previewShape)
-                    .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.surfaceContainerHighest,
+                                MaterialTheme.colorScheme.surfaceContainerHigh,
+                            ),
+                        ),
+                    ),
                 contentAlignment = Alignment.Center,
             ) {
                 LessonPreview(

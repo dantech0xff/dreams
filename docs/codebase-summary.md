@@ -34,7 +34,7 @@ app/src/main/java/com/dantech/dreams/
     │   ├── settings/               # Settings screen, display controls, AboutAgslSheet
     │   ├── common/                 # Shared Composables (LessonCard, transitions)
     │   └── (deleted: landing/, gallery/)
-    └── theme/                      # Shader Lab design tokens (colors, typography, spacing)
+    └── theme/                      # Oscilloscope Workbench design tokens (colors, typography, spacing)
 
 app/src/test/java/com/dantech/dreams/        # JVM unit tests (mirror structure)
 app/src/androidTest/java/com/dantech/dreams/ # Instrumented tests + test runner
@@ -334,7 +334,7 @@ Lessons loaded once on app startup via LessonRepositoryImpl init:
 | **Showcase Screens** | ui/feature/showcase | ShowcaseListScreen/VM/UiState, ShowcaseScreen/VM/UiState |
 | **Settings** | ui/feature/settings | SettingsScreen, DisplaySettingsSection, AboutAgslSheet |
 | **Shared UI** | ui/feature/common | LessonCard (moved from gallery), transitions, animations |
-| **Theme** | ui/theme | Shader Lab color schemes, tokens, typography |
+| **Theme** | ui/theme | Oscilloscope Workbench color schemes, tokens, typography |
 | **Core Utils** | core/agsl + core/motion | AGSL RuntimeShader utils, motion logic |
 
 ---

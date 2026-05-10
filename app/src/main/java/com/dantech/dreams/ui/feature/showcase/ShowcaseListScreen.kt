@@ -129,10 +129,11 @@ private fun ShowcaseCard(
             .fillMaxWidth()
             .scale(scale)
             .clickable(interactionSource = interaction, indication = null, onClick = onClick),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
         ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
     ) {
         AccentBanner(accent = accent, title = lesson.title, complexity = lesson.complexity)
         Column(Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
@@ -153,9 +154,7 @@ private fun ShowcaseCard(
     }
 }
 
-// 16:9 cinematic header — radial accent glow over a dark base, with a
-// faint diagonal sweep to suggest a frame ready to be recorded. Title +
-// complexity bolts overlay so the card reads from afar.
+// 16:9 calibrated header: flat accent wash without linework.
 @Composable
 private fun AccentBanner(accent: Color, title: String, complexity: Int) {
     BoxWithConstraints(
@@ -166,22 +165,23 @@ private fun AccentBanner(accent: Color, title: String, complexity: Int) {
         val w = constraints.maxWidth.toFloat()
         val h = constraints.maxHeight.toFloat()
         val base = MaterialTheme.colorScheme.surfaceContainerHighest
+        val lower = MaterialTheme.colorScheme.surfaceContainerLow
         Box(
             Modifier
                 .fillMaxSize()
                 .background(base)
                 .background(
-                    Brush.radialGradient(
-                        colors = listOf(accent.copy(alpha = 0.55f), Color.Transparent),
-                        center = Offset(w * 0.25f, h * 0.35f),
-                        radius = w * 0.85f,
+                    Brush.linearGradient(
+                        colors = listOf(lower, accent.copy(alpha = 0.28f), base),
+                        start = Offset(0f, h),
+                        end = Offset(w, 0f),
                     ),
                 )
                 .background(
                     Brush.linearGradient(
-                        colors = listOf(Color.Transparent, Color(0x33000000)),
-                        start = Offset(0f, 0f),
-                        end = Offset(w, h),
+                        colors = listOf(Color(0xCC000000), Color.Transparent, Color(0x66000000)),
+                        start = Offset(0f, h),
+                        end = Offset(w, 0f),
                     ),
                 ),
         )

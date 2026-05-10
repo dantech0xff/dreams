@@ -6,7 +6,6 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -40,7 +40,6 @@ import com.dantech.dreams.ui.theme.accent
 
 private const val MAX_COMPLEXITY = 5
 private val GlassFill = Color(0x66000000)
-private val GlassBorder = Color(0x1FFFFFFF)
 private val ChipFill = Color(0x80000000)
 private const val MutedAlpha = 0.62f
 
@@ -84,9 +83,9 @@ private fun GlassBackButton(onBack: () -> Unit) {
     Box(
         Modifier
             .size(44.dp)
+            .shadow(4.dp, CircleShape, clip = false)
             .clip(CircleShape)
             .background(GlassFill)
-            .border(1.dp, GlassBorder, CircleShape)
             .clickable(onClick = onBack),
         contentAlignment = Alignment.Center,
     ) {
@@ -106,9 +105,9 @@ private fun LessonInfoPill(lesson: LessonModel, modifier: Modifier = Modifier) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
+            .shadow(4.dp, shape, clip = false)
             .clip(shape)
             .background(GlassFill)
-            .border(1.dp, GlassBorder, shape)
             .padding(start = 12.dp, end = 14.dp, top = 8.dp, bottom = 8.dp),
     ) {
         Box(
@@ -164,9 +163,9 @@ fun ShowcaseHintPill(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
+            .shadow(4.dp, shape, clip = false)
             .clip(shape)
             .background(ChipFill)
-            .border(1.dp, GlassBorder, shape)
             .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
         PulsingDot(color = accent)
@@ -176,12 +175,6 @@ fun ShowcaseHintPill(
             style = MaterialTheme.typography.labelSmall,
             color = accent,
             fontWeight = FontWeight.SemiBold,
-        )
-        Spacer(Modifier.width(10.dp))
-        Box(
-            Modifier
-                .size(width = 1.dp, height = 14.dp)
-                .background(GlassBorder),
         )
         Spacer(Modifier.width(10.dp))
         Text(

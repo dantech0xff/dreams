@@ -36,8 +36,8 @@ internal fun DisplaySettingsSection(
         onChecked = onReducedMotion,
     )
     SwitchRow(
-        title = "Material You theme",
-        subtitle = "Tint UI from your wallpaper. Off keeps the brand palette.",
+        title = "Material You override",
+        subtitle = "Wallpaper colors override the Workbench palette.",
         checked = useDynamicColor,
         onChecked = onDynamicColor,
     )
@@ -56,7 +56,7 @@ internal fun SectionHeader(text: String) {
 private fun DarkThemeRow(checked: Boolean, onChecked: (Boolean) -> Unit) {
     SwitchRow(
         title = "Dark theme",
-        subtitle = "Use the dark Shader Lab palette.",
+        subtitle = "Use the OLED Oscilloscope Workbench palette.",
         checked = checked,
         onChecked = onChecked,
     )

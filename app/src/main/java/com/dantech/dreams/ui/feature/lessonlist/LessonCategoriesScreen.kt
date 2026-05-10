@@ -21,7 +21,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -80,14 +80,17 @@ private fun CategoryCard(
     item: LessonCategoryItem,
     onClick: () -> Unit,
 ) {
-    // ElevatedCard handles the soft drop shadow + tonal lift on dark surfaces;
-    // we keep the chrome quiet — small accent dot, plain "N lessons" footer —
-    // so the card reads as a real menu item, not a designed landing tile.
-    ElevatedCard(
+    val accent = item.category.accent
+    val shape = RoundedCornerShape(20.dp)
+
+    Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 3.dp),
+        shape = shape,
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -95,7 +98,7 @@ private fun CategoryCard(
                     Modifier
                         .size(8.dp)
                         .clip(CircleShape)
-                        .background(item.category.accent),
+                        .background(accent),
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(

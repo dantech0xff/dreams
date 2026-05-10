@@ -2,61 +2,65 @@ package com.dantech.dreams.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Shader Lab palette. Graphite dark mode, crisp ink light mode, and spectral
-// accents tuned for AGSL demos without letting chrome compete with shader output.
+// Oscilloscope Workbench palette. Dark mode is an OLED instrument surface;
+// light mode reads as blueprint paper without losing the technical accent set.
 
 // Surface scale (dark)
-val GraphiteBg = Color(0xFF090A0F)
-val GraphiteSurface = Color(0xFF11131A)
-val GraphiteContainerLow = Color(0xFF171A23)
-val GraphiteContainerHigh = Color(0xFF202432)
-val GraphiteContainerHighest = Color(0xFF2A3040)
+val WorkbenchBg = Color(0xFF04100B)
+val WorkbenchSurface = Color(0xFF0B1812)
+val WorkbenchContainerLow = Color(0xFF102219)
+val WorkbenchContainerHigh = Color(0xFF183428)
+val WorkbenchContainerHighest = Color(0xFF244A39)
 
 // Foreground (dark)
-val ShaderInk = Color(0xFFF1F5F9)
-val ShaderMute = Color(0xFFA8B3C7)
-val ShaderLine = Color(0xFF394254)
+val WorkbenchInk = Color(0xFFE7FFF1)
+val WorkbenchMute = Color(0xFF8FB8A1)
+val WorkbenchLine = Color(0xFF2F5F49)
 
 // Accents
-val SignalCyan = Color(0xFF22D3EE)
-val SignalCyanDark = Color(0xFF006C7A)
-val SignalCyanContainer = Color(0xFFC6F7FF)
-val SignalCyanContainerDark = Color(0xFF004F5C)
-val FluxRose = Color(0xFFEC4899)
-val FluxRoseDark = Color(0xFFB51F73)
-val FluxRoseContainer = Color(0xFFFFD8EC)
-val FluxRoseContainerDark = Color(0xFF641447)
-val PhotonAmber = Color(0xFFF59E0B)
-val PhotonAmberDark = Color(0xFF8A5200)
-val PhotonAmberContainer = Color(0xFFFFE3B3)
-val PhotonAmberContainerDark = Color(0xFF5C3900)
+val PhosphorGreen = Color(0xFF8CFF80)
+val PhosphorGreenDark = Color(0xFF116329)
+val PhosphorGreenContainer = Color(0xFFD9FFD2)
+val PhosphorGreenContainerDark = Color(0xFF12381D)
+val CrtCyan = Color(0xFF35F6FF)
+val CrtCyanDark = Color(0xFF006B73)
+val CrtCyanContainer = Color(0xFFB9FBFF)
+val CrtCyanContainerDark = Color(0xFF063A41)
+val CalibrationAmber = Color(0xFFFFC857)
+val CalibrationAmberDark = Color(0xFF7A5200)
+val CalibrationAmberContainer = Color(0xFFFFE39A)
+val CalibrationAmberContainerDark = Color(0xFF4D3500)
+val HotPixelMagenta = Color(0xFFFF4FD8)
+val HotPixelMagentaDark = Color(0xFF9D007D)
+val HotPixelMagentaContainer = Color(0xFFFFD7F4)
+val HotPixelMagentaContainerDark = Color(0xFF5F004B)
 
 // Status
-val RunGreen = Color(0xFF22C55E)  // compiled OK
-val CompileRed = Color(0xFFEF4444)  // shader error / destructive
+val RunGreen = Color(0xFF37F67A)  // compiled OK
+val CompileRed = Color(0xFFFF5A5F)  // shader error / destructive
 val CompileRedContainer = Color(0xFFFFDAD6)
 val CompileRedContainerDark = Color(0xFF5F1414)
 
-// Light-scheme surfaces
-val InkBg = Color(0xFFF7F9FC)
-val PaperSurface = Color(0xFFFFFFFF)
-val InkContainerLow = Color(0xFFEEF3F8)
-val InkContainerHigh = Color(0xFFE4EBF3)
-val InkContainerHighest = Color(0xFFD8E2ED)
-val DayInk = Color(0xFF121826)
-val DayMute = Color(0xFF526173)
-val DayLine = Color(0xFFC7D2E0)
+// Surface scale (light)
+val BlueprintBg = Color(0xFFF4F7EC)
+val BlueprintSurface = Color(0xFFFFFFF6)
+val BlueprintContainerLow = Color(0xFFE8F0DF)
+val BlueprintContainerHigh = Color(0xFFDCE8D1)
+val BlueprintContainerHighest = Color(0xFFCFDDC2)
+val BlueprintInk = Color(0xFF102018)
+val BlueprintMute = Color(0xFF4D6658)
+val BlueprintLine = Color(0xFFB7C8B7)
 
 // Per-category accents — small dot/stripe on cards, helps users
 // scan a long list and gives each category a visual identity.
-val AccentBasics = SignalCyan              // understanding the basics
-val AccentSdf = Color(0xFF8B5CF6)          // geometry/math
-val AccentNoise = Color(0xFF14B8A6)        // teal — organic
-val AccentPostFx = FluxRose                // expressive
-val AccentShowcase = PhotonAmber           // amber — cinematic / hero
-val AccentPatterns = Color(0xFFEAB308)     // gold — rhythm and repetition
-val AccentColor = Color(0xFFEC4899)        // hot pink — chromatic
-val AccentMotion = Color(0xFF10B981)       // emerald — kinetic
-val AccentFractals = Color(0xFF6366F1)     // indigo — recursive depth
-val AccentLighting = Color(0xFFF97316)     // tangerine — illumination
-val AccentInteractive = Color(0xFF0EA5E9)  // sky — touch / responsive
+val AccentBasics = PhosphorGreen           // fundamentals
+val AccentSdf = CrtCyan                    // geometry/math
+val AccentNoise = Color(0xFF72F6B1)        // organic signal
+val AccentPostFx = HotPixelMagenta         // expressive
+val AccentShowcase = CalibrationAmber      // cinematic / hero
+val AccentPatterns = Color(0xFFCFFF5E)     // rhythm and repetition
+val AccentColor = HotPixelMagenta          // chromatic work
+val AccentMotion = Color(0xFFB7FF6A)       // kinetic trace
+val AccentFractals = Color(0xFF9AB6FF)     // recursive depth
+val AccentLighting = Color(0xFFFFB000)     // illumination
+val AccentInteractive = CrtCyan            // touch / responsive
