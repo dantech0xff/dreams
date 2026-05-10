@@ -16,6 +16,7 @@ data class LessonModel(
     val conceptIntro: String,
     val learningNotes: ImmutableList<String> = persistentListOf(),
     val agslSource: String,
+    val extraAgslSources: ImmutableList<String> = persistentListOf(),
     val controls: ImmutableList<LessonControl> = persistentListOf(),
     val renderMode: LessonRenderMode = LessonRenderMode.BRUSH,
     val screenRecordingHint: String? = null,

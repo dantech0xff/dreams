@@ -16,12 +16,12 @@ app/src/main/java/com/dantech/dreams/
 │   └── motion/                     # Motion & reduced-motion logic
 ├── data/                           # Data layer (repos, entities, persistence)
 │   ├── lesson/                     # LessonRepositoryImpl, Lesson entity, showcases() accessor
-│   │   └── source/                 # Lesson sources (4 educational + 1 showcase categories)
+│   │   └── source/                 # Lesson sources (10 educational + 1 showcase categories)
 │   │       ├── basics/             # 6 basic AGSL lessons
 │   │       ├── sdf/                # 6 SDF lessons
 │   │       ├── noise/              # 6 noise lessons
 │   │       ├── posteffect/         # 5 post-effect lessons
-│   │       └── showcase/           # 3 showcase demos
+│   │       └── showcase/           # 2 showcase demos
 │   └── prefs/                      # UserPrefsRepositoryImpl + UserPrefs + ThemeMode
 ├── domain/                         # Domain layer (interfaces only)
 │   └── lesson/                     # LessonRepository interface
@@ -91,7 +91,7 @@ interface LessonRepository {
 **LessonRepositoryImpl** (data/lesson/)
 - Wraps internal `LessonRegistry` singleton
 - Idempotency guard: `if (all.isEmpty()) bootstrap()`
-- Loads 23 lessons from 5 source categories on first instantiation
+- Loads 56 lessons from 11 source categories on first instantiation
 
 **UserPrefsRepository** (interface + impl in data/prefs/)
 ```kotlin
@@ -133,6 +133,7 @@ data class LessonModel(
     val conceptIntro: String,
     val learningNotes: ImmutableList<String>,
     val agslSource: String,
+    val extraAgslSources: ImmutableList<String>,
     val controls: ImmutableList<LessonControl>,
 )
 
@@ -198,7 +199,7 @@ Immutable state classes used by Composables:
 - lesson, paramValues (SnapshotStateMap), isLoading, error
 
 **ShowcaseListUiState**
-- showcases (3 items), isLoading, error
+- showcases (2 items), isLoading, error
 
 **ShowcaseUiState**
 - lesson, paramValues, isLoading, error
@@ -209,7 +210,7 @@ Immutable state classes used by Composables:
 - `LessonCategoriesScreen()` — Selectable list of 4 lesson categories
 - `LessonListScreen(categoryName)` — Tabbed or flat list of lessons in category
 - `LessonDetailScreen(lessonId)` — Full-screen shader + interactive sliders
-- `ShowcaseListScreen()` — List of 3 showcase demos
+- `ShowcaseListScreen()` — List of showcase demos
 - `ShowcaseScreen(lessonId)` — Full-screen interactive demo
 - `SettingsScreen()` — Settings page (Dark theme switch, reduced-motion toggle, Material You, app info, GitHub link, license)
 
@@ -257,9 +258,9 @@ Lessons loaded once on app startup via LessonRepositoryImpl init:
 - **lighting/:** 4 lessons (Lambert, Phong, rim, terminator)
 - **interactive/:** 4 lessons (touch spotlight, ripple, pull field, shockwave)
 - **posteffect/:** 6 lessons (blur, aberration, ripple-tap, dissolve, glass, pixelate)
-- **showcase/:** 1 demo (ripple-on-tap)
+- **showcase/:** 2 demos (ripple-on-tap, codex-splash)
 
-**Total:** 55 lessons (54 educational + 1 showcase)
+**Total:** 56 lessons (54 educational + 2 showcases)
 
 ---
 
@@ -301,7 +302,7 @@ Lessons loaded once on app startup via LessonRepositoryImpl init:
 | **Min SDK** | 33 | RuntimeShader requirement |
 | **Target SDK** | 36 | Latest stable |
 | **JVM** | 11+ | Coroutines, Flow, Collections |
-| **Lesson bootstrap** | <500ms | 23 lessons loaded on app start |
+| **Lesson bootstrap** | <500ms | 56 lessons loaded on app start |
 | **Slider response** | <16ms | SnapshotStateMap per-frame update (60 FPS) |
 | **Persistence debounce** | 200ms | Slider stops → persist to DataStore |
 | **AGSL execution** | GPU (Android 13+) | ShaderBrush via RuntimeShader |
@@ -326,7 +327,7 @@ Lessons loaded once on app startup via LessonRepositoryImpl init:
 | Concern | Package | Notes |
 |---------|---------|-------|
 | **DI Setup** | core/di | 3 modules (app, data, feature); includes new lesson/showcase/settings VMs |
-| **Lesson Data** | data/lesson + domain/lesson | Repo interface + impl + 26 lessons + showcases() accessor |
+| **Lesson Data** | data/lesson + domain/lesson | Repo interface + impl + 56 lessons + showcases() accessor |
 | **Preferences** | data/prefs | UserPrefs entity, ThemeMode enum, repo interface + impl |
 | **Navigation Shell** | ui/feature/nav | MainShell, TopLevelBackStack, DreamsBottomBar, TabKey, Route (3-tab bottom nav) |
 | **Lesson Screens** | ui/feature/lessonlist | LessonCategoriesScreen/VM/UiState, LessonListScreen/VM/UiState |

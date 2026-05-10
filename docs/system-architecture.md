@@ -28,7 +28,7 @@
 ├──────────────────────┤              ├─────────────────┤
 │ LessonRepositoryImpl  │              │ RuntimeShader   │
 │ • LessonRegistry     │              │ • AGSL utils    │
-│ • 23 lesson sources  │              │ • Uniforms      │
+│ • 56 lessons         │              │ • Uniforms      │
 │ • showcases()        │              │                 │
 │                      │              │ Motion          │
 │ UserPrefsRepoImpl     │              │ • Reduced-motion│
@@ -193,7 +193,7 @@ val uiState: StateFlow<LessonDetailUiState>
 #### ShowcaseListViewModel
 ```kotlin
 val uiState: StateFlow<ShowcaseListUiState>
-// State: showcases (3 items), isLoading, error
+// State: showcases (2 items), isLoading, error
 // Actions: onSelectShowcase(lessonId) [navigates via callback]
 ```
 
@@ -250,7 +250,7 @@ internal object LessonRegistry {
 
 **Why internal + interface:** Hides singleton, prevents direct mutation, testable via fakes.
 
-**Idempotency guard:** `if (all.isEmpty())` before loading 23 lessons; safe for test restart.
+**Idempotency guard:** `if (all.isEmpty())` before loading 56 lessons; safe for test restart.
 
 ### UserPrefsRepository
 ```kotlin
@@ -366,7 +366,7 @@ data/lesson/source/
 ├── sdf/          (6 lessons: circle, rounded box, metaballs, breathing grid, combine, invert)
 ├── noise/        (6 lessons: hash, value noise, fBM, voronoi, plasma, lava)
 ├── posteffect/   (5 lessons: blur, aberration, ripple-tap, dissolve, glass)
-└── showcase/     (3 lessons: liquid glass, aurora, raymarched sphere)
+└── showcase/     (2 lessons: ripple-on-tap, codex-splash)
 ```
 
 ### Lesson Entity
@@ -377,6 +377,7 @@ data class Lesson(
     val title: String,
     val description: String,
     val agslCode: String,         // RuntimeShader AGSL source (460)
+    val extraAgslSources: List<String>, // Additional custom-preview shaders validated on startup
     val uniforms: List<Uniform>,  // Parameters: name, type, default, min, max
 )
 
@@ -505,7 +506,7 @@ fun AGSLRenderer(
 | Aspect | Measurement | Target |
 |--------|-------------|--------|
 | **App startup** | Lesson bootstrap + first Gallery frame | <2s |
-| **Lesson bootstrap** | Load 23 lessons from sources | <500ms |
+| **Lesson bootstrap** | Load 56 lessons from sources | <500ms |
 | **Gallery tab switch** | Recompose + list layout | <100ms |
 | **Slider update** | SnapshotStateMap write → frame render | <16ms (60 FPS) |
 | **DataStore write** | Debounce + persist param override | <300ms (200ms debounce + 100ms write) |

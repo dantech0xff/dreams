@@ -48,7 +48,7 @@ class LessonRegistryTest {
         assertEquals(4, repo.byCategory(LessonCategory.LIGHTING).size)
         assertEquals(4, repo.byCategory(LessonCategory.INTERACTIVE).size)
         assertEquals(6, repo.byCategory(LessonCategory.POSTFX).size)
-        assertEquals(1, repo.byCategory(LessonCategory.SHOWCASE).size)
+        assertEquals(2, repo.byCategory(LessonCategory.SHOWCASE).size)
     }
 
     @Test

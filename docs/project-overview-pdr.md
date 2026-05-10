@@ -2,7 +2,7 @@
 
 ## Project Vision
 
-Dreams is a curated, swipeable Jetpack Compose gallery for learning **Android Graphics Shading Language (AGSL)** through 23 bite-sized lessons organized by topic, plus three full-screen "wow" showcase demos engineered for screen-recording.
+Dreams is a curated, swipeable Jetpack Compose gallery for learning **Android Graphics Shading Language (AGSL)** through 54 bite-sized lessons organized by topic, plus two full-screen "wow" showcase demos engineered for screen-recording.
 
 **Target Audience:** Android engineers already writing Compose who want a runnable, interactive intro to runtime shaders on real devices.
 
@@ -14,8 +14,8 @@ Dreams is a curated, swipeable Jetpack Compose gallery for learning **Android Gr
 |--------|--------|
 | **Min SDK** | 33 (AGSL requirement) |
 | **Target SDK** | 36 |
-| **Lessons** | 23 (6 Basics, 6 SDF, 6 Noise, 5 Post-FX) |
-| **Showcases** | 3 (Liquid Glass, Aurora, Raymarched Sphere) |
+| **Lessons** | 54 educational lessons across 10 categories |
+| **Showcases** | 2 (Ripple on Tap, Codex Splash) |
 | **Build Time** | <90s (single module, no multi-module overhead) |
 | **Test Coverage** | ≥80% (data layer, VM logic, DI) |
 
@@ -85,7 +85,7 @@ Dreams is a curated, swipeable Jetpack Compose gallery for learning **Android Gr
 
 #### NF4: Performance
 - AGSL uniforms updated on Compose thread (SnapshotStateMap) — no async shader recompilation
-- Lesson bootstrap (23 shaders + metadata) completes in <500ms
+- Lesson bootstrap (56 lessons + metadata) completes in <500ms
 - DataStore reads cached in-memory (Flow-based); high-frequency slider writes are debounced
 
 ---
@@ -156,7 +156,7 @@ core/di (Koin modules) + core/agsl + core/motion
 - **Trade-off:** Slightly heavier than SharedPreferences; justified by consistency with modern Compose patterns
 
 ### 6. Lesson Bootstrap with Idempotency Guard
-- **Why:** LessonRegistry.bootstrap() checks `if (all.isEmpty())` before loading 23 lessons; safe for test restarts
+- **Why:** LessonRegistry.bootstrap() checks `if (all.isEmpty())` before loading 56 lessons; safe for test restarts
 - **Trade-off:** No explicit reset method; tests rely on isolation (each test gets fresh app state via DreamsTestRunner)
 
 ---
@@ -176,7 +176,7 @@ core/di (Koin modules) + core/agsl + core/motion
 - Cold start → Gallery remembers last lesson
 - Toggle favorite → DataStore persists
 - Reduced-motion toggle → transitions snap vs. animate
-- All 23 lessons load and render without crashes
+- All 56 lessons load and render without crashes
 
 ---
 
@@ -198,7 +198,7 @@ core/di (Koin modules) + core/agsl + core/motion
 ## Success Criteria (Shipped State)
 
 - [x] App builds clean, no warnings
-- [x] All 23 lessons load and render
+- [x] All 56 lessons load and render
 - [x] Gallery + favorites persist across cold start
 - [x] Back-stack survives config change + process death
 - [x] Reduced-motion → instant swaps (not animated)

@@ -38,7 +38,7 @@ Lesson detail screens include learning notes, interactive sliders/color swatches
 | Lighting     | 4     | Lambert, specular, faked depth                  |
 | Interactive  | 4     | touch-driven shader experiments                 |
 | Post-FX      | 6     | blur, aberration, ripple, dissolve, glass       |
-| Showcase     | 1     | ripple-on-tap with starfield + bot halo backdrop |
+| Showcase     | 2     | ripple-on-tap and Codex-style procedural splash |
 
 Categories live in `app/src/main/java/com/dantech/dreams/data/lesson/source/`.
 

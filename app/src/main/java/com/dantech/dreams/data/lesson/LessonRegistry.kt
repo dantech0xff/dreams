@@ -41,11 +41,15 @@ internal object LessonRegistry {
     fun validateAll(): List<Pair<String, String>> {
         val failures = mutableListOf<Pair<String, String>>()
         for (lesson in all) {
-            try {
-                RuntimeShader(lesson.agslSource)
-            } catch (t: Throwable) {
-                Log.e("LessonRegistry", "Compile failed: ${lesson.id}", t)
-                failures += lesson.id to (t.message ?: "unknown error")
+            val sources = listOf(lesson.agslSource) + lesson.extraAgslSources
+            sources.forEachIndexed { index, source ->
+                val sourceId = if (index == 0) lesson.id else "${lesson.id}#extra-$index"
+                try {
+                    RuntimeShader(source)
+                } catch (t: Throwable) {
+                    Log.e("LessonRegistry", "Compile failed: $sourceId", t)
+                    failures += sourceId to (t.message ?: "unknown error")
+                }
             }
         }
         return failures
