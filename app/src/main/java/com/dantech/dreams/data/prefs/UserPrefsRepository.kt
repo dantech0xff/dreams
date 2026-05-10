@@ -13,4 +13,5 @@ interface UserPrefsRepository {
     suspend fun clearLessonOverrides(lessonId: String)
     suspend fun setReducedMotion(enabled: Boolean)
     suspend fun setUseDynamicColor(enabled: Boolean)
+    suspend fun setThemeMode(mode: ThemeMode)
 }

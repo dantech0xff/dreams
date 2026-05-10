@@ -25,6 +25,7 @@ internal class UserPrefsRepositoryImpl(
         val COLOR_OVERRIDES = stringPreferencesKey("color_overrides")
         val REDUCED_MOTION = booleanPreferencesKey("reduced_motion")
         val USE_DYNAMIC_COLOR = booleanPreferencesKey("use_dynamic_color")
+        val THEME_MODE = stringPreferencesKey("theme_mode")
     }
 
     override val prefsFlow: Flow<UserPrefs> = dataStore.data
@@ -43,6 +44,7 @@ internal class UserPrefsRepositoryImpl(
                 }.toMap().toImmutableMap(),
                 reducedMotionOverride = p[Keys.REDUCED_MOTION] ?: false,
                 useDynamicColor = p[Keys.USE_DYNAMIC_COLOR] ?: false,
+                themeMode = ThemeMode.fromStorageValue(p[Keys.THEME_MODE]),
             )
         }
 
@@ -95,5 +97,9 @@ internal class UserPrefsRepositoryImpl(
 
     override suspend fun setUseDynamicColor(enabled: Boolean) {
         dataStore.edit { it[Keys.USE_DYNAMIC_COLOR] = enabled }
+    }
+
+    override suspend fun setThemeMode(mode: ThemeMode) {
+        dataStore.edit { it[Keys.THEME_MODE] = mode.storageValue }
     }
 }

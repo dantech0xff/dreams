@@ -22,7 +22,7 @@ app/src/main/java/com/dantech/dreams/
 │   │       ├── noise/              # 6 noise lessons
 │   │       ├── posteffect/         # 5 post-effect lessons
 │   │       └── showcase/           # 3 showcase demos
-│   └── prefs/                      # UserPrefsRepositoryImpl + UserPrefs entity
+│   └── prefs/                      # UserPrefsRepositoryImpl + UserPrefs + ThemeMode
 ├── domain/                         # Domain layer (interfaces only)
 │   └── lesson/                     # LessonRepository interface
 └── ui/                             # UI layer (Composables, ViewModels)
@@ -31,10 +31,10 @@ app/src/main/java/com/dantech/dreams/
     │   ├── lessonlist/             # LessonCategories + LessonList screens + VMs + UiStates
     │   ├── lesson/                 # LessonDetail screen + ViewModel
     │   ├── showcase/               # ShowcaseList + Showcase screens + VMs + UiStates
-    │   ├── settings/               # Settings screen + AboutAgslSheet
+    │   ├── settings/               # Settings screen, display controls, AboutAgslSheet
     │   ├── common/                 # Shared Composables (LessonCard, transitions)
     │   └── (deleted: landing/, gallery/)
-    └── theme/                      # Design tokens (Tokens.kt, colors, typography)
+    └── theme/                      # Shader Lab design tokens (colors, typography, spacing)
 
 app/src/test/java/com/dantech/dreams/        # JVM unit tests (mirror structure)
 app/src/androidTest/java/com/dantech/dreams/ # Instrumented tests + test runner
@@ -93,24 +93,31 @@ interface LessonRepository {
 - Idempotency guard: `if (all.isEmpty()) bootstrap()`
 - Loads 23 lessons from 5 source categories on first instantiation
 
-**UserPrefsRepository** (interface in domain/lesson/, impl in data/prefs/)
+**UserPrefsRepository** (interface + impl in data/prefs/)
 ```kotlin
 interface UserPrefsRepository {
-    val prefsFlow: Flow<UserPrefs>  // Hot, multicast
-    suspend fun toggleFavorite(lessonId: String)
-    suspend fun setLastLessonId(lessonId: String)
-    suspend fun setParamOverride(lessonId: String, key: String, value: Float)
-    suspend fun setReducedMotionOverride(enabled: Boolean)
+    val prefsFlow: Flow<UserPrefs>
+    suspend fun setLastLessonId(id: String)
+    suspend fun toggleFavorite(id: String): Boolean
+    suspend fun setParamOverride(lessonId: String, uniform: String, value: Float)
+    suspend fun setColorOverride(lessonId: String, uniform: String, argb: Int)
+    suspend fun clearLessonOverrides(lessonId: String)
+    suspend fun setReducedMotion(enabled: Boolean)
+    suspend fun setUseDynamicColor(enabled: Boolean)
+    suspend fun setThemeMode(mode: ThemeMode)
 }
 ```
 
 **UserPrefs** (data class, data/prefs/)
 ```kotlin
 data class UserPrefs(
-    val lastLessonId: String = "",
-    val favorites: Set<String> = emptySet(),
-    val paramOverrides: Map<String, Map<String, Float>> = emptyMap(),
+    val lastLessonId: String? = null,
+    val favorites: ImmutableSet<String> = persistentSetOf(),
+    val paramOverrides: ImmutableMap<String, ImmutableMap<String, Float>> = persistentMapOf(),
+    val colorOverrides: ImmutableMap<String, ImmutableMap<String, Int>> = persistentMapOf(),
     val reducedMotionOverride: Boolean = false,
+    val useDynamicColor: Boolean = false,
+    val themeMode: ThemeMode = ThemeMode.DEFAULT,
 )
 ```
 
@@ -204,7 +211,7 @@ Immutable state classes used by Composables:
 - `LessonDetailScreen(lessonId)` — Full-screen shader + interactive sliders
 - `ShowcaseListScreen()` — List of 3 showcase demos
 - `ShowcaseScreen(lessonId)` — Full-screen interactive demo
-- `SettingsScreen()` — Settings page (reduced-motion toggle, app info, GitHub link, license)
+- `SettingsScreen()` — Settings page (Dark theme switch, reduced-motion toggle, Material You, app info, GitHub link, license)
 
 **Components** (private or shared, state hoisted)
 - `LessonCard()` — Lesson card with preview + title + favorite toggle (moved to common/)
@@ -227,6 +234,7 @@ Immutable state classes used by Composables:
 - `"color_overrides"` — JSON-encoded Map<lessonId, Map<uniform, ARGB Int>>
 - `"reduced_motion"` — Boolean
 - `"use_dynamic_color"` — Boolean
+- `"theme_mode"` — String enum value: `light` or `dark`
 
 **Access pattern:**
 - **Read:** `prefsFlow.collect { snapshot -> ... }` (hot Flow, cached)
@@ -319,14 +327,14 @@ Lessons loaded once on app startup via LessonRepositoryImpl init:
 |---------|---------|-------|
 | **DI Setup** | core/di | 3 modules (app, data, feature); includes new lesson/showcase/settings VMs |
 | **Lesson Data** | data/lesson + domain/lesson | Repo interface + impl + 26 lessons + showcases() accessor |
-| **Preferences** | data/prefs | UserPrefs entity + repo interface + impl |
+| **Preferences** | data/prefs | UserPrefs entity, ThemeMode enum, repo interface + impl |
 | **Navigation Shell** | ui/feature/nav | MainShell, TopLevelBackStack, DreamsBottomBar, TabKey, Route (3-tab bottom nav) |
 | **Lesson Screens** | ui/feature/lessonlist | LessonCategoriesScreen/VM/UiState, LessonListScreen/VM/UiState |
 | **Lesson Detail** | ui/feature/lesson | LessonDetailScreen, ViewModel, UiState |
 | **Showcase Screens** | ui/feature/showcase | ShowcaseListScreen/VM/UiState, ShowcaseScreen/VM/UiState |
-| **Settings** | ui/feature/settings | SettingsScreen, AboutAgslSheet (moved from landing) |
+| **Settings** | ui/feature/settings | SettingsScreen, DisplaySettingsSection, AboutAgslSheet |
 | **Shared UI** | ui/feature/common | LessonCard (moved from gallery), transitions, animations |
-| **Theme** | ui/theme | Tokens, colors, typography |
+| **Theme** | ui/theme | Shader Lab color schemes, tokens, typography |
 | **Core Utils** | core/agsl + core/motion | AGSL RuntimeShader utils, motion logic |
 
 ---

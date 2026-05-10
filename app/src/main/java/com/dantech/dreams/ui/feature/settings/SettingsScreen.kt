@@ -17,7 +17,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -64,14 +63,13 @@ fun SettingsScreen(
                 .padding(padding)
                 .verticalScroll(rememberScrollState()),
         ) {
-            SectionHeader("Display")
-            ReduceMotionRow(
-                checked = prefs.reducedMotionOverride,
-                onChecked = { v -> scope.launch { prefsRepo.setReducedMotion(v) } },
-            )
-            DynamicColorRow(
-                checked = prefs.useDynamicColor,
-                onChecked = { v -> scope.launch { prefsRepo.setUseDynamicColor(v) } },
+            DisplaySettingsSection(
+                themeMode = prefs.themeMode,
+                reducedMotion = prefs.reducedMotionOverride,
+                useDynamicColor = prefs.useDynamicColor,
+                onThemeMode = { mode -> scope.launch { prefsRepo.setThemeMode(mode) } },
+                onReducedMotion = { v -> scope.launch { prefsRepo.setReducedMotion(v) } },
+                onDynamicColor = { v -> scope.launch { prefsRepo.setUseDynamicColor(v) } },
             )
 
             HorizontalDivider(Modifier.padding(vertical = 8.dp))
@@ -99,56 +97,6 @@ fun SettingsScreen(
 
     if (aboutOpen) AboutAgslSheet(onDismiss = { aboutOpen = false })
     if (licenseOpen) LicenseSheet(onDismiss = { licenseOpen = false })
-}
-
-@Composable
-private fun SectionHeader(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.titleSmall,
-        modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
-    )
-}
-
-@Composable
-private fun ReduceMotionRow(checked: Boolean, onChecked: (Boolean) -> Unit) {
-    SwitchRow(
-        title = "Reduce motion",
-        subtitle = "Skip transitions and shared element morphs.",
-        checked = checked,
-        onChecked = onChecked,
-    )
-}
-
-@Composable
-private fun DynamicColorRow(checked: Boolean, onChecked: (Boolean) -> Unit) {
-    SwitchRow(
-        title = "Material You theme",
-        subtitle = "Tint UI from your wallpaper. Off keeps the brand palette.",
-        checked = checked,
-        onChecked = onChecked,
-    )
-}
-
-@Composable
-private fun SwitchRow(
-    title: String,
-    subtitle: String,
-    checked: Boolean,
-    onChecked: (Boolean) -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.titleMedium)
-            Text(subtitle, style = MaterialTheme.typography.bodySmall)
-        }
-        Switch(checked = checked, onCheckedChange = onChecked)
-    }
 }
 
 @Composable

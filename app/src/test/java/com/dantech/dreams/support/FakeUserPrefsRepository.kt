@@ -1,5 +1,6 @@
 package com.dantech.dreams.support
 
+import com.dantech.dreams.data.prefs.ThemeMode
 import com.dantech.dreams.data.prefs.UserPrefs
 import com.dantech.dreams.data.prefs.UserPrefsRepository
 import kotlinx.collections.immutable.toPersistentMap
@@ -63,5 +64,9 @@ class FakeUserPrefsRepository(
 
     override suspend fun setUseDynamicColor(enabled: Boolean) {
         state.update { it.copy(useDynamicColor = enabled) }
+    }
+
+    override suspend fun setThemeMode(mode: ThemeMode) {
+        state.update { it.copy(themeMode = mode) }
     }
 }

@@ -14,6 +14,7 @@ data class UserPrefs(
     val colorOverrides: ImmutableMap<String, ImmutableMap<String, Int>> = persistentMapOf(),
     val reducedMotionOverride: Boolean = false,
     val useDynamicColor: Boolean = false,
+    val themeMode: ThemeMode = ThemeMode.DEFAULT,
 ) {
     companion object {
         val DEFAULT = UserPrefs()

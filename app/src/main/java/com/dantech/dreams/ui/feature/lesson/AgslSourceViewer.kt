@@ -19,7 +19,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 
@@ -35,7 +34,7 @@ fun AgslSourceViewer(
         modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
-            .background(Color(0xFF101418)),
+            .background(MaterialTheme.colorScheme.surfaceContainerHighest),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -43,14 +42,14 @@ fun AgslSourceViewer(
         ) {
             Text(
                 text = "AGSL Source",
-                color = Color(0xFFCFD8DC),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.labelLarge,
                 modifier = Modifier.padding(vertical = 8.dp),
             )
             IconButton(onClick = { expanded = !expanded }) {
                 Text(
                     text = if (expanded) "▲" else "▼",
-                    color = Color(0xFFCFD8DC),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -58,7 +57,7 @@ fun AgslSourceViewer(
             Row(Modifier.horizontalScroll(rememberScrollState())) {
                 Text(
                     text = numberedSource,
-                    color = Color(0xFFE0F2F1),
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontFamily = FontFamily.Monospace,
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(12.dp),

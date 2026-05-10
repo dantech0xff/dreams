@@ -9,6 +9,6 @@
     <color name="white">#FFFFFFFF</color>
 
     <!-- Window background; mirrors Compose colorScheme.background.
-         Light = DayBg, dark override lives in values-night/colors.xml. -->
-    <color name="dreams_window_bg">#FAFAFC</color>
+         Light = InkBg, dark override lives in values-night/colors.xml. -->
+    <color name="dreams_window_bg">#F7F9FC</color>
 </resources>

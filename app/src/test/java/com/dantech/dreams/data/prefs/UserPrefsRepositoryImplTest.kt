@@ -3,6 +3,8 @@ package com.dantech.dreams.data.prefs
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import app.cash.turbine.test
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -34,6 +36,7 @@ class UserPrefsRepositoryImplTest {
         repo.prefsFlow.test {
             val first = awaitItem()
             assertEquals(UserPrefs.DEFAULT, first)
+            assertEquals(ThemeMode.DARK, first.themeMode)
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -82,6 +85,36 @@ class UserPrefsRepositoryImplTest {
         repo.setReducedMotion(true)
         repo.prefsFlow.test {
             assertTrue(awaitItem().reducedMotionOverride)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `setThemeMode persists`() = runTest {
+        repo.setThemeMode(ThemeMode.DARK)
+        repo.prefsFlow.test {
+            assertEquals(ThemeMode.DARK, awaitItem().themeMode)
+            cancelAndIgnoreRemainingEvents()
+        }
+
+        repo.setThemeMode(ThemeMode.LIGHT)
+        repo.prefsFlow.test {
+            assertEquals(ThemeMode.LIGHT, awaitItem().themeMode)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `unsupported theme mode falls back to dark`() = runTest {
+        dataStore.edit { it[stringPreferencesKey("theme_mode")] = "unknown" }
+        repo.prefsFlow.test {
+            assertEquals(ThemeMode.DARK, awaitItem().themeMode)
+            cancelAndIgnoreRemainingEvents()
+        }
+
+        dataStore.edit { it[stringPreferencesKey("theme_mode")] = "system" }
+        repo.prefsFlow.test {
+            assertEquals(ThemeMode.DARK, awaitItem().themeMode)
             cancelAndIgnoreRemainingEvents()
         }
     }

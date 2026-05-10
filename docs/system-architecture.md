@@ -42,6 +42,9 @@
     │  • lastLessonId  │
     │  • favorites     │
     │  • paramOverride │
+    │  • colorOverride │
+    │  • themeMode     │
+    │  • dynamicColor  │
     │  • reducedMotion │
     └──────────────────┘
 ```
@@ -253,14 +256,19 @@ internal object LessonRegistry {
 ```kotlin
 interface UserPrefsRepository {
     val prefsFlow: Flow<UserPrefs>
-    suspend fun toggleFavorite(lessonId: String)
-    suspend fun setLastLessonId(lessonId: String)
-    suspend fun setParamOverride(lessonId: String, key: String, value: Float)
-    suspend fun setReducedMotionOverride(enabled: Boolean)
+    suspend fun setLastLessonId(id: String)
+    suspend fun toggleFavorite(id: String): Boolean
+    suspend fun setParamOverride(lessonId: String, uniform: String, value: Float)
+    suspend fun setColorOverride(lessonId: String, uniform: String, argb: Int)
+    suspend fun clearLessonOverrides(lessonId: String)
+    suspend fun setReducedMotion(enabled: Boolean)
+    suspend fun setUseDynamicColor(enabled: Boolean)
+    suspend fun setThemeMode(mode: ThemeMode)
 }
 
 // Backed by DataStore<Preferences>
-// Keys: "last_lesson_id", "favorites" (JSON array), "param_overrides_{lessonId}" (JSON), "reduced_motion"
+// Keys: "last_lesson_id", "favorites", "param_overrides", "color_overrides",
+//       "reduced_motion", "use_dynamic_color", "theme_mode"
 ```
 
 **Read pattern:** `prefsFlow.collect { snapshot -> _ui.update { ... } }`
@@ -325,16 +333,21 @@ else
 ### Data Structure
 ```kotlin
 data class UserPrefs(
-    val lastLessonId: String = "",
-    val favorites: Set<String> = emptySet(),
-    val paramOverrides: Map<String, Map<String, Float>> = emptyMap(),
+    val lastLessonId: String? = null,
+    val favorites: ImmutableSet<String> = persistentSetOf(),
+    val paramOverrides: ImmutableMap<String, ImmutableMap<String, Float>> = persistentMapOf(),
+    val colorOverrides: ImmutableMap<String, ImmutableMap<String, Int>> = persistentMapOf(),
     val reducedMotionOverride: Boolean = false,
+    val useDynamicColor: Boolean = false,
+    val themeMode: ThemeMode = ThemeMode.DEFAULT,
 )
 ```
 
 ### Serialization
-- **Favorites:** JSON-encoded `Set<String>` via kotlinx.serialization
+- **Favorites:** Preferences string set
 - **paramOverrides:** JSON-encoded `Map<lessonId, Map<paramKey, value>>` (per-lesson shader uniforms)
+- **colorOverrides:** JSON-encoded `Map<lessonId, Map<uniform, ARGB int>>`
+- **themeMode:** String enum value: `light` or `dark`; invalid/legacy values fall back to `dark`
 - **DataStore file:** `dreams_prefs` in app's private data dir
 
 ### Access Pattern
@@ -455,15 +468,15 @@ fun AGSLRenderer(
 | **AGSL** | `core/agsl` | RuntimeShader utils, shader sources (assets) |
 | **Motion** | `core/motion` | Reduced-motion logic, animation spec resolution |
 | **Lesson data** | `data/lesson` | LessonRepositoryImpl, Lesson entity, lesson sources (Basics, SDF, Noise, PostEffect, Showcase), showcases() accessor |
-| **Prefs** | `data/prefs` | UserPrefsRepositoryImpl, UserPrefs data class |
+| **Prefs** | `data/prefs` | UserPrefsRepositoryImpl, UserPrefs data class, ThemeMode enum |
 | **Domain interfaces** | `domain/lesson` | LessonRepository interface (sealed, impl hidden) |
 | **Navigation shell** | `ui/feature/nav` | MainShell, TopLevelBackStack, DreamsBottomBar, TabKey, Route sealed interface |
 | **Lesson screens** | `ui/feature/lessonlist` | LessonCategoriesScreen/VM/UiState, LessonListScreen/VM/UiState |
 | **Lesson detail** | `ui/feature/lesson` | LessonDetailScreen, LessonDetailViewModel, LessonDetailUiState |
 | **Showcase screens** | `ui/feature/showcase` | ShowcaseListScreen/VM/UiState, ShowcaseScreen/VM/UiState |
-| **Settings** | `ui/feature/settings` | SettingsScreen, AboutAgslSheet (moved from landing) |
+| **Settings** | `ui/feature/settings` | SettingsScreen, DisplaySettingsSection, AboutAgslSheet |
 | **Shared UI** | `ui/feature/common` | LessonCard (moved from gallery), SharedTransitionLayout helpers, animation specs |
-| **Theme** | `ui/theme` | Tokens.kt, colors, typography, spacing, Material3 defaults |
+| **Theme** | `ui/theme` | Shader Lab Material3 schemes, Tokens.kt, typography, spacing |
 
 ---
 
@@ -515,4 +528,3 @@ fun AGSLRenderer(
 | **Reduced-motion** | System setting (ANIMATOR_DURATION_SCALE) + app pref for disabling animations |
 | **Shared-element** | Cross-screen Compose transition; both screens animate bounds |
 | **SnapshotStateMap** | Compose snapshot-aware mutable map; triggers recompose on write |
-

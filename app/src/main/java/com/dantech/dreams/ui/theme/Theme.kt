@@ -1,7 +1,5 @@
 package com.dantech.dreams.ui.theme
 
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -12,87 +10,96 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.dantech.dreams.data.prefs.ThemeMode
 import com.dantech.dreams.data.prefs.UserPrefs
 import com.dantech.dreams.data.prefs.UserPrefsRepository
 import org.koin.compose.koinInject
 
-// Brand chrome is dark-first — see Color.kt rationale. Light scheme derived for
-// daytime/AOD use. dynamicColor (Material You wallpaper-tinted) is opt-in via
-// SettingsScreen so the brand identity is the default; users who want wallpaper
-// chrome can enable it.
+// dynamicColor (Material You wallpaper-tinted) is opt-in via SettingsScreen so
+// the Shader Lab brand identity is the default.
 
 private val DarkBrandScheme = darkColorScheme(
-    primary = NeonViolet80,
-    onPrimary = Midnight,
-    primaryContainer = NeonViolet20,
-    onPrimaryContainer = NeonViolet80,
-    secondary = SignalCyan80,
-    onSecondary = Midnight,
-    secondaryContainer = SignalCyan20,
-    onSecondaryContainer = SignalCyan80,
-    tertiary = FluxRose,
-    onTertiary = Midnight,
-    background = Midnight,
-    onBackground = EngineerInk,
-    surface = MidnightLow,
-    onSurface = EngineerInk,
-    surfaceVariant = MidnightMid,
-    onSurfaceVariant = EngineerMute,
-    surfaceContainer = MidnightMid,
-    surfaceContainerLow = MidnightLow,
-    surfaceContainerLowest = Midnight,
-    surfaceContainerHigh = MidnightHigh,
-    surfaceContainerHighest = MidnightHigher,
-    outline = EngineerLine,
-    outlineVariant = EngineerLine,
+    primary = SignalCyan,
+    onPrimary = GraphiteBg,
+    primaryContainer = SignalCyanContainerDark,
+    onPrimaryContainer = SignalCyanContainer,
+    secondary = FluxRose,
+    onSecondary = GraphiteBg,
+    secondaryContainer = FluxRoseContainerDark,
+    onSecondaryContainer = FluxRoseContainer,
+    tertiary = PhotonAmber,
+    onTertiary = GraphiteBg,
+    tertiaryContainer = PhotonAmberContainerDark,
+    onTertiaryContainer = PhotonAmberContainer,
+    background = GraphiteBg,
+    onBackground = ShaderInk,
+    surface = GraphiteSurface,
+    onSurface = ShaderInk,
+    surfaceVariant = GraphiteContainerLow,
+    onSurfaceVariant = ShaderMute,
+    surfaceContainer = GraphiteContainerLow,
+    surfaceContainerLow = GraphiteSurface,
+    surfaceContainerLowest = GraphiteBg,
+    surfaceContainerHigh = GraphiteContainerHigh,
+    surfaceContainerHighest = GraphiteContainerHighest,
+    outline = ShaderLine,
+    outlineVariant = ShaderLine,
     error = CompileRed,
-    onError = Midnight,
+    onError = GraphiteBg,
+    errorContainer = CompileRedContainerDark,
+    onErrorContainer = CompileRedContainer,
 )
 
 private val LightBrandScheme = lightColorScheme(
-    primary = NeonViolet,
-    onPrimary = DaySurface,
-    primaryContainer = Color(0xFFEDE3FF),
-    onPrimaryContainer = Color(0xFF2A1A55),
-    secondary = Color(0xFF0891B2),       // saturated cyan for light bg contrast
-    onSecondary = DaySurface,
-    secondaryContainer = Color(0xFFCFFAFE),
-    onSecondaryContainer = Color(0xFF154A52),
-    tertiary = Color(0xFFE11D48),
-    onTertiary = DaySurface,
-    background = DayBg,
+    primary = SignalCyanDark,
+    onPrimary = PaperSurface,
+    primaryContainer = SignalCyanContainer,
+    onPrimaryContainer = Color(0xFF00363D),
+    secondary = FluxRoseDark,
+    onSecondary = PaperSurface,
+    secondaryContainer = FluxRoseContainer,
+    onSecondaryContainer = Color(0xFF4C0031),
+    tertiary = PhotonAmberDark,
+    onTertiary = PaperSurface,
+    tertiaryContainer = PhotonAmberContainer,
+    onTertiaryContainer = Color(0xFF3E2600),
+    background = InkBg,
     onBackground = DayInk,
-    surface = DaySurface,
+    surface = PaperSurface,
     onSurface = DayInk,
-    surfaceVariant = DayContainerLo,
+    surfaceVariant = InkContainerLow,
     onSurfaceVariant = DayMute,
-    surfaceContainer = DayContainerLo,
-    surfaceContainerLow = DayBg,
-    surfaceContainerLowest = DaySurface,
-    surfaceContainerHigh = DayContainerHi,
-    surfaceContainerHighest = DayContainerHi,
+    surfaceContainer = InkContainerLow,
+    surfaceContainerLow = InkBg,
+    surfaceContainerLowest = PaperSurface,
+    surfaceContainerHigh = InkContainerHigh,
+    surfaceContainerHighest = InkContainerHighest,
     outline = DayLine,
     outlineVariant = DayLine,
     error = CompileRed,
-    onError = DaySurface,
+    onError = PaperSurface,
+    errorContainer = CompileRedContainer,
+    onErrorContainer = Color(0xFF410002),
 )
 
-// Avoid blocking startup if Koin isn't ready yet — fall back to brand defaults.
 @Composable
 fun DreamsTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
     val prefsRepo: UserPrefsRepository = koinInject()
     val prefs by prefsRepo.prefsFlow.collectAsStateWithLifecycle(initialValue = UserPrefs.DEFAULT)
     val useDynamicColor = prefs.useDynamicColor
+    val resolvedDarkTheme = when (prefs.themeMode) {
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+    }
 
     val colorScheme = when {
         useDynamicColor -> {
             val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            if (resolvedDarkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-        darkTheme -> DarkBrandScheme
+        resolvedDarkTheme -> DarkBrandScheme
         else -> LightBrandScheme
     }
 
