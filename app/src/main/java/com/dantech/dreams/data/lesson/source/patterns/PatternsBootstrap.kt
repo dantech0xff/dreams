@@ -6,5 +6,11 @@ object PatternsBootstrap {
         PolkaDots.id
         HexGrid.id
         TruchetTiles.id
+        MoireInterference.id
+        KaleidoscopeFold.id
+        PlaidWeave.id
+        HerringboneTiles.id
+        RadialBurst.id
+        BrickBond.id
     }
 }

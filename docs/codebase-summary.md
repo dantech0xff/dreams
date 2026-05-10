@@ -248,7 +248,7 @@ Immutable state classes used by Composables:
 Lessons loaded once on app startup via LessonRepositoryImpl init:
 
 - **basics/:** 6 lessons (uniforms, time, fragCoord, gradients, polar, smoothstep)
-- **patterns/:** 4 lessons (stripes, dots, hex grid, truchet)
+- **patterns/:** 10 lessons (stripes, dots, hex grid, truchet, moire, kaleidoscope, plaid, herringbone, burst, brick)
 - **colorlab/:** 4 lessons (palettes, HSV, gradients, tone mapping)
 - **sdf/:** 6 lessons (circle, rounded box, metaballs, breathing grid, combine, invert)
 - **noise/:** 6 lessons (hash, value noise, fBM, voronoi, plasma, lava)
@@ -259,7 +259,7 @@ Lessons loaded once on app startup via LessonRepositoryImpl init:
 - **posteffect/:** 6 lessons (blur, aberration, ripple-tap, dissolve, glass, pixelate)
 - **showcase/:** 1 demo (ripple-on-tap)
 
-**Total:** 49 lessons (48 educational + 1 showcase)
+**Total:** 55 lessons (54 educational + 1 showcase)
 
 ---
 

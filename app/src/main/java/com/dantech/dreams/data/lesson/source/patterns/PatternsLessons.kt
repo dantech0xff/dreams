@@ -27,7 +27,12 @@ object DiagonalStripes {
         LessonRegistry.register(
             LessonModel(
                 id = id, title = "Diagonal Stripes", category = LessonCategory.PATTERNS, complexity = 1,
-                conceptIntro = "step(0.5, fract(x)) snaps continuous coords to a binary mask. Adding a sheared y term tilts the stripes.",
+                conceptIntro = "Repeat one coordinate with fract(), then threshold it with step(). The skew uniform shears the stripe field.",
+                learningNotes = persistentListOf(
+                    "fract(value * count) creates a fresh 0..1 ramp for every stripe repeat.",
+                    "step(0.5, ramp) turns that ramp into a crisp two-color mask.",
+                    "Adding uv.y * skew tilts the pattern without rotating the whole canvas.",
+                ),
                 agslSource = SOURCE,
                 controls = persistentListOf(
                     LessonControl.FloatRange("Count", "count", 4f, 60f, 18f),
@@ -62,7 +67,12 @@ object PolkaDots {
         LessonRegistry.register(
             LessonModel(
                 id = id, title = "Polka Dots", category = LessonCategory.PATTERNS, complexity = 2,
-                conceptIntro = "Tile space with fract(uv * n), recenter to [-0.5, 0.5], drop an SDF circle in each cell.",
+                conceptIntro = "Tile UV space with fract(uv * cells), recenter each tile, then draw one circle SDF per cell.",
+                learningNotes = persistentListOf(
+                    "fract(uv * cells) gives local coordinates inside every repeated tile.",
+                    "Subtracting 0.5 moves each tile origin to its center.",
+                    "length(g) - radius is the same circle SDF, reused across the full grid.",
+                ),
                 agslSource = SOURCE,
                 controls = persistentListOf(
                     LessonControl.FloatRange("Cells", "cells", 4f, 32f, 12f),
@@ -98,7 +108,12 @@ object HexGrid {
         LessonRegistry.register(
             LessonModel(
                 id = id, title = "Hex Grid", category = LessonCategory.PATTERNS, complexity = 3,
-                conceptIntro = "Two offset rectangular lattices, take the closer center per pixel — gives a perfect hex tiling.",
+                conceptIntro = "Compare two offset rectangular lattices and keep the closer center to build a hex-spaced repeat.",
+                learningNotes = persistentListOf(
+                    "The second lattice is shifted by half a cell so rows interleave.",
+                    "Picking the shorter vector gives each pixel a nearest-center coordinate.",
+                    "smoothstep around the cell radius turns distance into a clean grid edge.",
+                ),
                 agslSource = SOURCE,
                 controls = persistentListOf(LessonControl.FloatRange("Scale", "scale", 4f, 24f, 10f)),
             )
@@ -135,7 +150,12 @@ object TruchetTiles {
         LessonRegistry.register(
             LessonModel(
                 id = id, title = "Truchet Tiles", category = LessonCategory.PATTERNS, complexity = 4,
-                conceptIntro = "Per-cell hash decides arc orientation. Two quarter-circle SDFs in each tile yield a continuous maze-like weave.",
+                conceptIntro = "Hash each cell to choose an orientation, then draw quarter-circle SDFs that connect across tile borders.",
+                learningNotes = persistentListOf(
+                    "floor(uv) names the current tile, so the hash stays stable inside it.",
+                    "Mirroring f.x flips the tile while keeping the same local coordinate range.",
+                    "The min of two arc distances produces the paired curves in every tile.",
+                ),
                 agslSource = SOURCE,
                 controls = persistentListOf(
                     LessonControl.FloatRange("Cells", "cells", 4f, 24f, 10f),

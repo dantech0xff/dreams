@@ -29,7 +29,7 @@ Lesson detail screens include learning notes, interactive sliders/color swatches
 | Category     | Count | Theme                                           |
 |--------------|-------|-------------------------------------------------|
 | Basics       | 6     | uniforms, fragCoord, gradients, polar coords    |
-| Patterns     | 4     | tiles, stripes, repetition                      |
+| Patterns     | 10    | tiles, stripes, repetition                      |
 | Color        | 4     | palettes, gradients, tone curves                |
 | SDF          | 6     | circle, rounded box, metaballs, breathing grid  |
 | Noise        | 6     | hash, value, fBm, voronoi, plasma, lava         |

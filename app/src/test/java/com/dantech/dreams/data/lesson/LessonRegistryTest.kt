@@ -39,7 +39,7 @@ class LessonRegistryTest {
     @Test
     fun `each category has expected lesson count`() {
         assertEquals(6, repo.byCategory(LessonCategory.BASICS).size)
-        assertEquals(4, repo.byCategory(LessonCategory.PATTERNS).size)
+        assertEquals(10, repo.byCategory(LessonCategory.PATTERNS).size)
         assertEquals(4, repo.byCategory(LessonCategory.COLOR).size)
         assertEquals(6, repo.byCategory(LessonCategory.SDF).size)
         assertEquals(6, repo.byCategory(LessonCategory.NOISE).size)
@@ -70,6 +70,36 @@ class LessonRegistryTest {
     @Test
     fun `basics lessons include learning notes`() {
         repo.byCategory(LessonCategory.BASICS).forEach { lesson ->
+            assertEquals("Lesson ${lesson.id} should have 3 learning notes", 3, lesson.learningNotes.size)
+            lesson.learningNotes.forEach { note ->
+                assertTrue("Lesson ${lesson.id} has blank learning note", note.isNotBlank())
+            }
+        }
+    }
+
+    @Test
+    fun `patterns lessons stay in learning order`() {
+        val ids = repo.byCategory(LessonCategory.PATTERNS).map { it.id }
+        assertEquals(
+            listOf(
+                "patterns-01-diagonal-stripes",
+                "patterns-02-polka-dots",
+                "patterns-03-hex-grid",
+                "patterns-04-truchet",
+                "patterns-05-moire-interference",
+                "patterns-06-kaleidoscope-fold",
+                "patterns-07-plaid-weave",
+                "patterns-08-herringbone-tiles",
+                "patterns-09-radial-burst",
+                "patterns-10-brick-bond",
+            ),
+            ids,
+        )
+    }
+
+    @Test
+    fun `patterns lessons include learning notes`() {
+        repo.byCategory(LessonCategory.PATTERNS).forEach { lesson ->
             assertEquals("Lesson ${lesson.id} should have 3 learning notes", 3, lesson.learningNotes.size)
             lesson.learningNotes.forEach { note ->
                 assertTrue("Lesson ${lesson.id} has blank learning note", note.isNotBlank())
