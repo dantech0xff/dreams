@@ -22,6 +22,7 @@ internal class UserPrefsRepositoryImpl(
         val LAST_LESSON = stringPreferencesKey("last_lesson_id")
         val FAVORITES = stringSetPreferencesKey("favorites")
         val OVERRIDES = stringPreferencesKey("param_overrides")
+        val COLOR_OVERRIDES = stringPreferencesKey("color_overrides")
         val REDUCED_MOTION = booleanPreferencesKey("reduced_motion")
         val USE_DYNAMIC_COLOR = booleanPreferencesKey("use_dynamic_color")
     }
@@ -35,6 +36,9 @@ internal class UserPrefsRepositoryImpl(
                 lastLessonId = p[Keys.LAST_LESSON],
                 favorites = (p[Keys.FAVORITES] ?: emptySet()).toImmutableSet(),
                 paramOverrides = decodeOverrides(p[Keys.OVERRIDES] ?: "").map {
+                    it.key to it.value.toImmutableMap()
+                }.toMap().toImmutableMap(),
+                colorOverrides = decodeColorOverrides(p[Keys.COLOR_OVERRIDES] ?: "").map {
                     it.key to it.value.toImmutableMap()
                 }.toMap().toImmutableMap(),
                 reducedMotionOverride = p[Keys.REDUCED_MOTION] ?: false,
@@ -65,11 +69,23 @@ internal class UserPrefsRepositoryImpl(
         }
     }
 
+    override suspend fun setColorOverride(lessonId: String, uniform: String, argb: Int) {
+        dataStore.edit { p ->
+            val current = decodeColorOverrides(p[Keys.COLOR_OVERRIDES] ?: "").toMutableMap()
+            val inner = current[lessonId].orEmpty().toMutableMap().apply { put(uniform, argb) }
+            current[lessonId] = inner
+            p[Keys.COLOR_OVERRIDES] = encodeColorOverrides(current)
+        }
+    }
+
     override suspend fun clearLessonOverrides(lessonId: String) {
         dataStore.edit { p ->
-            val current = decodeOverrides(p[Keys.OVERRIDES] ?: "").toMutableMap()
-            current.remove(lessonId)
-            p[Keys.OVERRIDES] = if (current.isEmpty()) "" else encodeOverrides(current)
+            val floatOverrides = decodeOverrides(p[Keys.OVERRIDES] ?: "").toMutableMap()
+            val colorOverrides = decodeColorOverrides(p[Keys.COLOR_OVERRIDES] ?: "").toMutableMap()
+            floatOverrides.remove(lessonId)
+            colorOverrides.remove(lessonId)
+            p[Keys.OVERRIDES] = encodeOverrides(floatOverrides)
+            p[Keys.COLOR_OVERRIDES] = encodeColorOverrides(colorOverrides)
         }
     }
 

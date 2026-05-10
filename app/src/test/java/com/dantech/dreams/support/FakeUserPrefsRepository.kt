@@ -39,8 +39,22 @@ class FakeUserPrefsRepository(
         }
     }
 
+    override suspend fun setColorOverride(lessonId: String, uniform: String, argb: Int) {
+        state.update { p ->
+            val current = p.colorOverrides.toMutableMap()
+            val inner = (current[lessonId].orEmpty()).toMutableMap().apply { put(uniform, argb) }
+            current[lessonId] = inner.toPersistentMap()
+            p.copy(colorOverrides = current.toPersistentMap())
+        }
+    }
+
     override suspend fun clearLessonOverrides(lessonId: String) {
-        state.update { it.copy(paramOverrides = (it.paramOverrides - lessonId).toPersistentMap()) }
+        state.update {
+            it.copy(
+                paramOverrides = (it.paramOverrides - lessonId).toPersistentMap(),
+                colorOverrides = (it.colorOverrides - lessonId).toPersistentMap(),
+            )
+        }
     }
 
     override suspend fun setReducedMotion(enabled: Boolean) {

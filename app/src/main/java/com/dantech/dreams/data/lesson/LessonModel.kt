@@ -14,6 +14,7 @@ data class LessonModel(
     val category: LessonCategory,
     val complexity: Int,
     val conceptIntro: String,
+    val learningNotes: ImmutableList<String> = persistentListOf(),
     val agslSource: String,
     val controls: ImmutableList<LessonControl> = persistentListOf(),
     val renderMode: LessonRenderMode = LessonRenderMode.BRUSH,

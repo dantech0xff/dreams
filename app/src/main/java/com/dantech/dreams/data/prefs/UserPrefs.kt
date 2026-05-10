@@ -11,6 +11,7 @@ data class UserPrefs(
     val lastLessonId: String? = null,
     val favorites: ImmutableSet<String> = persistentSetOf(),
     val paramOverrides: ImmutableMap<String, ImmutableMap<String, Float>> = persistentMapOf(),
+    val colorOverrides: ImmutableMap<String, ImmutableMap<String, Int>> = persistentMapOf(),
     val reducedMotionOverride: Boolean = false,
     val useDynamicColor: Boolean = false,
 ) {

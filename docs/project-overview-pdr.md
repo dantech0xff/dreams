@@ -45,14 +45,16 @@ Dreams is a curated, swipeable Jetpack Compose gallery for learning **Android Gr
 - Last viewed lesson remembered; auto-shows on app restart
 
 #### F2: Lesson Detail Screen
-- Full-screen AGSL shader with interactive parameter sliders
-- Slider value changes persist with 200ms debounce
+- Full-screen AGSL shader with interactive parameter sliders and color swatches
+- Compact learning notes highlight what to notice before reading source
+- Basics lessons show line-numbered AGSL source expanded by default
+- Slider value changes persist with 200ms debounce; color values persist on selection
 - Smooth shared-element transition from lesson card to detail screen
 - Bottom bar hides on detail screen (fullscreen mode)
 - Back navigation returns to lesson list at last-viewed category
 
 #### F3: Showcase Tab
-- Showcase selection screen showing 3 full-screen demos (liquid glass, aurora, raymarched sphere)
+- Showcase selection screen showing full-screen demos
 - Each demo renders as interactive, tap-responsive shader display
 - Reduced-motion users see instant swaps instead of animated transitions
 - Bottom bar hides when viewing a showcase (fullscreen mode)
@@ -84,7 +86,7 @@ Dreams is a curated, swipeable Jetpack Compose gallery for learning **Android Gr
 #### NF4: Performance
 - AGSL uniforms updated on Compose thread (SnapshotStateMap) — no async shader recompilation
 - Lesson bootstrap (23 shaders + metadata) completes in <500ms
-- DataStore reads cached in-memory (Flow-based), writes debounced
+- DataStore reads cached in-memory (Flow-based); high-frequency slider writes are debounced
 
 ---
 

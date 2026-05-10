@@ -116,24 +116,29 @@ data class UserPrefs(
 
 ### Lesson Entity (data/lesson/)
 
-**Lesson**
+**LessonModel**
 ```kotlin
-data class Lesson(
-    val id: String,                    // "basics-001", "showcase-liquid-glass"
-    val category: LessonCategory,      // enum: BASICS, SDF, NOISE, POST_EFFECT, SHOWCASE
+data class LessonModel(
+    val id: String,                    // "basics-01-solid", "showcase-05-ripple-on-tap"
     val title: String,
-    val description: String,
-    val agslCode: String,              // AGSL 460 source
-    val uniforms: List<Uniform>,       // Interactive parameters
+    val category: LessonCategory,
+    val complexity: Int,
+    val conceptIntro: String,
+    val learningNotes: ImmutableList<String>,
+    val agslSource: String,
+    val controls: ImmutableList<LessonControl>,
 )
 
-data class Uniform(
-    val name: String,
-    val type: String,                  // "float", "int", "half4"
-    val defaultValue: Float,
-    val min: Float = 0f,
-    val max: Float = 1f,
-)
+sealed interface LessonControl {
+    data class FloatRange(
+        val name: String,
+        val uniformName: String,
+        val min: Float,
+        val max: Float,
+        val default: Float,
+    )
+    data class ColorPicker(val name: String, val uniformName: String, val default: Color)
+}
 ```
 
 ### Navigation Routes (ui/feature/nav/)
@@ -161,9 +166,9 @@ Each ViewModel exposes `StateFlow<XUiState>` and handles user actions:
 - SavedStateHandle: persists selected tab across config change
 
 **LessonDetailViewModel**
-- Manages lesson display + shader parameter sliders
-- `setParamValue(key, value)` — local state update + debounced DataStore persist (200ms)
-- Parameter updates via MutableSharedFlow → debounce → persist pipeline
+- Manages lesson display, learning notes, sliders, and color controls
+- `setFloat(uniform, value)` — local state update + debounced DataStore persist (200ms)
+- `setColor(uniform, color)` — local state update + immediate DataStore persist
 
 **ShowcaseViewModel**
 - Simple VM for full-screen showcase demos
@@ -217,9 +222,11 @@ Immutable state classes used by Composables:
 
 **Keys (stringPreferencesKey):**
 - `"last_lesson_id"` — Last viewed lesson
-- `"favorites"` — JSON-encoded Set<String>
-- `"param_overrides_{lessonId}"` — JSON-encoded Map<String, Float>
+- `"favorites"` — Set<String> of favorite lesson IDs
+- `"param_overrides"` — JSON-encoded Map<lessonId, Map<uniform, Float>>
+- `"color_overrides"` — JSON-encoded Map<lessonId, Map<uniform, ARGB Int>>
 - `"reduced_motion"` — Boolean
+- `"use_dynamic_color"` — Boolean
 
 **Access pattern:**
 - **Read:** `prefsFlow.collect { snapshot -> ... }` (hot Flow, cached)
@@ -232,13 +239,19 @@ Immutable state classes used by Composables:
 
 Lessons loaded once on app startup via LessonRepositoryImpl init:
 
-- **basics/:** 6 lessons (uniforms, fragCoord, gradients, polar, waves, patterns)
+- **basics/:** 6 lessons (uniforms, time, fragCoord, gradients, polar, smoothstep)
+- **patterns/:** 4 lessons (stripes, dots, hex grid, truchet)
+- **colorlab/:** 4 lessons (palettes, HSV, gradients, tone mapping)
 - **sdf/:** 6 lessons (circle, rounded box, metaballs, breathing grid, combine, invert)
 - **noise/:** 6 lessons (hash, value noise, fBM, voronoi, plasma, lava)
-- **posteffect/:** 5 lessons (blur, aberration, ripple-tap, dissolve, glass)
-- **showcase/:** 3 demos (liquid glass, aurora, raymarched sphere)
+- **motion/:** 4 lessons (easing, harmonics, wave trains, pendulum chains)
+- **fractals/:** 4 lessons (Mandelbrot, Julia, Newton, Sierpinski)
+- **lighting/:** 4 lessons (Lambert, Phong, rim, terminator)
+- **interactive/:** 4 lessons (touch spotlight, ripple, pull field, shockwave)
+- **posteffect/:** 6 lessons (blur, aberration, ripple-tap, dissolve, glass, pixelate)
+- **showcase/:** 1 demo (ripple-on-tap)
 
-**Total:** 26 lessons (23 educational + 3 showcases)
+**Total:** 49 lessons (48 educational + 1 showcase)
 
 ---
 

@@ -1,5 +1,6 @@
 package com.dantech.dreams.support
 
+import androidx.compose.ui.graphics.Color
 import com.dantech.dreams.data.lesson.LessonCategory
 import com.dantech.dreams.data.lesson.LessonControl
 import com.dantech.dreams.data.lesson.LessonModel
@@ -34,9 +35,15 @@ fun sampleLessons(): List<LessonModel> = listOf(
         category = LessonCategory.BASICS,
         complexity = 1,
         conceptIntro = "intro",
-        agslSource = "half4 main(float2 fc) { return half4(1); }",
+        agslSource = """
+            layout(color) uniform half4 baseColor;
+            uniform float amplitude;
+
+            half4 main(float2 fc) { return baseColor * amplitude; }
+        """.trimIndent(),
         controls = persistentListOf(
             LessonControl.FloatRange("amp", "amplitude", 0f, 1f, 0.25f),
+            LessonControl.ColorPicker("base", "baseColor", Color(0xFFE91E63)),
         ),
     ),
     LessonModel(

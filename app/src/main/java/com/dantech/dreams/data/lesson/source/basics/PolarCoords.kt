@@ -34,6 +34,11 @@ object PolarCoords {
                 category = LessonCategory.BASICS,
                 complexity = 3,
                 conceptIntro = "atan(p.y, p.x) gives the angle from origin; combine with length() for swirling polar effects.",
+                learningNotes = persistentListOf(
+                    "length(uv) gives radius: how far the pixel is from center.",
+                    "atan(uv.y, uv.x) gives angle: which direction the pixel points.",
+                    "Subtracting time * speed shifts the phase, making the swirl rotate.",
+                ),
                 agslSource = SOURCE,
                 controls = persistentListOf(
                     LessonControl.FloatRange("Speed", "speed", 0f, 4f, 1.5f),

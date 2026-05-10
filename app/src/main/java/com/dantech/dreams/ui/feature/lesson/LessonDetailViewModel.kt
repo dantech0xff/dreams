@@ -1,5 +1,7 @@
 package com.dantech.dreams.ui.feature.lesson
 
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -29,22 +31,32 @@ class LessonDetailViewModel(
 
     // 200ms debounce: every slider event lands here, only the latest within the
     // window is persisted. Keeps DataStore commits sane during drag.
-    private val pendingPersist = MutableSharedFlow<Pair<String, Float>>(extraBufferCapacity = 64)
+    private val pendingPersist = MutableSharedFlow<PendingFloatPersist>(extraBufferCapacity = 64)
+    private var persistGeneration = 0L
 
     @OptIn(FlowPreview::class)
     private val persistJob = viewModelScope.launch {
         pendingPersist
             .debounce(PERSIST_DEBOUNCE_MS)
-            .collect { (uniform, value) ->
-                prefs.setParamOverride(lessonId, uniform, value)
+            .collect { pending ->
+                if (pending.generation == persistGeneration) {
+                    prefs.setParamOverride(lessonId, pending.uniform, pending.value)
+                }
             }
     }
 
     init {
         viewModelScope.launch {
-            val saved = prefs.prefsFlow.first().paramOverrides[lessonId] ?: emptyMap()
-            if (saved.isNotEmpty()) {
-                _ui.update { it.copy(paramOverrides = saved.toPersistentMap()) }
+            val snapshot = prefs.prefsFlow.first()
+            val saved = snapshot.paramOverrides[lessonId] ?: emptyMap()
+            val savedColors = snapshot.colorOverrides[lessonId] ?: emptyMap()
+            if (saved.isNotEmpty() || savedColors.isNotEmpty()) {
+                _ui.update {
+                    it.copy(
+                        paramOverrides = saved.toPersistentMap(),
+                        colorOverrides = savedColors.toPersistentMap(),
+                    )
+                }
             }
             prefs.setLastLessonId(lessonId)
         }
@@ -52,13 +64,26 @@ class LessonDetailViewModel(
 
     fun setFloat(uniform: String, value: Float) {
         _ui.update { it.copy(paramOverrides = it.paramOverrides.put(uniform, value)) }
-        pendingPersist.tryEmit(uniform to value)
+        pendingPersist.tryEmit(PendingFloatPersist(uniform, value, persistGeneration))
+    }
+
+    fun setColor(uniform: String, color: Color) {
+        val argb = color.toArgb()
+        _ui.update { it.copy(colorOverrides = it.colorOverrides.put(uniform, argb)) }
+        viewModelScope.launch { prefs.setColorOverride(lessonId, uniform, argb) }
     }
 
     fun resetOverrides() {
-        _ui.update { it.copy(paramOverrides = persistentMapOf()) }
+        persistGeneration += 1
+        _ui.update { it.copy(paramOverrides = persistentMapOf(), colorOverrides = persistentMapOf()) }
         viewModelScope.launch { prefs.clearLessonOverrides(lessonId) }
     }
+
+    private data class PendingFloatPersist(
+        val uniform: String,
+        val value: Float,
+        val generation: Long,
+    )
 
     private companion object {
         const val PERSIST_DEBOUNCE_MS = 200L

@@ -29,8 +29,21 @@ class ParamOverridesCodecTest {
     }
 
     @Test
+    fun `color roundtrip preserves nested map`() {
+        val original = mapOf(
+            "lesson-a" to mapOf("baseColor" to 0xFFE91E63.toInt()),
+            "lesson-b" to mapOf("ink" to 0xFF2196F3.toInt()),
+        )
+        val encoded = encodeColorOverrides(original)
+        val decoded = decodeColorOverrides(encoded)
+        assertEquals(original, decoded)
+    }
+
+    @Test
     fun `malformed input never throws`() {
         assertTrue(decodeOverrides("{not valid json").isEmpty())
         assertTrue(decodeOverrides("[]").isEmpty())
+        assertTrue(decodeColorOverrides("{not valid json").isEmpty())
+        assertTrue(decodeColorOverrides("[]").isEmpty())
     }
 }

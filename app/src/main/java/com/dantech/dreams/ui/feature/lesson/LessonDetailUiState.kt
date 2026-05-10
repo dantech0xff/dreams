@@ -9,4 +9,5 @@ import kotlinx.collections.immutable.persistentMapOf
 data class LessonDetailUiState(
     val lesson: LessonModel? = null,
     val paramOverrides: PersistentMap<String, Float> = persistentMapOf(),
+    val colorOverrides: PersistentMap<String, Int> = persistentMapOf(),
 )

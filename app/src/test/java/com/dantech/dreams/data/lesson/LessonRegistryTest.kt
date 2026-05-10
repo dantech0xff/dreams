@@ -48,6 +48,55 @@ class LessonRegistryTest {
         assertEquals(4, repo.byCategory(LessonCategory.LIGHTING).size)
         assertEquals(4, repo.byCategory(LessonCategory.INTERACTIVE).size)
         assertEquals(6, repo.byCategory(LessonCategory.POSTFX).size)
-        assertEquals(5, repo.byCategory(LessonCategory.SHOWCASE).size)
+        assertEquals(1, repo.byCategory(LessonCategory.SHOWCASE).size)
     }
+
+    @Test
+    fun `basics lessons stay in learning order`() {
+        val ids = repo.byCategory(LessonCategory.BASICS).map { it.id }
+        assertEquals(
+            listOf(
+                "basics-01-solid",
+                "basics-02-animated-color",
+                "basics-03-linear-gradient",
+                "basics-04-radial-gradient",
+                "basics-05-polar-coords",
+                "basics-06-vignette",
+            ),
+            ids,
+        )
+    }
+
+    @Test
+    fun `basics lessons include learning notes`() {
+        repo.byCategory(LessonCategory.BASICS).forEach { lesson ->
+            assertEquals("Lesson ${lesson.id} should have 3 learning notes", 3, lesson.learningNotes.size)
+            lesson.learningNotes.forEach { note ->
+                assertTrue("Lesson ${lesson.id} has blank learning note", note.isNotBlank())
+            }
+        }
+    }
+
+    @Test
+    fun `lesson controls target declared uniforms`() {
+        repo.all().forEach { lesson ->
+            lesson.controls.forEach { control ->
+                val declared = when (control) {
+                    is LessonControl.FloatRange -> lesson.hasFloatUniform(control.uniformName)
+                    is LessonControl.ColorPicker -> lesson.hasColorUniform(control.uniformName)
+                }
+                assertTrue(
+                    "Lesson ${lesson.id} control ${control.uniformName} has no matching uniform",
+                    declared,
+                )
+            }
+        }
+    }
+
+    private fun LessonModel.hasFloatUniform(name: String): Boolean =
+        Regex("""uniform\s+float\s+${Regex.escape(name)}\s*;""").containsMatchIn(agslSource)
+
+    private fun LessonModel.hasColorUniform(name: String): Boolean =
+        Regex("""(?:layout\s*\(\s*color\s*\)\s+)?uniform\s+half4\s+${Regex.escape(name)}\s*;""")
+            .containsMatchIn(agslSource)
 }

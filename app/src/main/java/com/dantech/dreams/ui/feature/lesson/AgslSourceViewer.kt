@@ -29,7 +29,8 @@ fun AgslSourceViewer(
     modifier: Modifier = Modifier,
     initiallyExpanded: Boolean = false,
 ) {
-    var expanded by remember { mutableStateOf(initiallyExpanded) }
+    var expanded by remember(source, initiallyExpanded) { mutableStateOf(initiallyExpanded) }
+    val numberedSource = remember(source) { source.withLineNumbers() }
     Column(
         modifier
             .fillMaxWidth()
@@ -56,7 +57,7 @@ fun AgslSourceViewer(
         if (expanded) {
             Row(Modifier.horizontalScroll(rememberScrollState())) {
                 Text(
-                    text = source,
+                    text = numberedSource,
                     color = Color(0xFFE0F2F1),
                     fontFamily = FontFamily.Monospace,
                     style = MaterialTheme.typography.bodySmall,
@@ -65,4 +66,12 @@ fun AgslSourceViewer(
             }
         }
     }
+}
+
+private fun String.withLineNumbers(): String {
+    val lines = lines()
+    val width = lines.size.toString().length
+    return lines.mapIndexed { index, line ->
+        "${(index + 1).toString().padStart(width)}  $line"
+    }.joinToString("\n")
 }

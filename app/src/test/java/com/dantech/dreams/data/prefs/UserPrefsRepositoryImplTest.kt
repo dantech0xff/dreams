@@ -58,6 +58,17 @@ class UserPrefsRepositoryImplTest {
     }
 
     @Test
+    fun `setColorOverride round trips through datastore`() = runTest {
+        val rose = 0xFFE91E63.toInt()
+        repo.setColorOverride("lesson-1", "baseColor", rose)
+        repo.prefsFlow.test {
+            val snap = awaitItem()
+            assertEquals(rose, snap.colorOverrides["lesson-1"]?.get("baseColor"))
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
     fun `setLastLessonId persists`() = runTest {
         repo.setLastLessonId("lesson-9")
         repo.prefsFlow.test {
@@ -79,11 +90,15 @@ class UserPrefsRepositoryImplTest {
     fun `clearLessonOverrides removes only that lesson`() = runTest {
         repo.setParamOverride("a", "u", 1f)
         repo.setParamOverride("b", "v", 2f)
+        repo.setColorOverride("a", "color", 0xFFE91E63.toInt())
+        repo.setColorOverride("b", "color", 0xFF2196F3.toInt())
         repo.clearLessonOverrides("a")
         repo.prefsFlow.test {
             val snap = awaitItem()
             assertFalse("a" in snap.paramOverrides)
+            assertFalse("a" in snap.colorOverrides)
             assertEquals(2f, snap.paramOverrides["b"]?.get("v"))
+            assertEquals(0xFF2196F3.toInt(), snap.colorOverrides["b"]?.get("color"))
             cancelAndIgnoreRemainingEvents()
         }
     }

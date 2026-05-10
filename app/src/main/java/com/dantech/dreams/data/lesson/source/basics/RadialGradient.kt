@@ -32,6 +32,11 @@ object RadialGradient {
                 category = LessonCategory.BASICS,
                 complexity = 2,
                 conceptIntro = "length(uv - 0.5) gives distance from screen center. Aspect-correct by multiplying x by width/height.",
+                learningNotes = persistentListOf(
+                    "Subtracting 0.5 recenters UV space so the origin is in the middle.",
+                    "Multiplying x by width/height keeps the circle round on non-square previews.",
+                    "radius controls how quickly distance fades from the inner color to the outer color.",
+                ),
                 agslSource = SOURCE,
                 controls = persistentListOf(
                     LessonControl.FloatRange("Radius", "radius", 0.05f, 1.2f, 0.6f),

@@ -9,6 +9,7 @@ interface UserPrefsRepository {
     suspend fun setLastLessonId(id: String)
     suspend fun toggleFavorite(id: String): Boolean
     suspend fun setParamOverride(lessonId: String, uniform: String, value: Float)
+    suspend fun setColorOverride(lessonId: String, uniform: String, argb: Int)
     suspend fun clearLessonOverrides(lessonId: String)
     suspend fun setReducedMotion(enabled: Boolean)
     suspend fun setUseDynamicColor(enabled: Boolean)

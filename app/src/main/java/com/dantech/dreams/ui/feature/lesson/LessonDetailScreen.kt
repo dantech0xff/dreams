@@ -1,6 +1,7 @@
 package com.dantech.dreams.ui.feature.lesson
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -17,18 +19,23 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.dantech.dreams.core.motion.LocalSharedTransitionScope
+import com.dantech.dreams.data.lesson.LessonCategory
 import com.dantech.dreams.ui.feature.common.lessonSharedKey
 import com.dantech.dreams.ui.feature.common.rememberShaderBindings
+import kotlinx.collections.immutable.ImmutableList
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
@@ -58,8 +65,9 @@ fun LessonDetailScreen(
     // SnapshotStateMap drives per-frame uniform writes on the Compose thread; the VM
     // owns the canonical paramOverrides map for persistence (phase-05).
     val floatValues = rememberFloatControlValues(lesson, ui.paramOverrides)
-    val colorValues = rememberColorControlValues(lesson)
+    val colorValues = rememberColorControlValues(lesson, ui.colorOverrides)
     val bindings = rememberShaderBindings(lesson)
+    val previewShape = RoundedCornerShape(24.dp)
 
     Scaffold(
         topBar = {
@@ -87,8 +95,11 @@ fun LessonDetailScreen(
                 Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f)
-                    .padding(horizontal = 16.dp)
-                    .then(heroSharedMod),
+                    .padding(16.dp)
+                    .then(heroSharedMod)
+                    .shadow(elevation = 18.dp, shape = previewShape, clip = false)
+                    .clip(previewShape)
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh),
                 contentAlignment = Alignment.Center,
             ) {
                 LessonPreview(
@@ -108,7 +119,15 @@ fun LessonDetailScreen(
             LessonControlsSection(
                 lesson = lesson,
                 floatValues = floatValues,
+                colorValues = colorValues,
                 onFloatChange = vm::setFloat,
+                onColorChange = vm::setColor,
+                onReset = vm::resetOverrides,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+
+            LearningNotesSection(
+                notes = lesson.learningNotes,
                 modifier = Modifier.padding(horizontal = 16.dp),
             )
 
@@ -122,8 +141,34 @@ fun LessonDetailScreen(
 
             AgslSourceViewer(
                 source = lesson.agslSource,
-                modifier = Modifier.padding(horizontal = 16.dp),
+                initiallyExpanded = lesson.category == LessonCategory.BASICS,
+                modifier = Modifier.padding(16.dp),
             )
+        }
+    }
+}
+
+@Composable
+private fun LearningNotesSection(notes: ImmutableList<String>, modifier: Modifier = Modifier) {
+    if (notes.isEmpty()) return
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(8.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+    ) {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(
+                text = "What to notice",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            notes.forEach { note ->
+                Text(
+                    text = "- $note",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 }

@@ -9,15 +9,28 @@ private val json = Json {
     encodeDefaults = false
 }
 
-private val serializer = MapSerializer(
+private val floatOverridesSerializer = MapSerializer(
     String.serializer(),
     MapSerializer(String.serializer(), Float.serializer()),
 )
 
+private val colorOverridesSerializer = MapSerializer(
+    String.serializer(),
+    MapSerializer(String.serializer(), Int.serializer()),
+)
+
 fun encodeOverrides(map: Map<String, Map<String, Float>>): String =
-    if (map.isEmpty()) "" else json.encodeToString(serializer, map)
+    if (map.isEmpty()) "" else json.encodeToString(floatOverridesSerializer, map)
 
 fun decodeOverrides(raw: String): Map<String, Map<String, Float>> {
     if (raw.isBlank()) return emptyMap()
-    return runCatching { json.decodeFromString(serializer, raw) }.getOrDefault(emptyMap())
+    return runCatching { json.decodeFromString(floatOverridesSerializer, raw) }.getOrDefault(emptyMap())
+}
+
+fun encodeColorOverrides(map: Map<String, Map<String, Int>>): String =
+    if (map.isEmpty()) "" else json.encodeToString(colorOverridesSerializer, map)
+
+fun decodeColorOverrides(raw: String): Map<String, Map<String, Int>> {
+    if (raw.isBlank()) return emptyMap()
+    return runCatching { json.decodeFromString(colorOverridesSerializer, raw) }.getOrDefault(emptyMap())
 }

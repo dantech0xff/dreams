@@ -22,7 +22,7 @@ Three-tab bottom navigation:
 - **Showcase** — fullscreen, recorder-ready demos.
 - **Settings** — reduced-motion toggle, About AGSL, license, GitHub.
 
-Last-viewed lesson, favourites, and slider values persist across cold start via DataStore.
+Lesson detail screens include learning notes, interactive sliders/color swatches, and line-numbered AGSL source. Last-viewed lesson, favourites, and control values persist across cold start via DataStore.
 
 ## Lesson Map
 
