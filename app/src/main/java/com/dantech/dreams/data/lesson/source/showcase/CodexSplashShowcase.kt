@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,6 +25,7 @@ import kotlinx.collections.immutable.persistentListOf
 @Composable
 fun CodexSplashDemo() {
     val time = rememberShaderTime()
+    val stillTime = remember { mutableFloatStateOf(0f) }
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val compact = maxWidth < 360.dp || maxHeight < 560.dp
         val iconSize = if (compact) 164.dp else 210.dp
@@ -36,7 +38,7 @@ fun CodexSplashDemo() {
 
         AgslShaderLayer(
             shaderSrc = CODEX_SPLASH_ICON_SRC,
-            time = time,
+            time = stillTime,
             modifier = Modifier
                 .align(Alignment.Center)
                 .size(iconSize),

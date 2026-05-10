@@ -80,13 +80,11 @@ float svgSegmentDistance(float2 p, float2 a, float2 b) {
 }
 
 float svgRayCross(float2 p, float2 a, float2 b) {
-    if ((a.y > p.y) != (b.y > p.y)) {
-        float x = a.x + (p.y - a.y) * (b.x - a.x) / (b.y - a.y);
-        if (x > p.x) {
-            return 1.0;
-        }
-    }
-    return 0.0;
+    float crossesY = step(min(a.y, b.y), p.y) * (1.0 - step(max(a.y, b.y), p.y));
+    float denom = b.y - a.y;
+    float safeDenom = denom + (1.0 - step(0.0001, abs(denom))) * 0.0001;
+    float x = a.x + (p.y - a.y) * (b.x - a.x) / safeDenom;
+    return crossesY * step(p.x, x);
 }
 
 float2 svgEdge(float2 p, float2 a, float2 b) {
@@ -194,22 +192,8 @@ float cloudSdf(float2 p) {
     s = svgEdge(q, float2(7.579, 4.335), float2(8.029, 3.940)); d = min(d, s.x); crossings += s.y;
     s = svgEdge(q, float2(8.029, 3.940), float2(8.527, 3.608)); d = min(d, s.x); crossings += s.y;
     s = svgEdge(q, float2(8.527, 3.608), float2(9.064, 3.344)); d = min(d, s.x); crossings += s.y;
-    if (mod(crossings, 2.0) > 0.5) {
-        d = -d;
-    }
-    return d * 0.02875;
-}
-
-float2 cloudNormal(float2 p) {
-    float e = 0.003;
-    float2 g = float2(
-        cloudSdf(p + float2(e, 0.0)) - cloudSdf(p - float2(e, 0.0)),
-        cloudSdf(p + float2(0.0, e)) - cloudSdf(p - float2(0.0, e))
-    );
-    if (dot(g, g) < 0.000001) {
-        return float2(0.0, -1.0);
-    }
-    return normalize(g);
+    float inside = step(0.5, mod(crossings, 2.0));
+    return mix(d, -d, inside) * 0.02875;
 }
 
 float2 tileNormal(float2 p) {
@@ -264,10 +248,9 @@ half4 main(float2 fragCoord) {
     float2 cp = p - float2(0.000, 0.010);
     float cloudD = cloudSdf(cp);
     float cloud = fill(cloudD, aa);
-    float cloudShadow = fill(cloudSdf(cp - float2(0.012, -0.013)), 0.019) * tile * 0.34;
+    float cloudShadow = fill(cloudD - 0.018, 0.026) * tile * 0.18;
     col = mix(col, float3(0.20, 0.22, 0.36), cloudShadow * (1.0 - cloud));
 
-    float2 cn = cloudNormal(cp);
     float topMix = clamp(0.52 - cp.y * 3.15 + cp.x * 0.24 + pulse * 0.025, 0.0, 1.0);
     float midBand = exp(-pow((cp.y + 0.020) * 12.0, 2.0));
     float lowerPool = smoothstep(-0.02, 0.19, cp.y);
@@ -276,9 +259,9 @@ half4 main(float2 fragCoord) {
     cloudCol = mix(cloudCol, float3(0.120, 0.270, 1.0), midBand * 0.42);
     cloudCol = mix(cloudCol, float3(0.020, 0.085, 0.950), lowerPool * 0.48);
 
-    float cloudTopRim = rim(cloudD, 0.000, 94.0) * clamp(dot(cn, normalize(float2(-0.40, -0.96))), 0.0, 1.0);
-    float cloudLeftRim = rim(cloudD, 0.000, 72.0) * clamp(dot(cn, normalize(float2(-1.0, -0.18))), 0.0, 1.0);
-    float cloudLowerShade = rim(cloudD, -0.004, 70.0) * clamp(dot(cn, normalize(float2(-0.18, 1.0))), 0.0, 1.0);
+    float cloudTopRim = rim(cloudD, 0.000, 94.0) * smoothstep(0.040, -0.150, cp.y);
+    float cloudLeftRim = rim(cloudD, 0.000, 72.0) * smoothstep(0.050, -0.210, cp.x) * 0.70;
+    float cloudLowerShade = rim(cloudD, -0.004, 70.0) * smoothstep(0.010, 0.185, cp.y);
     float capGlow = exp(-length((cp - float2(-0.006, -0.124)) * float2(1.15, 1.0)) * 20.0);
     cloudCol += float3(0.24, 0.20, 0.34) * cloudTopRim;
     cloudCol += float3(0.09, 0.24, 0.50) * cloudLeftRim;
