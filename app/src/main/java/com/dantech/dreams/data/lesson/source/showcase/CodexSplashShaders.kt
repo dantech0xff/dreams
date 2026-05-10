@@ -72,6 +72,10 @@ float rim(float d, float width, float softness) {
     return exp(-abs(d - width) * softness);
 }
 
+float3 prism(float phase) {
+    return 0.52 + 0.48 * cos(6.2831853 * (phase + float3(0.00, 0.34, 0.67)));
+}
+
 float svgSegmentDistance(float2 p, float2 a, float2 b) {
     float2 pa = p - a;
     float2 ba = b - a;
@@ -212,6 +216,10 @@ half4 main(float2 fragCoord) {
     float2 p = (fragCoord - halfRes) / m;
     float aa = 2.2 / m;
     float pulse = 0.5 + 0.5 * sin(time * 0.85);
+    float sweepCenter = mix(-0.70, 0.72, fract(time * 0.42));
+    float sweepLine = p.x * 0.86 - p.y * 0.72;
+    float glassSweep = exp(-pow((sweepLine - sweepCenter) * 7.4, 2.0));
+    float3 glassPrism = prism(sweepLine * 1.85 + time * 0.32);
 
     float tileD = sdRoundBox(p, float2(0.345), 0.160);
     float tile = fill(tileD, aa);
@@ -238,10 +246,14 @@ half4 main(float2 fragCoord) {
     float innerBevel = rim(tileD, -0.015, 78.0) * tile;
     float cornerGlint = exp(-length((p - float2(-0.235, -0.248)) * float2(1.3, 1.0)) * 18.0) * tile;
     float lowerEdge = exp(-abs(p.y - 0.342) * 58.0) * smoothstep(-0.29, 0.24, p.x) * tile;
+    float tileGlassEdge = clamp(rim(tileD, 0.000, 190.0) + rim(tileD, -0.024, 82.0) * tile, 0.0, 1.0);
+    float tileGlass = tileGlassEdge * (0.48 + glassSweep * 1.25);
     tileCol += float3(0.30, 0.36, 0.46) * outerBright;
     tileCol += float3(0.10, 0.12, 0.16) * innerBevel * topLeftLight;
     tileCol += float3(0.18, 0.20, 0.23) * cornerGlint;
     tileCol -= float3(0.055, 0.052, 0.045) * lowerEdge;
+    tileCol += glassPrism * tileGlass * 0.34;
+    tileCol += float3(1.0, 1.0, 1.0) * tileGlassEdge * glassSweep * 0.38;
     col = mix(col, tileCol, tile);
     alpha = max(alpha, tile);
 
@@ -267,6 +279,10 @@ half4 main(float2 fragCoord) {
     cloudCol += float3(0.09, 0.24, 0.50) * cloudLeftRim;
     cloudCol += float3(0.12, 0.06, 0.20) * capGlow;
     cloudCol -= float3(0.05, 0.08, 0.16) * cloudLowerShade;
+    float glyphGlassEdge = clamp(rim(cloudD, 0.000, 118.0) + rim(cloudD, -0.010, 84.0) * cloud, 0.0, 1.0);
+    float glyphSweep = glassSweep * (0.62 + 0.38 * smoothstep(0.16, -0.16, cp.x));
+    cloudCol += prism(cp.x * 2.4 - cp.y * 1.6 + time * 0.36) * glyphGlassEdge * (0.34 + glyphSweep * 0.78);
+    cloudCol += float3(0.94, 0.98, 1.0) * glyphGlassEdge * glyphSweep * 0.28;
     col = mix(col, cloudCol, cloud);
 
     float gtA = sdSegment(cp, float2(-0.132, -0.075), float2(-0.060, 0.020), 0.018);
