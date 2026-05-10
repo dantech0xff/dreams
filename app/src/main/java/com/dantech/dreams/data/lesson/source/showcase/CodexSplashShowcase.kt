@@ -24,23 +24,28 @@ import kotlinx.collections.immutable.persistentListOf
 @Composable
 fun CodexSplashDemo() {
     val time = rememberShaderTime()
-    BoxWithConstraints(Modifier.fillMaxSize()) {
-        val compact = maxWidth < 360.dp || maxHeight < 560.dp
-        val iconSize = if (compact) 200.dp else 300.dp
+    CodexSplashWaterSurface(
+        time = time,
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        BoxWithConstraints(Modifier.fillMaxSize()) {
+            val compact = maxWidth < 360.dp || maxHeight < 560.dp
+            val iconSize = if (compact) 200.dp else 300.dp
 
-        AgslShaderLayer(
-            shaderSrc = CODEX_SPLASH_BACKGROUND_SRC,
-            time = time,
-            modifier = Modifier.fillMaxSize(),
-        )
+            AgslShaderLayer(
+                shaderSrc = CODEX_SPLASH_BACKGROUND_SRC,
+                time = time,
+                modifier = Modifier.fillMaxSize(),
+            )
 
-        AgslShaderLayer(
-            shaderSrc = CODEX_SPLASH_ICON_SRC,
-            time = time,
-            modifier = Modifier
-                .align(Alignment.Center)
-                .size(iconSize),
-        )
+            AgslShaderLayer(
+                shaderSrc = CODEX_SPLASH_ICON_SRC,
+                time = time,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .size(iconSize),
+            )
+        }
     }
 }
 
@@ -80,13 +85,16 @@ object CodexSplashShowcase {
                 id = id,
                 title = "Codex Splash",
                 category = LessonCategory.SHOWCASE,
-                complexity = 4,
-                conceptIntro = "A procedural Codex-style splash screen: layered AGSL atmosphere, SDF icon tile, cloud glyph, and terminal marks. Compose only hosts and positions the shader layers.",
+                complexity = 5,
+                conceptIntro = "A procedural Codex-style splash screen: layered AGSL atmosphere, SDF icon tile, cloud glyph, terminal marks, prismatic logo glass, and an interactive water RenderEffect over the composed scene.",
                 agslSource = CODEX_SPLASH_BACKGROUND_SRC.trimIndent(),
-                extraAgslSources = persistentListOf(CODEX_SPLASH_ICON_SRC.trimIndent()),
+                extraAgslSources = persistentListOf(
+                    CODEX_SPLASH_ICON_SRC.trimIndent(),
+                    CODEX_SPLASH_WATER_SRC.trimIndent(),
+                ),
                 renderMode = LessonRenderMode.CUSTOM,
                 customPreview = { CodexSplashDemo() },
-                screenRecordingHint = "Hold on the logo as the prismatic glass edge sweeps across the tile and glyph.",
+                screenRecordingHint = "Tap or drag across the splash for strong water ripples over the glass logo.",
             )
         )
     }
