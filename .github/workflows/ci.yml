@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    name: Unit tests + debug APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Unit tests (JVM)
+        run: ./gradlew --no-daemon test --stacktrace
+
+      - name: Assemble debug APK
+        run: ./gradlew --no-daemon :app:assembleDebug --stacktrace
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-reports
+          path: app/build/reports/tests/
+          if-no-files-found: ignore
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: dreams-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+
+  shader-catalog:
+    name: Shader catalog is in sync + every AGSL compiles
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tools/shader-catalog
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tools/shader-catalog/package-lock.json
+
+      - name: Install tooling (Playwright + Chromium)
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Regenerate catalog, README table and web gallery
+        run: npm run catalog
+
+      - name: Fail if generated files are stale
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          if ! git diff --exit-code --stat -- docs/catalog/lessons.json docs/index.html README.md; then
+            echo "::error::Generated files are out of date. Run 'npm run catalog' in tools/shader-catalog and commit the result."
+            exit 1
+          fi
+
+      - name: Compile every lesson under WebGL2 (AGSL → GLSL)
+        run: npm run check
