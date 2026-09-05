@@ -1,0 +1,124 @@
+name: Lesson proposal
+description: Propose a new AGSL lesson, or a rework of an existing one
+title: "lesson: "
+labels: ["lesson", "enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A lesson teaches **one** idea in one screen of AGSL, with one to three controls worth dragging.
+        The lesson flow (Kotlin `object`, Bootstrap, tests, catalog) is described in
+        [CONTRIBUTING.md](https://github.com/dantech0xff/dreams/blob/master/CONTRIBUTING.md).
+        You do not need to have code yet; a clear idea is enough to start the conversation.
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: Where it belongs in the app. Pick "Not sure" if it could fit several.
+      options:
+        - Basics
+        - Patterns
+        - Color
+        - SDF
+        - Noise
+        - Motion
+        - Fractals
+        - Lighting
+        - Interactive
+        - Post-FX
+        - Showcase (fullscreen, custom preview)
+        - Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: title
+    attributes:
+      label: Lesson title
+      placeholder: Curl Noise Flow
+    validations:
+      required: true
+
+  - type: input
+    id: lesson-id
+    attributes:
+      label: Proposed id (optional)
+      description: Format is `<prefix>-<NN>-<slug>`, numbered after the last lesson in the category.
+      placeholder: noise-07-curl-flow
+
+  - type: textarea
+    id: concept
+    attributes:
+      label: Concept taught
+      description: What does the learner understand after this lesson that they did not before? One or two sentences; this becomes `conceptIntro`. If it depends on an existing lesson, name it.
+    validations:
+      required: true
+
+  - type: textarea
+    id: agsl
+    attributes:
+      label: AGSL idea
+      description: Pseudo-code or a full sketch of `main()`. Rough is fine.
+      render: glsl
+      placeholder: |
+        uniform float2 resolution;
+        uniform float time;
+        uniform float scale;
+
+        half4 main(float2 fragCoord) {
+            float2 uv = fragCoord / resolution;
+            // ...
+            return half4(0.0, 0.0, 0.0, 1.0);
+        }
+
+  - type: dropdown
+    id: inputs
+    attributes:
+      label: Inputs it needs
+      description: Which runtime uniforms the shader will read, beyond `resolution`.
+      options:
+        - None (static image)
+        - time (animated)
+        - touchPos + touchTime (Interactive)
+        - uniform shader content (Post-FX over Compose UI)
+        - Custom preview with its own gestures (Showcase)
+    validations:
+      required: true
+
+  - type: textarea
+    id: controls
+    attributes:
+      label: Sketch of controls
+      description: One line per control, `Label -> uniform, min..max, default` for sliders or `Label -> uniform, colour` for colour pickers. Keep it to one to three.
+      placeholder: |
+        Scale -> scale, 1..8, default 3
+        Speed -> speed, 0.1..2, default 0.6
+        Ink -> inkColor, #FF80CBC4
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: Complexity (1 = first shader ever, 5 = advanced)
+      options:
+        - "1"
+        - "2"
+        - "3"
+        - "4"
+        - "5"
+
+  - type: textarea
+    id: references
+    attributes:
+      label: Reference links
+      description: Articles, papers, talks, Shadertoy entries, Inigo Quilez pages. Note the license of anything you plan to port; it must be compatible with MIT (Shadertoy's default CC BY-NC-SA is not).
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched the existing lessons and issues for something similar.
+          required: true
+        - label: I would like to implement this myself.
+        - label: Any referenced code is either my own or under a licence compatible with MIT.

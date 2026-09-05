@@ -205,8 +205,8 @@ fun ShaderBindings.applyUniforms(shader: RuntimeShader, time: Float, /* … */) 
 Why: writing a uniform the shader does not declare throws, and — as `AgslCanvas.kt` warns — under
 CheckJNI it **aborts the process with a Modified-UTF-8 error before a `try/catch` can catch it**.
 `rememberShaderBindings(lesson)` filters the lesson's controls down to those actually declared in
-`agslSource`; `LessonRegistryTest` enforces the same rule at build time
-(`lesson controls target declared uniforms`).
+`agslSource`; `LessonRegistryTest` enforces the same rule in the JVM unit tests (`./gradlew test`,
+`lesson controls target declared uniforms`).
 
 ### 4.5 Tap → `touchPos` / `touchTime`, and pausing during navigation transitions
 

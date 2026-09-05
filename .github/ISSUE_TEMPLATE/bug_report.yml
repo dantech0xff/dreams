@@ -1,0 +1,113 @@
+name: Bug report
+description: A lesson renders wrong, crashes, or the catalog tooling misbehaves
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Rendering bugs are often GPU-specific, so the device details below matter more than usual.
+        Before filing, please search existing issues and, if you can, try the latest `master`.
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where does it happen?
+      options:
+        - Android app
+        - Web gallery (docs/index.html)
+        - Both the app and the web gallery
+        - Catalog tooling (tools/shader-catalog)
+    validations:
+      required: true
+
+  - type: input
+    id: lesson-id
+    attributes:
+      label: Lesson id
+      description: The lesson id as listed in the README catalog and in the web gallery URL (`#sdf-03-metaballs`), or the lesson title if you do not know the id. Leave empty if the bug is not lesson-specific.
+      placeholder: sdf-03-metaballs
+
+  - type: input
+    id: device
+    attributes:
+      label: Device
+      description: Manufacturer and model, or "Android Emulator" plus the system image.
+      placeholder: Pixel 8 Pro, or Android Emulator (Pixel 7, API 35, Hardware graphics)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: android-version
+    attributes:
+      label: Android version
+      options:
+        - Android 13 (API 33)
+        - Android 14 (API 34)
+        - Android 15 (API 35)
+        - Android 16 (API 36)
+        - Newer / preview
+        - Not applicable (web gallery or tooling only)
+    validations:
+      required: true
+
+  - type: input
+    id: gpu
+    attributes:
+      label: GPU
+      description: Adreno / Mali / Xclipse / PowerVR model if you know it. For the emulator, say whether graphics are set to Hardware or Software (SwiftShader). For the web gallery, browser and GPU.
+      placeholder: Adreno 750
+
+  - type: input
+    id: version
+    attributes:
+      label: Commit or branch
+      description: The commit hash or branch you built from.
+      placeholder: master @ abc1234
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      value: |
+        1. Open the lesson ...
+        2. Set the "..." slider to ...
+        3. Tap ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+    validations:
+      required: true
+
+  - type: textarea
+    id: media
+    attributes:
+      label: Screenshot or screen recording
+      description: Drag and drop an image or video here. For rendering differences, a comparison shot from another device or from the web gallery helps a lot.
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logcat
+      description: For crashes or a black preview, paste the output of `adb logcat -s LessonRepo LessonRegistry AndroidRuntime` (debug builds compile every lesson at startup and log failures under `LessonRepo` and `LessonRegistry`; `AndroidRuntime` carries crash stack traces).
+      render: shell
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched the existing issues.
+          required: true
+        - label: I can reproduce this on the latest `master`, or I named the commit above.

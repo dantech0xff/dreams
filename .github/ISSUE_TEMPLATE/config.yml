@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: AGSL guide (Android Developers)
+    url: https://developer.android.com/develop/ui/views/graphics/agsl
+    about: Questions about the AGSL language itself, RuntimeShader or RenderEffect are best answered by the official documentation.
+  - name: RuntimeShader API reference
+    url: https://developer.android.com/reference/android/graphics/RuntimeShader
+    about: Uniform types, setFloatUniform / setColorUniform, and the shader uniform used by Post-FX lessons.
+  - name: Project docs (learning path, AGSL cheatsheet, architecture)
+    url: https://github.com/dantech0xff/dreams/tree/master/docs
+    about: Read these before asking "where do I start?" or "how is the preview wired?".
