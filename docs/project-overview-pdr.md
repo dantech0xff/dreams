@@ -223,7 +223,7 @@ core/di (Koin modules) + core/agsl + core/motion
 
 ## Links to Implementation
 
-- **Refactor plan:** [Production-grade refactor (Koin + Nav3 + ViewModel)](../plans/260506-0052-production-refactor-koin-nav3/plan.md)
+- **Refactor plan:** Production-grade refactor (Koin + Nav3 + ViewModel) — planning notes kept outside the repo; see `docs/journals/` for the shipped write-ups
 - **DI modules:** `app/src/main/java/com/dantech/dreams/core/di/`
 - **Navigation routes:** `app/src/main/java/com/dantech/dreams/ui/feature/nav/Route.kt`
 - **Test scaffold:** `app/src/test/java/com/dantech/dreams/core/di/KoinModulesCheckTest.kt`
