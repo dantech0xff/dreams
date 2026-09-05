@@ -16,3 +16,4 @@ local.properties
 /.idea
 /resources
 .claude/settings.local.json
+tools/shader-catalog/node_modules
