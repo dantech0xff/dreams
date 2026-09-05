@@ -83,6 +83,7 @@ const html = `<!doctype html>
   --sans:system-ui,-apple-system,"Segoe UI",Roboto,Inter,sans-serif;
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html{color-scheme:dark;scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);
   background-image:radial-gradient(1200px 500px at 20% -10%,rgba(140,255,128,.08),transparent 60%),
@@ -216,7 +217,7 @@ kbd{font-family:var(--mono);font-size:11px;padding:1px 5px;border:1px solid var(
       </div>
       <div class="cta">
         <a class="btn primary" href="#lessons">Browse the lessons ↓</a>
-        <a class="btn" href="${REPO}#build--run">Run it on a device</a>
+        <a class="btn" href="${REPO}#build-run-test">Run it on a device</a>
       </div>
       <p class="nowebgl" id="nowebgl">Your browser has no WebGL2 — showing static thumbnails instead of live previews.</p>
     </div>
