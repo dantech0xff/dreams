@@ -43,7 +43,12 @@ function prepare(lesson) {
 }
 
 async function main() {
-  const lessons = catalog.lessons.filter((l) => !ONLY || l.id === ONLY).map(prepare);
+  const selected = catalog.lessons.filter((l) => !ONLY || l.id === ONLY);
+  if (ONLY && selected.length === 0) {
+    console.error(`No lesson with id "${ONLY}" in docs/catalog/lessons.json — run extract-lessons.mjs first, or check the id.`);
+    process.exit(2);
+  }
+  const lessons = selected.map(prepare);
   const browser = await launchChromium();
   const page = await browser.newPage({ viewport: { width: RENDER, height: RENDER } });
   page.on('console', (m) => { if (m.type() === 'error') console.error('[page]', m.text()); });

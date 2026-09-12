@@ -169,9 +169,10 @@ If the default thumbnail frame (t = 2.5 s, default control values, a simulated t
 
 1. `./gradlew test` and `./gradlew :app:assembleDebug` on JDK 17.
 2. `npm run catalog` (extract, README table, site), then **fails if `docs/catalog/lessons.json`, `docs/index.html` or `README.md` differ from what you committed**.
-3. `npm run check`: every lesson must compile as GLSL ES 3.00 in headless Chromium.
+3. `npm run check:thumbs`: every lesson in the catalog must have a committed `docs/gallery/<id>.png`, and no PNG may be left behind by a renamed id.
+4. `npm run check`: every lesson must compile as GLSL ES 3.00 in headless Chromium.
 
-CI does not re-render PNGs, so the thumbnail for a new or visually changed lesson is your job. Commit it together with the code.
+CI does not *re-render* PNGs (text rasterisation is not reproducible across machines), so producing the thumbnail for a new or visually changed lesson is your job — it only checks that the file is there. Commit it together with the code.
 
 ## Commit messages
 

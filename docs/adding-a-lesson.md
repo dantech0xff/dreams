@@ -156,7 +156,7 @@ npm run readme                                      # README.md catalog section
 npm run site                                        # docs/index.html
 ```
 
-`npm run all` does extract + every thumbnail and the hero poster + readme + site in one go. If the default frame (t = 2.5 s, default slider values, a simulated tap at (0.62, 0.42) for touch lessons) looks dull, add an entry to `THUMB_STATES.overrides` in `thumb-states.mjs` (`time`, `touch: {x, y, t}`, `values: { uniformName: number }` — or an `"#AARRGGBB"` string for a colour uniform) and re-render. Commit `docs/catalog/lessons.json`, `docs/gallery/<id>.png`, `README.md` and `docs/index.html`: CI (`.github/workflows/ci.yml`) reruns `npm run catalog` and fails if any of `lessons.json`, `docs/index.html` or `README.md` differ, then runs `npm run check`.
+`npm run all` does extract + every thumbnail and the hero poster + readme + site in one go. If the default frame (t = 2.5 s, default slider values, a simulated tap at (0.62, 0.42) for touch lessons) looks dull, add an entry to `THUMB_STATES.overrides` in `thumb-states.mjs` (`time`, `touch: {x, y, t}`, `values: { uniformName: number }` — or an `"#AARRGGBB"` string for a colour uniform) and re-render. Commit `docs/catalog/lessons.json`, `docs/gallery/<id>.png`, `README.md` and `docs/index.html`: CI (`.github/workflows/ci.yml`) reruns `npm run catalog` and fails if any of `lessons.json`, `docs/index.html` or `README.md` differ, then `npm run check:thumbs` (your `docs/gallery/<id>.png` must be committed — CI never renders it) and `npm run check`.
 
 The extractor is a small Kotlin reader tuned to the lesson conventions. Keep these true so it, and CI, stay happy:
 

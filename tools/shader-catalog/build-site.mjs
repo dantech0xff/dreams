@@ -12,6 +12,8 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..', '..');
 const OUT = path.join(ROOT, 'docs', 'index.html');
 const REPO = 'https://github.com/dantech0xff/dreams';
+// Absolute origin for Open Graph tags: scrapers (Facebook, X, LinkedIn) ignore relative og:image.
+const PAGES = 'https://dantech0xff.github.io/dreams/';
 const BRANCH = process.env.DREAMS_BRANCH || 'master';
 
 const catalog = JSON.parse(fs.readFileSync(path.join(ROOT, 'docs', 'catalog', 'lessons.json'), 'utf8'));
@@ -72,7 +74,11 @@ const html = `<!doctype html>
 <meta name="description" content="Learn Android Graphics Shading Language (AGSL) with Kotlin and Jetpack Compose: ${lessons.length} runnable lessons with live previews, sliders and source.">
 <meta property="og:title" content="Dreams — AGSL Engineer Playground">
 <meta property="og:description" content="${lessons.length} runnable AGSL shader lessons for Jetpack Compose, previewed live in your browser.">
-<meta property="og:image" content="gallery/poster-hero.png">
+<meta property="og:type" content="website">
+<meta property="og:url" content="${PAGES}">
+<meta property="og:image" content="${PAGES}gallery/poster-hero.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="${PAGES}gallery/poster-hero.png">
 <link rel="icon" href="data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#04100B"/><path d="M6 20 L12 10 L18 18 L22 13 L26 20" fill="none" stroke="#8CFF80" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>')}">
 <style>
 :root{

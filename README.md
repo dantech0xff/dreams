@@ -335,7 +335,7 @@ npm run all      # extract → thumbnails → README table → docs/index.html
 npm run check    # only compile every lesson under WebGL2
 ```
 
-`lessons.json`, the README catalog and `docs/index.html` are generated from the Kotlin sources; CI fails when they drift. Details in [`tools/shader-catalog/README.md`](tools/shader-catalog/README.md).
+`lessons.json`, the README catalog and `docs/index.html` are generated from the Kotlin sources; CI fails when they drift, or when a lesson has no committed thumbnail. Details in [`tools/shader-catalog/README.md`](tools/shader-catalog/README.md).
 
 ### GitHub Pages
 

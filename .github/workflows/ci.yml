@@ -77,5 +77,8 @@ jobs:
             exit 1
           fi
 
+      - name: Every lesson has a committed thumbnail
+        run: npm run check:thumbs
+
       - name: Compile every lesson under WebGL2 (AGSL → GLSL)
         run: npm run check

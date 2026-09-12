@@ -325,8 +325,11 @@ export function extract() {
   const regText = fs.readFileSync(path.join(ROOT, LESSON_DIR, 'LessonRegistry.kt'), 'utf8');
   const bootstrapOrder = [...regText.matchAll(/source\.(\w+)\.(\w+)Bootstrap\.touch\(\)/g)].map((m) => m[1]);
   const touchOrder = [];
+  // Compare on POSIX-shaped paths: walk() builds them with path.join, which is
+  // backslash-separated on Windows.
+  const posix = (p) => p.split(path.sep).join('/');
   for (const pkg of bootstrapOrder) {
-    const bootFile = files.find((f) => f.includes(`/source/${pkg}/`) && f.endsWith('Bootstrap.kt'));
+    const bootFile = files.find((f) => posix(f).includes(`/source/${pkg}/`) && f.endsWith('Bootstrap.kt'));
     if (!bootFile) throw new Error(`No Bootstrap file for package ${pkg}`);
     const body = texts.get(bootFile);
     for (const m of body.matchAll(/^\s*([A-Z]\w*)\.id\s*$/gm)) touchOrder.push(m[1]);
@@ -378,9 +381,15 @@ export function extract() {
   });
 
   const ids = new Set();
+  const knownCategories = new Set(categories.map((c) => c.name));
   for (const l of lessons) {
     if (ids.has(l.id)) throw new Error(`Duplicate lesson id ${l.id}`);
     ids.add(l.id);
+    // A category the LessonCategory parser did not see would silently vanish from
+    // every per-category section of the README and the site.
+    if (!knownCategories.has(l.category)) {
+      throw new Error(`${l.id}: category ${l.category} is not declared in LessonCategory.kt`);
+    }
   }
 
   return {

@@ -10,10 +10,12 @@
   "scripts": {
     "extract": "node extract-lessons.mjs",
     "check": "node render-thumbnails.mjs --check",
+    "check:thumbs": "node check-thumbnails.mjs",
     "thumbs": "node render-thumbnails.mjs",
     "site": "node build-site.mjs",
     "readme": "node update-readme.mjs",
     "catalog": "npm run extract && npm run readme && npm run site",
+    "verify": "npm run catalog && npm run check:thumbs && npm run check",
     "all": "npm run extract && npm run thumbs && npm run readme && npm run site"
   },
   "devDependencies": {
