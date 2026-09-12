@@ -167,7 +167,7 @@ internal object LessonRegistry {
     
     fun bootstrap() {
         if (all.isEmpty()) { // Idempotency guard
-            // Load all 23 lessons from sources
+            // Load every lesson from data/lesson/source/<category>/
         }
     }
 }
