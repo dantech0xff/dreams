@@ -15,9 +15,11 @@ permissions:
   pages: write
   id-token: write
 
+# Queue deployments instead of cancelling: a cancelled actions/deploy-pages run can
+# leave the Pages deployment stuck until the next successful one.
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:

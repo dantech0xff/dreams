@@ -35,7 +35,7 @@ Thanks for helping make Dreams a better place to learn AGSL. The repo is an Andr
 | Requirement | Why |
 |---|---|
 | **Android Studio**, the latest stable release that supports **AGP 9.1.1** (check the [AGP and Android Studio compatibility table](https://developer.android.com/build/releases/gradle-plugin#android_gradle_plugin_and_android_studio_compatibility)) | The project pins AGP 9.1.1, Kotlin 2.2.10 and the 2026.02.01 Compose BOM in [`gradle/libs.versions.toml`](gradle/libs.versions.toml). |
-| **JDK 17** | What CI uses. The app itself compiles to Java 11 bytecode (`compileOptions` in [`app/build.gradle.kts`](app/build.gradle.kts)), so any JDK 17 or newer can run Gradle. |
+| **JDK 21** | `gradle/gradle-daemon-jvm.properties` pins the Gradle daemon to Java 21, and that is what CI installs; with any other JDK on `PATH`, Gradle downloads a Java 21 toolchain on first run. The app itself still compiles to Java 11 bytecode (`compileOptions` in [`app/build.gradle.kts`](app/build.gradle.kts)). |
 | **Gradle**: nothing to install | The wrapper pins Gradle 9.3.1 ([`gradle/wrapper/gradle-wrapper.properties`](gradle/wrapper/gradle-wrapper.properties)). Always use `./gradlew`. |
 | **A device or emulator on Android 13 (API 33) or newer, with GPU acceleration** | `RuntimeShader` (AGSL) exists only from API 33, hence `minSdk = 33`. For an emulator pick a system image with hardware graphics; software rendering is slow and hides real-GPU precision differences. |
 | **Node.js 20+** and Playwright Chromium (optional) | Only for the catalog tooling in `tools/shader-catalog` (`"engines": { "node": ">=20" }`). CI runs Node 22. |
@@ -167,7 +167,7 @@ If the default thumbnail frame (t = 2.5 s, default control values, a simulated t
 
 **CI** ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs on every pull request and on pushes to `master`:
 
-1. `./gradlew test` and `./gradlew :app:assembleDebug` on JDK 17.
+1. `./gradlew test` and `./gradlew :app:assembleDebug` on JDK 21.
 2. `npm run catalog` (extract, README table, site), then **fails if `docs/catalog/lessons.json`, `docs/index.html` or `README.md` differ from what you committed**.
 3. `npm run check:thumbs`: every lesson in the catalog must have a committed `docs/gallery/<id>.png`, and no PNG may be left behind by a renamed id.
 4. `npm run check`: every lesson must compile as GLSL ES 3.00 in headless Chromium.

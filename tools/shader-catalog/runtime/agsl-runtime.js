@@ -36,21 +36,41 @@ void main() {
 
     const vao = gl.createVertexArray();
     gl.bindVertexArray(vao);
-    const programs = new Map();
+    let programs = new Map();
+    let vertex = null;
 
     function compile(type, src) {
       const sh = gl.createShader(type);
       gl.shaderSource(sh, src);
       gl.compileShader(sh);
       if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+        // On a lost context every query returns null; report that, not "null".
+        if (gl.isContextLost()) { gl.deleteShader(sh); throw new Error('WebGL context lost'); }
         const log = gl.getShaderInfoLog(sh);
         gl.deleteShader(sh);
-        throw new Error(log);
+        throw new Error(log || 'shader failed to compile');
       }
       return sh;
     }
 
-    const vertex = compile(gl.VERTEX_SHADER, VERTEX_SHADER);
+    vertex = compile(gl.VERTEX_SHADER, VERTEX_SHADER);
+
+    // A backgrounded tab (common on mobile) can drop the context. Keep the default
+    // "context is gone for good" behaviour from firing, drop every cached GPU object,
+    // and let the caller know so it can show the static fallback and rebuild.
+    const listeners = { lost: [], restored: [] };
+    canvas.addEventListener('webglcontextlost', (e) => {
+      e.preventDefault();
+      programs = new Map();
+      runner._scratch = null;
+      runner._codexTarget = null;
+      listeners.lost.forEach((fn) => fn());
+    });
+    canvas.addEventListener('webglcontextrestored', () => {
+      gl.bindVertexArray(vao);
+      vertex = compile(gl.VERTEX_SHADER, VERTEX_SHADER);
+      listeners.restored.forEach((fn) => fn());
+    });
 
     /** Compile + link a fragment program (cached by key). */
     function program(key, glsl) {
@@ -154,7 +174,20 @@ void main() {
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     }
 
-    return { gl, canvas, program, texture, updateTexture, target, draw, programs };
+    const runner = {
+      gl,
+      canvas,
+      program,
+      texture,
+      updateTexture,
+      target,
+      draw,
+      get programs() { return programs; },
+      isContextLost: () => gl.isContextLost(),
+      onContextLost: (fn) => listeners.lost.push(fn),
+      onContextRestored: (fn) => listeners.restored.push(fn),
+    };
+    return runner;
   }
 
   // -------------------------------------------------------------------------
@@ -346,19 +379,16 @@ void main() {
     const values = uniformValues(lesson, state, W, H);
 
     if (lesson.renderMode === 'RENDER_EFFECT') {
-      const scratch = scratchCanvas(runner, W, H);
-      painters.sampleCard(scratch.ctx, W, H);
-      runner.updateTexture(scratch.tex, scratch.canvas);
-      values.content = scratch.tex;
+      // SampleContent() does not animate: repaint only when the canvas size changes.
+      values.content = contentTexture(runner, W, H, `card:${W}x${H}`, painters.sampleCard);
       runner.draw(runner.program(lesson.id, lesson.glsl), values, { clear: [0, 0, 0, 0] });
       return;
     }
 
     if (lesson.id === 'showcase-05-ripple-on-tap') {
-      const scratch = scratchCanvas(runner, W, H);
-      painters.rippleBackdrop(scratch.ctx, W, H, { time: state.time, gaze: state.gaze });
-      runner.updateTexture(scratch.tex, scratch.canvas);
-      values.content = scratch.tex;
+      // The backdrop drifts (starfield, breathing halo, gaze), so it is repainted each frame.
+      values.content = contentTexture(runner, W, H, Symbol('animated'), (ctx, w, h) =>
+        painters.rippleBackdrop(ctx, w, h, { time: state.time, gaze: state.gaze }));
       values.rip = state.ripples || emptyRipples();
       runner.draw(runner.program(lesson.id, lesson.glsl), values, { clear: [0, 0, 0, 1] });
       return;
@@ -367,8 +397,11 @@ void main() {
     if (lesson.id === 'showcase-06-codex-splash') {
       // Pass 1: atmosphere → offscreen. Pass 2: SDF icon tile, centred, alpha-blended.
       // Pass 3: water RenderEffect samples the composed scene (a FBO, so flip=1).
-      const scene = runner._codexTarget && runner._codexTarget.w === W && runner._codexTarget.h === H
-        ? runner._codexTarget : (runner._codexTarget = runner.target(W, H));
+      let scene = runner._codexTarget;
+      if (!scene || scene.w !== W || scene.h !== H) {
+        if (scene) { runner.gl.deleteFramebuffer(scene.fbo); runner.gl.deleteTexture(scene.tex); }
+        scene = runner._codexTarget = runner.target(W, H);
+      }
       runner.draw(runner.program(lesson.id + ':bg', lesson.glsl), { resolution: [W, H], time: state.time }, { target: scene, clear: [0, 0, 0, 1] });
       const icon = Math.round(Math.min(W, H) * (W > H * 1.2 ? 0.55 : 0.62));
       const ix = Math.round((W - icon) / 2);
@@ -393,13 +426,30 @@ void main() {
   }
 
   function scratchCanvas(runner, W, H) {
-    if (!runner._scratch || runner._scratch.canvas.width !== W || runner._scratch.canvas.height !== H) {
+    const cur = runner._scratch;
+    if (!cur || cur.canvas.width !== W || cur.canvas.height !== H) {
+      if (cur) runner.gl.deleteTexture(cur.tex);          // otherwise every resize leaks a full-size RGBA texture
       const canvas = document.createElement('canvas');
       canvas.width = W;
       canvas.height = H;
-      runner._scratch = { canvas, ctx: canvas.getContext('2d'), tex: runner.texture(null, W, H) };
+      runner._scratch = { canvas, ctx: canvas.getContext('2d'), tex: runner.texture(null, W, H), painted: null };
     }
     return runner._scratch;
+  }
+
+  /**
+   * Paint a stand-in for the Compose content and upload it. `key` identifies what was
+   * painted: when it is unchanged (a static card at the same size) the previous upload
+   * is reused instead of re-rasterising and re-uploading several MB every frame.
+   */
+  function contentTexture(runner, W, H, key, paint) {
+    const scratch = scratchCanvas(runner, W, H);
+    if (scratch.painted !== key) {
+      paint(scratch.ctx, W, H);
+      runner.updateTexture(scratch.tex, scratch.canvas);
+      scratch.painted = key;
+    }
+    return scratch.tex;
   }
 
   function uniformValues(lesson, state, W, H) {

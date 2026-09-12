@@ -339,6 +339,10 @@ kbd{font-family:var(--mono);font-size:11px;padding:1px 5px;border:1px solid var(
     opts = opts || {};
     let runner = null;
     try { runner = supportsWebGL2 ? Agsl.createRunner(canvas, { preserveDrawingBuffer: true }) : null; } catch (e) { runner = null; }
+    if (runner) {
+      runner.onContextLost(() => { if (opts.onError) opts.onError('The browser dropped the WebGL context for this page (common after the tab sits in the background). Reopen the lesson to restart it.'); });
+      runner.onContextRestored(() => { if (opts.onRestored) opts.onRestored(); });
+    }
     const st = { lesson: null, time: 0, last: null, paused: false, touch: null, values: {}, ripples: Agsl.emptyRipples(), gaze: [0.15, 0.1], lastEmit: -1, autoRipple: !!opts.autoRipple, raf: 0, error: null };
     function fit(){
       const r = canvas.getBoundingClientRect();
@@ -347,8 +351,9 @@ kbd{font-family:var(--mono);font-size:11px;padding:1px 5px;border:1px solid var(
       if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
     }
     function frame(now){
+      if (!runner) { st.raf = 0; return; }   // no WebGL2: never schedule a no-op 60 Hz loop
       st.raf = requestAnimationFrame(frame);
-      if (!runner || !st.lesson) return;
+      if (!st.lesson) return;
       if (st.last == null) st.last = now;
       const dt = Math.min(0.1, (now - st.last) / 1000); st.last = now;
       if (!st.paused) st.time += dt;
@@ -381,13 +386,14 @@ kbd{font-family:var(--mono);font-size:11px;padding:1px 5px;border:1px solid var(
       state: st,
       available: !!runner,
       load(lesson, keepTime){ st.lesson = lesson; st.touch = null; st.values = {}; st.ripples = Agsl.emptyRipples(); st.gaze = [0.15, 0.1]; st.lastEmit = -1; if (!keepTime) st.time = 0; st.paused = false; st.error = null; },
-      start(){ if (!st.raf) st.raf = requestAnimationFrame(frame); },
+      start(){ if (runner && !st.raf) st.raf = requestAnimationFrame(frame); },
       stop(){ cancelAnimationFrame(st.raf); st.raf = 0; st.last = null; },
       snapshot(){ return canvas.toDataURL('image/png'); },
     };
   }
 
   // ---------- hero ----------
+  let heroVisible = true;
   const hero = makePlayer($('heroCanvas'), { autoRipple: true });
   let heroIdx = 0, heroTimer = 0;
   function showHero(i){
@@ -399,12 +405,14 @@ kbd{font-family:var(--mono);font-size:11px;padding:1px 5px;border:1px solid var(
     $('stage').dataset.id = l.id;
   }
   showHero(0); hero.start();
-  heroTimer = setInterval(() => { if (!document.hidden && !$('modal').classList.contains('open')) showHero(heroIdx + 1); }, 9000);
+  heroTimer = setInterval(() => {
+    if (!document.hidden && heroVisible && !$('modal').classList.contains('open')) showHero(heroIdx + 1);
+  }, 9000);
   $('stage').addEventListener('click', () => openLesson($('stage').dataset.id));
 
   // ---------- modal ----------
   const player = makePlayer($('mCanvas'), { onError: (m) => { $('mErr').textContent = 'Preview failed to compile in this browser:\\n' + m; $('mErr').style.display = 'flex'; } });
-  let current = null, tab = 'agsl';
+  let current = null, tab = 'agsl', lastFocus = null;
   function ctlHtml(l){
     return l.controls.map((c, i) => c.type === 'float'
       ? '<div class="ctl"><label for="c'+i+'">'+esc(c.name)+' <small style="color:var(--mute);font-family:var(--mono)">'+esc(c.uniform)+'</small></label><output id="o'+i+'">'+fmt(c.default)+'</output><input id="c'+i+'" type="range" min="'+c.min+'" max="'+c.max+'" step="'+((c.max-c.min)/200)+'" value="'+c.default+'" data-u="'+c.uniform+'" data-i="'+i+'"></div>'
@@ -455,12 +463,45 @@ kbd{font-family:var(--mono);font-size:11px;padding:1px 5px;border:1px solid var(
     renderTabs();
     $('modal').classList.add('open');
     document.body.style.overflow = 'hidden';
-    if (player.available) { player.load(l); player.start(); $('mCanvas').hidden = false; }
-    else { $('view').style.background = 'url(gallery/'+l.id+'.png) center/cover'; $('mCanvas').hidden = true; }
+    if (player.available) {
+      player.load(l);
+      player.start();
+      $('mCanvas').hidden = false;
+      hero.stop();   // one heavy WebGL canvas at a time
+    } else {
+      // Static fallback: show the rendered thumbnail and hide the controls that cannot work.
+      $('view').style.background = 'url(gallery/'+l.id+'.png) center/cover';
+      $('mCanvas').hidden = true;
+      $('mControls').innerHTML = '<p class="hintline" style="margin:0">Live preview needs WebGL2, which this browser does not provide — showing the rendered thumbnail instead.</p>';
+      $('mHint').textContent = '';
+      ['btnPause', 'btnReset', 'btnPng'].forEach((id) => { $(id).hidden = true; });
+    }
     $('btnPause').textContent = '⏸ Pause';
     if (push !== false) history.replaceState(null, '', '#' + l.id);
+    // Move focus into the dialog so Tab stays inside it and Space does not re-activate
+    // the card behind the overlay; remember where to put it back.
+    lastFocus = document.activeElement;
+    $('close').focus({ preventScroll: true });
   }
-  function closeModal(){ $('modal').classList.remove('open'); document.body.style.overflow = ''; player.stop(); history.replaceState(null, '', location.pathname + location.search); }
+  function closeModal(){
+    $('modal').classList.remove('open');
+    document.body.style.overflow = '';
+    player.stop();
+    if (heroVisible && !document.hidden) hero.start();
+    history.replaceState(null, '', location.pathname + location.search);
+    if (lastFocus && document.contains(lastFocus)) lastFocus.focus({ preventScroll: true });
+    lastFocus = null;
+  }
+  // Simple focus trap: the dialog is the only interactive region while it is open.
+  $('modal').addEventListener('keydown', (e) => {
+    if (e.key !== 'Tab') return;
+    const items = [...$('sheet').querySelectorAll('button, a[href], input, [tabindex]:not([tabindex="-1"])')]
+      .filter((el) => !el.hidden && el.offsetParent !== null);
+    if (!items.length) return;
+    const first = items[0], last = items[items.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
   $('close').addEventListener('click', closeModal);
   $('modal').addEventListener('click', (e) => { if (e.target === $('modal')) closeModal(); });
   $('mControls').addEventListener('input', (e) => {
@@ -469,20 +510,40 @@ kbd{font-family:var(--mono);font-size:11px;padding:1px 5px;border:1px solid var(
     else { player.state.values[inp.dataset.u] = '#' + inp.dataset.a + inp.value.slice(1).toUpperCase(); }
   });
   $('btnPause').addEventListener('click', () => { player.state.paused = !player.state.paused; $('btnPause').textContent = player.state.paused ? '▶ Play' : '⏸ Pause'; });
-  $('btnReset').addEventListener('click', () => { player.state.values = {}; player.state.touch = null; $('mControls').innerHTML = ctlHtml(current); });
+  $('btnReset').addEventListener('click', () => { player.state.values = {}; player.state.touch = null; player.state.ripples = Agsl.emptyRipples(); $('mControls').innerHTML = ctlHtml(current); });
   $('btnPng').addEventListener('click', () => { const a = document.createElement('a'); a.download = current.id + '.png'; a.href = player.snapshot(); a.click(); });
   $('btnCopy').addEventListener('click', async () => { try { await navigator.clipboard.writeText(current.agslSource); $('btnCopy').textContent = 'Copied ✓'; setTimeout(() => $('btnCopy').textContent = 'Copy AGSL', 1200); } catch (e) { /* ignore */ } });
   const step = (d) => { const i = DATA.lessons.findIndex(l => l.id === current.id); openLesson(DATA.lessons[(i + d + DATA.lessons.length) % DATA.lessons.length].id); };
   $('btnPrev').addEventListener('click', () => step(-1));
   $('btnNext').addEventListener('click', () => step(1));
+  // Arrow keys are the only way to drive a range slider from the keyboard, and Space
+  // activates whatever button has focus — so the lesson shortcuts stay out of the way
+  // whenever focus is inside a control.
+  const inControl = (el) => !!el && (el.matches('input, select, textarea, [contenteditable]') || el.closest('pre, .controls'));
   document.addEventListener('keydown', (e) => {
     if (!$('modal').classList.contains('open')) return;
-    if (e.key === 'Escape') closeModal();
-    else if (e.key === 'ArrowRight') step(1);
+    if (e.key === 'Escape') { closeModal(); return; }
+    if (inControl(e.target)) return;
+    if (e.key === 'ArrowRight') step(1);
     else if (e.key === 'ArrowLeft') step(-1);
-    else if (e.key === ' ' && e.target === document.body) { e.preventDefault(); $('btnPause').click(); }
+    else if (e.key === ' ' && !(e.target instanceof HTMLButtonElement) && !(e.target instanceof HTMLAnchorElement)) {
+      e.preventDefault();
+      $('btnPause').click();
+    }
   });
-  document.addEventListener('visibilitychange', () => { if (document.hidden) { hero.stop(); player.stop(); } else { hero.start(); if ($('modal').classList.contains('open')) player.start(); } });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { hero.stop(); player.stop(); }
+    else if ($('modal').classList.contains('open')) player.start();
+    else if (heroVisible) hero.start();
+  });
+  // Stop burning GPU on the hero once it scrolls away.
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver((entries) => {
+      heroVisible = entries[0].isIntersecting;
+      if (!heroVisible) hero.stop();
+      else if (!document.hidden && !$('modal').classList.contains('open')) hero.start();
+    }, { threshold: 0 }).observe($('stage'));
+  }
   if (location.hash.length > 1 && byId.has(location.hash.slice(1))) openLesson(location.hash.slice(1), false);
   window.addEventListener('hashchange', () => { const id = location.hash.slice(1); if (byId.has(id)) openLesson(id, false); });
   window.__dreams = { DATA, openLesson, player, hero };

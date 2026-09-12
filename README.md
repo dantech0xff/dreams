@@ -5,7 +5,7 @@
 # Dreams — AGSL Engineer Playground
 
 **Learn Android Graphics Shading Language (AGSL) by example.**
-56 runnable Jetpack Compose shader lessons — from a solid colour to fBM lava, SDF metaballs, Julia sets and RenderEffects that bend real UI — each with sliders, learning notes and line-numbered source.
+56 runnable Jetpack Compose shader lessons — from a solid colour to fBM lava, SDF metaballs, Julia sets and RenderEffects that bend real UI — with live uniform sliders and the line-numbered source next to every preview.
 
 [![CI](https://img.shields.io/github/actions/workflow/status/dantech0xff/dreams/ci.yml?branch=master&label=CI&logo=githubactions&logoColor=white)](https://github.com/dantech0xff/dreams/actions/workflows/ci.yml)
 [![Live gallery](https://img.shields.io/badge/live%20gallery-dantech0xff.github.io%2Fdreams-8CFF80?logo=googlechrome&logoColor=white)](https://dantech0xff.github.io/dreams/)
@@ -25,7 +25,7 @@
 
 AGSL has shipped with every Android 13+ device since 2022, yet almost all shader material online is written for ShaderToy or Unity. Dreams closes that gap for Android engineers:
 
-- **One idea per lesson.** Every lesson is one Kotlin `object` holding one AGSL program, a two-sentence *why*, three *what to notice* notes, and the sliders that matter. Nothing to install or configure to read it — the shader is right there in the file.
+- **One idea per lesson.** Every lesson is one Kotlin `object` holding one AGSL program, a two-sentence *why* and the sliders that matter; the Basics and Patterns tracks add three *what to notice* notes each. Nothing to install or configure to read one — the shader is right there in the file.
 - **Runs on a phone, previews in the browser.** The same AGSL source drives the Compose app (`ShaderBrush`, `RenderEffect`) and the [live web gallery](https://dantech0xff.github.io/dreams/), where it is transpiled to GLSL ES 3.00 by the repo's own tooling. Thumbnails on this page were rendered from the lesson source in CI-grade headless Chromium.
 - **Production-shaped code, not a scratchpad.** Koin DI, Navigation 3 with `@Serializable` routes, DataStore persistence, immutable UI state, unit-tested registry — the patterns you would use in a real app, applied to shaders.
 - **Open source, MIT.** Fork it, ship a lesson, or lift `AgslBrushCanvas` and `Modifier.runtimeShaderEffect` straight into your project.
@@ -255,7 +255,7 @@ object PolarCoords {
 | `uniform float2 touchPos;` + `uniform float touchTime;` | last tap in 0..1 UV and the `time` it happened; `(-1,-1)` / `-1` before any tap | [`LessonPreview.kt`](app/src/main/java/com/dantech/dreams/ui/feature/lesson/LessonPreview.kt) |
 | `uniform float <name>;` + `LessonControl.FloatRange` | the slider value, persisted per lesson (200 ms debounce) | [`ShaderUniformBindings.kt`](app/src/main/java/com/dantech/dreams/ui/feature/common/ShaderUniformBindings.kt) |
 | `layout(color) uniform half4 <name>;` + `LessonControl.ColorPicker` | the swatch colour via `setColorUniform` | same |
-| `uniform shader content;` | the Compose subtree beneath the effect (Post-FX lessons) | [`ShaderModifiers.kt`](app/src/main/java/com/dantech/dreams/core/agsl/ShaderModifiers.kt) |
+| `uniform shader content;` | the Compose subtree beneath the effect (Post-FX lessons; the showcases bind it themselves through `Modifier.runtimeShaderEffect`) | [`AgslCanvas.kt`](app/src/main/java/com/dantech/dreams/ui/feature/common/AgslCanvas.kt), [`ShaderModifiers.kt`](app/src/main/java/com/dantech/dreams/core/agsl/ShaderModifiers.kt) |
 
 **Three render modes** cover everything in the catalog:
 
@@ -301,7 +301,7 @@ flowchart LR
 | Language / UI | Kotlin 2.2 · Jetpack Compose · Material 3 (BOM 2026.02.01) |
 | Shaders | AGSL via `RuntimeShader` · `ShaderBrush` · `RenderEffect` · `minSdk 33`, `targetSdk 36` |
 | Architecture | single Gradle module, layered packages `core/` · `data/` · `domain/` · `ui/feature/` |
-| DI / Navigation | Koin 4.2 (BOM) · Navigation 3 with `@Serializable` routes and per-tab back stacks |
+| DI / Navigation | Koin 4.2 (BOM) · Navigation 3: one `@Serializable` route back stack, with the three tabs as content slots inside the `Main` shell |
 | Persistence | DataStore Preferences + kotlinx.serialization (favourites, last lesson, slider and colour overrides, theme) |
 | Tests | JUnit 4 · Turbine · Koin `verify()` · kotlinx-coroutines-test — registry counts, control↔uniform matching, ViewModel state, prefs codec |
 
@@ -318,7 +318,7 @@ Deeper reading: [system architecture](docs/system-architecture.md) · [code stan
 
 ## Build, run, test
 
-Requirements: Android Studio with AGP 9.1 support (or JDK 17+ on the command line), an Android 13+ device or an emulator with GPU rendering (software emulators render AGSL stubs).
+Requirements: Android Studio with AGP 9.1 support, JDK 21 on the command line (`gradle/gradle-daemon-jvm.properties` pins the Gradle daemon to Java 21), and an Android 13+ device or an emulator with GPU rendering (software emulators render AGSL stubs).
 
 ```bash
 ./gradlew :app:installDebug      # build + install the app
