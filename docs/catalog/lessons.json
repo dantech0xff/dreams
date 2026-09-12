@@ -1,0 +1,2503 @@
+{
+  "$schema": "dreams-lesson-catalog/1",
+  "generatedBy": "tools/shader-catalog/extract-lessons.mjs",
+  "sourceDir": "app/src/main/java/com/dantech/dreams/data/lesson/source",
+  "categories": [
+    {
+      "name": "BASICS",
+      "displayName": "Basics",
+      "tagline": "Start where pixels meet math",
+      "count": 6
+    },
+    {
+      "name": "PATTERNS",
+      "displayName": "Patterns",
+      "tagline": "Tiles, stripes, and repetition that hypnotize",
+      "count": 10
+    },
+    {
+      "name": "COLOR",
+      "displayName": "Color",
+      "tagline": "Palettes, gradients, and tone curves",
+      "count": 4
+    },
+    {
+      "name": "SDF",
+      "displayName": "SDF",
+      "tagline": "Crisp geometry sculpted from equations",
+      "count": 6
+    },
+    {
+      "name": "NOISE",
+      "displayName": "Noise",
+      "tagline": "Random fields that read as plasma, lava, smoke",
+      "count": 6
+    },
+    {
+      "name": "MOTION",
+      "displayName": "Motion",
+      "tagline": "Time-driven curves, easing, and oscillators",
+      "count": 4
+    },
+    {
+      "name": "FRACTALS",
+      "displayName": "Fractals",
+      "tagline": "Self-similar worlds at every zoom",
+      "count": 4
+    },
+    {
+      "name": "LIGHTING",
+      "displayName": "Lighting",
+      "tagline": "Lambert, specular, and fakes that sell depth",
+      "count": 4
+    },
+    {
+      "name": "INTERACTIVE",
+      "displayName": "Interactive",
+      "tagline": "Touch-driven shader experiments",
+      "count": 4
+    },
+    {
+      "name": "POSTFX",
+      "displayName": "Post-FX",
+      "tagline": "Bend, blur, and dissolve real Compose UI",
+      "count": 6
+    },
+    {
+      "name": "SHOWCASE",
+      "displayName": "Showcase",
+      "tagline": "Cinema-mode shaders, ready for the recorder",
+      "count": 2
+    }
+  ],
+  "lessons": [
+    {
+      "id": "basics-01-solid",
+      "title": "Solid Color",
+      "category": "BASICS",
+      "complexity": 1,
+      "conceptIntro": "The simplest shader: every pixel returns the same uniform color. Introduces the half4/uniform basics.",
+      "learningNotes": [
+        "main(fragCoord) runs once for every pixel in the preview.",
+        "half4 stores red, green, blue, and alpha as the shader's output color.",
+        "baseColor is a uniform, so Compose can change it without recompiling AGSL."
+      ],
+      "controls": [
+        {
+          "type": "color",
+          "name": "Base color",
+          "uniform": "baseColor",
+          "default": "#FFE91E63"
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "baseColor",
+          "type": "half4",
+          "color": true
+        }
+      ],
+      "agslSource": "layout(color) uniform half4 baseColor;\n\nhalf4 main(float2 fragCoord) {\n    return baseColor;\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/basics/SolidColor.kt",
+        "line": 10,
+        "object": "SolidColor"
+      }
+    },
+    {
+      "id": "basics-02-animated-color",
+      "title": "Animated Color",
+      "category": "BASICS",
+      "complexity": 1,
+      "conceptIntro": "Drive the output color from a time uniform written every frame via withFrameNanos. The uniform `time` is a float in seconds.",
+      "learningNotes": [
+        "time is written every frame, so the same shader code produces changing pixels.",
+        "sin(time * speed) oscillates between -1 and 1; the math remaps it to 0..1.",
+        "mix(a, b, t) blends two colors, with t choosing how far to move from a to b."
+      ],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Speed",
+          "uniform": "speed",
+          "min": 0.1,
+          "max": 4,
+          "default": 1
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "time",
+          "type": "float"
+        },
+        {
+          "name": "speed",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float time;\nuniform float speed;\n\nhalf4 main(float2 fragCoord) {\n    float t = 0.5 + 0.5 * sin(time * speed);\n    half3 a = half3(0.10, 0.40, 0.90);\n    half3 b = half3(0.95, 0.35, 0.20);\n    return half4(mix(a, b, t), 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/basics/AnimatedColor.kt",
+        "line": 9,
+        "object": "AnimatedColor"
+      }
+    },
+    {
+      "id": "basics-03-linear-gradient",
+      "title": "Linear Gradient",
+      "category": "BASICS",
+      "complexity": 2,
+      "conceptIntro": "Normalize fragCoord, project it onto a direction vector, then mix two color uniforms along that axis.",
+      "learningNotes": [
+        "fragCoord is the current pixel position in device pixels.",
+        "startColor and endColor are uniforms, so the gradient palette can change live.",
+        "angle rotates the direction vector; dot(centered, direction) becomes the blend amount."
+      ],
+      "controls": [
+        {
+          "type": "color",
+          "name": "Start color",
+          "uniform": "startColor",
+          "default": "#FF0D0D33"
+        },
+        {
+          "type": "color",
+          "name": "End color",
+          "uniform": "endColor",
+          "default": "#FFF38C4D"
+        },
+        {
+          "type": "float",
+          "name": "Direction",
+          "uniform": "angle",
+          "min": 0,
+          "max": 360,
+          "default": 0
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "startColor",
+          "type": "half4",
+          "color": true
+        },
+        {
+          "name": "endColor",
+          "type": "half4",
+          "color": true
+        },
+        {
+          "name": "angle",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nlayout(color) uniform half4 startColor;\nlayout(color) uniform half4 endColor;\nuniform float angle;\n\nhalf4 main(float2 fragCoord) {\n    float2 centered = fragCoord / resolution - 0.5;\n    float radians = angle * 0.01745329252;\n    float2 direction = float2(cos(radians), sin(radians));\n    float span = abs(direction.x) + abs(direction.y);\n    float t = dot(centered, direction) / span + 0.5;\n    half3 color = mix(startColor.rgb, endColor.rgb, clamp(t, 0.0, 1.0));\n    return half4(color, 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/basics/LinearGradient.kt",
+        "line": 10,
+        "object": "LinearGradient"
+      }
+    },
+    {
+      "id": "basics-04-radial-gradient",
+      "title": "Radial Gradient",
+      "category": "BASICS",
+      "complexity": 2,
+      "conceptIntro": "length(uv - 0.5) gives distance from screen center. Aspect-correct by multiplying x by width/height.",
+      "learningNotes": [
+        "Subtracting 0.5 recenters UV space so the origin is in the middle.",
+        "Multiplying x by width/height keeps the circle round on non-square previews.",
+        "radius controls how quickly distance fades from the inner color to the outer color."
+      ],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Radius",
+          "uniform": "radius",
+          "min": 0.05,
+          "max": 1.2,
+          "default": 0.6
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "radius",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float radius;\n\nhalf4 main(float2 fragCoord) {\n    float2 uv = fragCoord / resolution - 0.5;\n    uv.x *= resolution.x / resolution.y;\n    float d = length(uv);\n    float t = clamp(d / radius, 0.0, 1.0);\n    half3 inner = half3(1.0, 0.85, 0.30);\n    half3 outer = half3(0.10, 0.05, 0.25);\n    return half4(mix(inner, outer, t), 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/basics/RadialGradient.kt",
+        "line": 9,
+        "object": "RadialGradient"
+      }
+    },
+    {
+      "id": "basics-05-polar-coords",
+      "title": "Polar Coordinates",
+      "category": "BASICS",
+      "complexity": 3,
+      "conceptIntro": "atan(p.y, p.x) gives the angle from origin; combine with length() for swirling polar effects.",
+      "learningNotes": [
+        "length(uv) gives radius: how far the pixel is from center.",
+        "atan(uv.y, uv.x) gives angle: which direction the pixel points.",
+        "Subtracting time * speed shifts the phase, making the swirl rotate."
+      ],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Speed",
+          "uniform": "speed",
+          "min": 0,
+          "max": 4,
+          "default": 1.5
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": "Sweep the speed slider 0 → 4 for a hypnotic swirl.",
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "time",
+          "type": "float"
+        },
+        {
+          "name": "speed",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float time;\nuniform float speed;\n\nhalf4 main(float2 fragCoord) {\n    float2 uv = fragCoord / resolution - 0.5;\n    uv.x *= resolution.x / resolution.y;\n    float r = length(uv);\n    float a = atan(uv.y, uv.x);\n    float swirl = a + r * 8.0 - time * speed;\n    float v = 0.5 + 0.5 * sin(swirl * 4.0);\n    half3 col = mix(half3(0.10, 0.05, 0.30), half3(1.0, 0.45, 0.85), v);\n    return half4(col, 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/basics/PolarCoords.kt",
+        "line": 9,
+        "object": "PolarCoords"
+      }
+    },
+    {
+      "id": "basics-06-vignette",
+      "title": "Animated Vignette",
+      "category": "BASICS",
+      "complexity": 2,
+      "conceptIntro": "smoothstep(edge0, edge1, x) gives a soft 0→1 transition. Pair with length() for an antialiased vignette.",
+      "learningNotes": [
+        "length(uv) turns centered coordinates into distance from the middle.",
+        "radius moves the first smoothstep edge, changing the size of the lit area.",
+        "softness controls the gap between smoothstep edges, widening or sharpening the fade."
+      ],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Radius",
+          "uniform": "radius",
+          "min": 0.1,
+          "max": 0.7,
+          "default": 0.35
+        },
+        {
+          "type": "float",
+          "name": "Softness",
+          "uniform": "softness",
+          "min": 0.02,
+          "max": 0.4,
+          "default": 0.15
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "time",
+          "type": "float"
+        },
+        {
+          "name": "radius",
+          "type": "float"
+        },
+        {
+          "name": "softness",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float time;\nuniform float radius;\nuniform float softness;\n\nhalf4 main(float2 fragCoord) {\n    float2 uv = fragCoord / resolution - 0.5;\n    uv.x *= resolution.x / resolution.y;\n    float r = length(uv);\n    float pulse = radius + 0.10 * sin(time * 2.0);\n    float v = 1.0 - smoothstep(pulse, pulse + softness, r);\n    half3 col = mix(half3(0.0), half3(0.95, 0.55, 0.30), v);\n    return half4(col, 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/basics/AnimatedVignette.kt",
+        "line": 9,
+        "object": "AnimatedVignette"
+      }
+    },
+    {
+      "id": "patterns-01-diagonal-stripes",
+      "title": "Diagonal Stripes",
+      "category": "PATTERNS",
+      "complexity": 1,
+      "conceptIntro": "Repeat one coordinate with fract(), then threshold it with step(). The skew uniform shears the stripe field.",
+      "learningNotes": [
+        "fract(value * count) creates a fresh 0..1 ramp for every stripe repeat.",
+        "step(0.5, ramp) turns that ramp into a crisp two-color mask.",
+        "Adding uv.y * skew tilts the pattern without rotating the whole canvas."
+      ],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Count",
+          "uniform": "count",
+          "min": 4,
+          "max": 60,
+          "default": 18
+        },
+        {
+          "type": "float",
+          "name": "Skew",
+          "uniform": "skew",
+          "min": -1.5,
+          "max": 1.5,
+          "default": 0.6
+        },
+        {
+          "type": "color",
+          "name": "Ink A",
+          "uniform": "inkA",
+          "default": "#FF0F172A"
+        },
+        {
+          "type": "color",
+          "name": "Ink B",
+          "uniform": "inkB",
+          "default": "#FFFACC15"
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "count",
+          "type": "float"
+        },
+        {
+          "name": "skew",
+          "type": "float"
+        },
+        {
+          "name": "inkA",
+          "type": "half4",
+          "color": true
+        },
+        {
+          "name": "inkB",
+          "type": "half4",
+          "color": true
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float count;\nuniform float skew;\nlayout(color) uniform half4 inkA;\nlayout(color) uniform half4 inkB;\nhalf4 main(float2 fragCoord) {\n    float2 uv = fragCoord / resolution;\n    float v = step(0.5, fract((uv.x + uv.y * skew) * count));\n    return mix(inkA, inkB, half(v));\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/patterns/PatternsLessons.kt",
+        "line": 11,
+        "object": "DiagonalStripes"
+      }
+    },
+    {
+      "id": "patterns-02-polka-dots",
+      "title": "Polka Dots",
+      "category": "PATTERNS",
+      "complexity": 2,
+      "conceptIntro": "Tile UV space with fract(uv * cells), recenter each tile, then draw one circle SDF per cell.",
+      "learningNotes": [
+        "fract(uv * cells) gives local coordinates inside every repeated tile.",
+        "Subtracting 0.5 moves each tile origin to its center.",
+        "length(g) - radius is the same circle SDF, reused across the full grid."
+      ],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Cells",
+          "uniform": "cells",
+          "min": 4,
+          "max": 32,
+          "default": 12
+        },
+        {
+          "type": "float",
+          "name": "Radius",
+          "uniform": "radius",
+          "min": 0.05,
+          "max": 0.45,
+          "default": 0.22
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "cells",
+          "type": "float"
+        },
+        {
+          "name": "radius",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float cells;\nuniform float radius;\nhalf4 main(float2 fragCoord) {\n    float2 uv = fragCoord / resolution;\n    uv.x *= resolution.x / resolution.y;\n    float2 g = fract(uv * cells) - 0.5;\n    float d = length(g) - radius;\n    float a = 1.0 - smoothstep(0.0, 0.01, d);\n    half3 bg = half3(0.95, 0.92, 0.88);\n    half3 dot = half3(0.95, 0.30, 0.55);\n    return half4(mix(bg, dot, a), 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/patterns/PatternsLessons.kt",
+        "line": 48,
+        "object": "PolkaDots"
+      }
+    },
+    {
+      "id": "patterns-03-hex-grid",
+      "title": "Hex Grid",
+      "category": "PATTERNS",
+      "complexity": 3,
+      "conceptIntro": "Compare two offset rectangular lattices and keep the closer center to build a hex-spaced repeat.",
+      "learningNotes": [
+        "The second lattice is shifted by half a cell so rows interleave.",
+        "Picking the shorter vector gives each pixel a nearest-center coordinate.",
+        "smoothstep around the cell radius turns distance into a clean grid edge."
+      ],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Scale",
+          "uniform": "scale",
+          "min": 4,
+          "max": 24,
+          "default": 10
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "scale",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float scale;\nhalf4 main(float2 fragCoord) {\n    float2 uv = (fragCoord - 0.5 * resolution) / resolution.y * scale;\n    // Two interleaved rectangular lattices form a hex tiling.\n    float2 a = float2(1.0, 1.732);\n    float2 r1 = mod(uv, a) - a * 0.5;\n    float2 r2 = mod(uv + a * 0.5, a) - a * 0.5;\n    float2 c = (dot(r1, r1) < dot(r2, r2)) ? r1 : r2;\n    // Distance to hex center, with edge AA.\n    float d = length(c);\n    float edge = smoothstep(0.42, 0.46, d);\n    half3 fill = half3(0.05, 0.07, 0.16);\n    half3 line = half3(0.95, 0.75, 0.20);\n    return half4(mix(fill, line, half(edge)), 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/patterns/PatternsLessons.kt",
+        "line": 86,
+        "object": "HexGrid"
+      }
+    },
+    {
+      "id": "patterns-04-truchet",
+      "title": "Truchet Tiles",
+      "category": "PATTERNS",
+      "complexity": 4,
+      "conceptIntro": "Hash each cell to choose an orientation, then draw quarter-circle SDFs that connect across tile borders.",
+      "learningNotes": [
+        "floor(uv) names the current tile, so the hash stays stable inside it.",
+        "Mirroring f.x flips the tile while keeping the same local coordinate range.",
+        "The min of two arc distances produces the paired curves in every tile."
+      ],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Cells",
+          "uniform": "cells",
+          "min": 4,
+          "max": 24,
+          "default": 10
+        },
+        {
+          "type": "float",
+          "name": "Thickness",
+          "uniform": "thickness",
+          "min": 0.04,
+          "max": 0.3,
+          "default": 0.12
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": "Sweep cells 6 → 18 for a satisfying density bloom.",
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "cells",
+          "type": "float"
+        },
+        {
+          "name": "thickness",
+          "type": "float"
+        }
+      ],
+      "agslSource": "    uniform float2 resolution;\n    uniform float cells;\n    uniform float thickness;\n    \nfloat hash21(float2 p) {\n    return fract(sin(dot(p, float2(12.9898, 78.233))) * 43758.5453);\n}\nfloat valueNoise(float2 p) {\n    float2 i = floor(p);\n    float2 f = fract(p);\n    float a = hash21(i);\n    float b = hash21(i + float2(1.0, 0.0));\n    float c = hash21(i + float2(0.0, 1.0));\n    float d = hash21(i + float2(1.0, 1.0));\n    float2 u = f * f * (3.0 - 2.0 * f);\n    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);\n}\nfloat fbm(float2 p) {\n    float v = 0.0;\n    float a = 0.5;\n    for (int i = 0; i < 6; i++) {\n        v += a * valueNoise(p);\n        p *= 2.0;\n        a *= 0.5;\n    }\n    return v;\n}\n\n    half4 main(float2 fragCoord) {\n        float2 uv = fragCoord / resolution * cells;\n        float2 i = floor(uv);\n        float2 f = fract(uv);\n        // Randomly mirror half the tiles → arcs join across cell borders.\n        if (hash21(i) > 0.5) f.x = 1.0 - f.x;\n        // Two quarter-arcs per tile centered at opposite corners.\n        float d = min(\n            abs(distance(f, float2(0.0, 0.0)) - 0.5),\n            abs(distance(f, float2(1.0, 1.0)) - 0.5)\n        );\n        float a = 1.0 - smoothstep(thickness, thickness + 0.02, d);\n        half3 bg = half3(0.05, 0.10, 0.15);\n        half3 fg = half3(0.95, 0.65, 0.20);\n        return half4(mix(bg, fg, half(a)), 1.0);\n    }",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/patterns/PatternsLessons.kt",
+        "line": 124,
+        "object": "TruchetTiles"
+      }
+    },
+    {
+      "id": "patterns-05-moire-interference",
+      "title": "Moire Interference",
+      "category": "PATTERNS",
+      "complexity": 3,
+      "conceptIntro": "Overlay two nearly aligned stripe waves. Tiny angular differences create large beat patterns.",
+      "learningNotes": [
+        "Each stripe field is just sin(dot(uv, direction) * density).",
+        "Taking abs(stripeA - stripeB) reveals where the two waves disagree.",
+        "Contrast narrows the smoothstep band, making the interference sharper."
+      ],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Density",
+          "uniform": "density",
+          "min": 12,
+          "max": 120,
+          "default": 54
+        },
+        {
+          "type": "float",
+          "name": "Angle",
+          "uniform": "angle",
+          "min": -45,
+          "max": 45,
+          "default": 12
+        },
+        {
+          "type": "float",
+          "name": "Contrast",
+          "uniform": "contrast",
+          "min": 0.5,
+          "max": 5,
+          "default": 2
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": "Sweep angle 2 -> 24 to show broad bands collapsing into tight ripples.",
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "density",
+          "type": "float"
+        },
+        {
+          "name": "angle",
+          "type": "float"
+        },
+        {
+          "name": "contrast",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float density;\nuniform float angle;\nuniform float contrast;\nhalf4 main(float2 fragCoord) {\n    float2 uv = (fragCoord - 0.5 * resolution) / resolution.y;\n    float theta = angle * 0.0174532925;\n    float2 dirA = float2(1.0, 0.0);\n    float2 dirB = float2(cos(theta), sin(theta));\n    float stripeA = 0.5 + 0.5 * sin(dot(uv, dirA) * density);\n    float stripeB = 0.5 + 0.5 * sin(dot(uv, dirB) * density);\n    float beat = abs(stripeA - stripeB);\n    float width = 0.25 / max(contrast, 0.1);\n    float mask = smoothstep(0.5 - width, 0.5 + width, beat);\n    float glow = smoothstep(0.72, 0.95, beat) * 0.35;\n    half3 base = half3(0.05, 0.08, 0.16);\n    half3 ink = half3(0.98, 0.78, 0.20);\n    half3 accent = half3(0.18, 0.82, 0.95);\n    half3 col = mix(base, ink, mask);\n    col = mix(col, accent, glow);\n    return half4(col, 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/patterns/MoireInterference.kt",
+        "line": 9,
+        "object": "MoireInterference"
+      }
+    },
+    {
+      "id": "patterns-06-kaleidoscope-fold",
+      "title": "Kaleidoscope Fold",
+      "category": "PATTERNS",
+      "complexity": 4,
+      "conceptIntro": "Fold polar angle into repeated wedges, then shade the folded space as one mirrored slice.",
+      "learningNotes": [
+        "atan() converts the pixel into polar angle, which can be repeated like any coordinate.",
+        "mod(angle, wedge) repeats the slice; abs() mirrors it around the slice center.",
+        "Twist adds radius back into angle so the symmetry bends outward from the center."
+      ],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Segments",
+          "uniform": "segments",
+          "min": 3,
+          "max": 14,
+          "default": 8
+        },
+        {
+          "type": "float",
+          "name": "Twist",
+          "uniform": "twist",
+          "min": -8,
+          "max": 8,
+          "default": 2.5
+        },
+        {
+          "type": "float",
+          "name": "Scale",
+          "uniform": "scale",
+          "min": 2,
+          "max": 8,
+          "default": 4.2
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": "Sweep twist -4 -> 6 while holding segments near 8 for a mirrored bloom.",
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "segments",
+          "type": "float"
+        },
+        {
+          "name": "twist",
+          "type": "float"
+        },
+        {
+          "name": "scale",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float segments;\nuniform float twist;\nuniform float scale;\nhalf4 main(float2 fragCoord) {\n    float2 uv = (fragCoord - 0.5 * resolution) / resolution.y;\n    float radius = length(uv);\n    float angle = atan(uv.y, uv.x) + radius * twist;\n    float wedge = 6.28318530718 / max(segments, 2.0);\n    float folded = abs(mod(angle + wedge * 0.5, wedge) - wedge * 0.5);\n    float2 p = float2(cos(folded), sin(folded)) * radius * scale;\n    float ribbons = 0.5 + 0.5 * sin((p.x + p.y) * 18.0);\n    float cells = abs(fract(p.x * 3.0) - 0.5);\n    float spokes = smoothstep(0.18, 0.48, cells);\n    float petals = 0.5 + 0.5 * sin(12.0 * length(p) + 4.0 * sin(p.y * 3.0));\n    float vignette = 1.0 - smoothstep(0.62, 0.95, radius);\n    half3 bg = half3(0.06, 0.04, 0.14);\n    half3 magenta = half3(0.90, 0.25, 0.65);\n    half3 cyan = half3(0.25, 0.90, 0.95);\n    half3 col = mix(bg, magenta, ribbons);\n    col = mix(col, cyan, petals * spokes);\n    return half4(col * vignette, 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/patterns/KaleidoscopeFold.kt",
+        "line": 9,
+        "object": "KaleidoscopeFold"
+      }
+    },
+    {
+      "id": "patterns-07-plaid-weave",
+      "title": "Plaid Weave",
+      "category": "PATTERNS",
+      "complexity": 2,
+      "conceptIntro": "Cross two repeated stripe masks. Alternating cell parity sells the over-under weave.",
+      "learningNotes": [
+        "The vertical and horizontal thread masks use the same centered cell coordinate.",
+        "floor() gives stable tile indices that can flip color from cell to cell.",
+        "Adding masks creates plaid, while clamp() keeps the blend in display range."
+      ],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Density",
+          "uniform": "density",
+          "min": 4,
+          "max": 32,
+          "default": 12
+        },
+        {
+          "type": "float",
+          "name": "Thread Width",
+          "uniform": "threadWidth",
+          "min": 0.05,
+          "max": 0.45,
+          "default": 0.16
+        },
+        {
+          "type": "float",
+          "name": "Contrast",
+          "uniform": "contrast",
+          "min": 0.5,
+          "max": 2,
+          "default": 1
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "density",
+          "type": "float"
+        },
+        {
+          "name": "threadWidth",
+          "type": "float"
+        },
+        {
+          "name": "contrast",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float density;\nuniform float threadWidth;\nuniform float contrast;\nhalf4 main(float2 fragCoord) {\n    float2 uv = fragCoord / resolution;\n    uv.x *= resolution.x / resolution.y;\n    float2 cell = fract(uv * density);\n    float vertical = 1.0 - smoothstep(threadWidth, threadWidth + 0.03, abs(cell.x - 0.5));\n    float horizontal = 1.0 - smoothstep(threadWidth, threadWidth + 0.03, abs(cell.y - 0.5));\n    float weave = clamp(vertical + horizontal * contrast, 0.0, 1.0);\n    float overUnder = step(0.5, fract(floor(uv.x * density) + floor(uv.y * density) * 0.5));\n    half3 base = half3(0.07, 0.09, 0.14);\n    half3 warp = half3(0.85, 0.18, 0.34);\n    half3 weft = half3(0.16, 0.72, 0.95);\n    half3 thread = mix(warp, weft, half(overUnder));\n    return half4(mix(base, thread, half(weave)), 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/patterns/PlaidWeave.kt",
+        "line": 9,
+        "object": "PlaidWeave"
+      }
+    },
+    {
+      "id": "patterns-08-herringbone-tiles",
+      "title": "Herringbone Tiles",
+      "category": "PATTERNS",
+      "complexity": 3,
+      "conceptIntro": "Alternate mirrored tile coordinates so diagonal stripes meet as a herringbone zig-zag.",
+      "learningNotes": [
+        "mod(tile.x + tile.y, 2) splits the grid into alternating orientations.",
+        "Mirroring one coordinate flips the diagonal grain without new geometry.",
+        "A second edge mask draws grout lines over the procedural wood stripes."
+      ],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Scale",
+          "uniform": "scale",
+          "min": 3,
+          "max": 18,
+          "default": 8
+        },
+        {
+          "type": "float",
+          "name": "Width",
+          "uniform": "width",
+          "min": 0.04,
+          "max": 0.35,
+          "default": 0.16
+        },
+        {
+          "type": "float",
+          "name": "Offset",
+          "uniform": "offset",
+          "min": -0.5,
+          "max": 0.5,
+          "default": 0.18
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": "Sweep scale 4 -> 14 to make the tile rhythm tighten.",
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "scale",
+          "type": "float"
+        },
+        {
+          "name": "width",
+          "type": "float"
+        },
+        {
+          "name": "offset",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float scale;\nuniform float width;\nuniform float offset;\nhalf4 main(float2 fragCoord) {\n    float2 uv = (fragCoord - 0.5 * resolution) / resolution.y * scale;\n    float2 tile = floor(uv);\n    float2 cell = fract(uv) - 0.5;\n    float parity = mod(tile.x + tile.y, 2.0);\n    float2 p = parity < 1.0 ? float2(cell.x, cell.y) : float2(-cell.x, cell.y);\n    p.x += (parity - 0.5) * offset;\n    float stripe = abs(fract((p.x + p.y) * 3.0) - 0.5);\n    float line = 1.0 - smoothstep(width, width + 0.035, stripe);\n    float joint = max(\n        smoothstep(0.46, 0.49, abs(cell.x)),\n        smoothstep(0.46, 0.49, abs(cell.y))\n    );\n    half3 grout = half3(0.04, 0.05, 0.08);\n    half3 woodA = half3(0.92, 0.58, 0.25);\n    half3 woodB = half3(0.50, 0.22, 0.12);\n    half3 wood = mix(woodB, woodA, half(line));\n    return half4(mix(wood, grout, half(joint)), 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/patterns/HerringboneTiles.kt",
+        "line": 9,
+        "object": "HerringboneTiles"
+      }
+    },
+    {
+      "id": "patterns-09-radial-burst",
+      "title": "Radial Burst",
+      "category": "PATTERNS",
+      "complexity": 3,
+      "conceptIntro": "Repeat angular space instead of UV space. Each repeated sector becomes one ray.",
+      "learningNotes": [
+        "atan() gives angle; dividing by tau maps it into a repeatable 0..1 coordinate.",
+        "fract(angle * rays) creates the same wedge ramp around the full circle.",
+        "Adding radius * twist bends the rays while keeping them anchored at center."
+      ],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Rays",
+          "uniform": "rays",
+          "min": 4,
+          "max": 64,
+          "default": 24
+        },
+        {
+          "type": "float",
+          "name": "Twist",
+          "uniform": "twist",
+          "min": -10,
+          "max": 10,
+          "default": 2
+        },
+        {
+          "type": "float",
+          "name": "Softness",
+          "uniform": "softness",
+          "min": 0.02,
+          "max": 0.45,
+          "default": 0.18
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": "Sweep rays 8 -> 48 for a poster-like burst reveal.",
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "rays",
+          "type": "float"
+        },
+        {
+          "name": "twist",
+          "type": "float"
+        },
+        {
+          "name": "softness",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float rays;\nuniform float twist;\nuniform float softness;\nhalf4 main(float2 fragCoord) {\n    float2 uv = (fragCoord - 0.5 * resolution) / resolution.y;\n    float radius = length(uv);\n    float angle = atan(uv.y, uv.x) + radius * twist;\n    float sector = fract(angle / 6.28318530718 * rays);\n    float spoke = abs(sector - 0.5);\n    float burst = smoothstep(softness, 0.5, spoke);\n    float rings = 0.5 + 0.5 * sin(radius * 38.0);\n    float fade = 1.0 - smoothstep(0.55, 0.92, radius);\n    half3 bg = half3(0.06, 0.03, 0.11);\n    half3 gold = half3(1.0, 0.72, 0.16);\n    half3 violet = half3(0.38, 0.18, 0.82);\n    half3 col = mix(violet, gold, half(burst));\n    col = mix(bg, col, half(fade * (0.65 + rings * 0.35)));\n    return half4(col, 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/patterns/RadialBurst.kt",
+        "line": 9,
+        "object": "RadialBurst"
+      }
+    },
+    {
+      "id": "patterns-10-brick-bond",
+      "title": "Brick Bond",
+      "category": "PATTERNS",
+      "complexity": 3,
+      "conceptIntro": "Hash each cell before fract() so the wall allocates stable random brick chunks.",
+      "learningNotes": [
+        "Scaling x and y differently makes rectangular cells instead of square tiles.",
+        "Each cell hash decides whether the base brick stays whole or splits into smaller chunks.",
+        "Distance to the nearest cell edge becomes a mortar mask."
+      ],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Scale",
+          "uniform": "scale",
+          "min": 3,
+          "max": 18,
+          "default": 7
+        },
+        {
+          "type": "float",
+          "name": "Mortar",
+          "uniform": "mortar",
+          "min": 0.01,
+          "max": 0.15,
+          "default": 0.05
+        },
+        {
+          "type": "float",
+          "name": "Randomness",
+          "uniform": "randomness",
+          "min": 0,
+          "max": 1,
+          "default": 0.65
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "scale",
+          "type": "float"
+        },
+        {
+          "name": "mortar",
+          "type": "float"
+        },
+        {
+          "name": "randomness",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float scale;\nuniform float mortar;\nuniform float randomness;\nfloat hash21(float2 p) {\n    return fract(sin(dot(p, float2(127.1, 311.7))) * 43758.5453);\n}\nhalf4 main(float2 fragCoord) {\n    float2 uv = fragCoord / resolution;\n    uv.x *= resolution.x / resolution.y;\n    float2 brickUv = uv * float2(scale * 1.7, scale);\n    float row = floor(brickUv.y);\n    brickUv.x += (hash21(float2(row, 5.3)) - 0.5) * randomness * 0.6;\n    float2 tile = floor(brickUv);\n    float2 cell = fract(brickUv);\n    float splitX = step(1.0 - randomness * 0.55, hash21(tile + float2(11.7, 11.7)));\n    float splitY = (1.0 - splitX) * step(1.0 - randomness * 0.35, hash21(tile + float2(29.1, 29.1)));\n    float2 divisions = float2(1.0 + splitX, 1.0 + splitY);\n    float2 local = fract(cell * divisions);\n    float2 subTile = floor(cell * divisions);\n    float edgeX = min(local.x, 1.0 - local.x);\n    float edgeY = min(local.y, 1.0 - local.y);\n    float edge = min(edgeX, edgeY);\n    float grout = 1.0 - smoothstep(mortar, mortar + 0.02, edge);\n    float brickId = hash21(tile + subTile * 0.37);\n    float shade = 0.15 * sin(brickId * 12.0 + row * 2.3);\n    half3 mortarColor = half3(0.05, 0.055, 0.06);\n    half3 brickA = half3(0.70, 0.18, 0.10);\n    half3 brickB = half3(0.95, 0.42, 0.18);\n    half3 brick = mix(brickA, brickB, half(0.5 + shade));\n    return half4(mix(brick, mortarColor, half(grout)), 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/patterns/BrickBond.kt",
+        "line": 9,
+        "object": "BrickBond"
+      }
+    },
+    {
+      "id": "color-01-cosine-palette",
+      "title": "IQ Cosine Palette",
+      "category": "COLOR",
+      "complexity": 2,
+      "conceptIntro": "a + b·cos(2π·(c·t + d)) maps a 1D parameter to a smooth color ramp. Six floats define the entire palette.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Phase",
+          "uniform": "shift",
+          "min": 0,
+          "max": 1,
+          "default": 0
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": "Sweep phase 0 → 1 — ramp glides through the whole spectrum.",
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "shift",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float shift;\nhalf4 main(float2 fragCoord) {\n    float t = fragCoord.x / resolution.x;\n    float3 a = float3(0.50, 0.50, 0.50);\n    float3 b = float3(0.50, 0.50, 0.50);\n    float3 c = float3(1.00, 1.00, 1.00);\n    float3 d = float3(0.00, 0.33, 0.67);\n    float3 col = a + b * cos(6.2831 * (c * t + d + shift));\n    return half4(half3(col), 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/colorlab/ColorLessons.kt",
+        "line": 13,
+        "object": "CosinePalette"
+      }
+    },
+    {
+      "id": "color-02-hsv-wheel",
+      "title": "HSV Wheel",
+      "category": "COLOR",
+      "complexity": 3,
+      "conceptIntro": "Polar coords give hue (angle) and saturation (radius). hsv2rgb without branches is a four-line piecewise.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Saturation",
+          "uniform": "saturation",
+          "min": 0,
+          "max": 1,
+          "default": 0.95
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "saturation",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float saturation;\n// Standard hsv2rgb — k = mod(n + h*6, 6), c = v - v*s*max(min(k,4-k,1),0).\nfloat3 hsv2rgb(float h, float s, float v) {\n    float3 k = mod(float3(5.0, 3.0, 1.0) + h * 6.0, 6.0);\n    return v - v * s * max(min(min(k, 4.0 - k), 1.0), 0.0);\n}\nhalf4 main(float2 fragCoord) {\n    float2 uv = (fragCoord - 0.5 * resolution) / min(resolution.x, resolution.y);\n    float r = length(uv) * 2.0;\n    float a = atan(uv.y, uv.x) / 6.2831 + 0.5;\n    float mask = 1.0 - smoothstep(0.95, 1.0, r);\n    float3 col = hsv2rgb(a, saturation * clamp(r, 0.0, 1.0), 1.0) * mask;\n    return half4(half3(col), 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/colorlab/ColorLessons.kt",
+        "line": 42,
+        "object": "HsvWheel"
+      }
+    },
+    {
+      "id": "color-03-gradient-stops",
+      "title": "Gradient Stops",
+      "category": "COLOR",
+      "complexity": 2,
+      "conceptIntro": "Branch on the parameter for two-segment gradients. Reshape with pow(t, k) to bias toward dark or light.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Bias",
+          "uniform": "bias",
+          "min": 0,
+          "max": 1,
+          "default": 0.5
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "bias",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float bias;\n// Three-stop gradient: blend across two segments, biased by a power curve.\n// Demonstrates how a non-linear remap of t reshapes a perceptually uniform ramp.\nhalf4 main(float2 fragCoord) {\n    float t = fragCoord.x / resolution.x;\n    float p = pow(t, mix(0.4, 2.5, bias));\n    float3 a = float3(0.10, 0.05, 0.30);\n    float3 b = float3(0.95, 0.30, 0.55);\n    float3 c = float3(1.00, 0.95, 0.65);\n    float3 col = (p < 0.5)\n        ? mix(a, b, p * 2.0)\n        : mix(b, c, (p - 0.5) * 2.0);\n    return half4(half3(col), 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/colorlab/ColorLessons.kt",
+        "line": 74,
+        "object": "GradientStops"
+      }
+    },
+    {
+      "id": "color-04-aces-tonemap",
+      "title": "ACES Tone Map",
+      "category": "COLOR",
+      "complexity": 3,
+      "conceptIntro": "HDR colors above 1 must be tone-mapped before display. ACES gives a filmic shoulder/toe in 8 ALU ops.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Exposure",
+          "uniform": "exposure",
+          "min": 0.1,
+          "max": 4,
+          "default": 1
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": "Sweep exposure 0.2 → 3 — sun saturates without ever clipping pure white.",
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "exposure",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float exposure;\n// ACES filmic curve (Narkowicz 2015 approximation).\nfloat3 aces(float3 x) {\n    return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0);\n}\nhalf4 main(float2 fragCoord) {\n    float2 uv = fragCoord / resolution;\n    // Synthetic HDR signal — bright sun on cool sky.\n    float sun = exp(-30.0 * length(uv - float2(0.7, 0.35)));\n    float3 hdr = float3(0.20, 0.30, 0.55) + 8.0 * sun * float3(1.0, 0.85, 0.55);\n    float3 mapped = aces(hdr * exposure);\n    return half4(half3(mapped), 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/colorlab/ColorLessons.kt",
+        "line": 106,
+        "object": "AcesToneMap"
+      }
+    },
+    {
+      "id": "sdf-01-circle",
+      "title": "Circle SDF",
+      "category": "SDF",
+      "complexity": 2,
+      "conceptIntro": "A signed distance field is a function returning distance to a shape's edge. length(p) - r is the canonical circle.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Radius",
+          "uniform": "radius",
+          "min": 0.05,
+          "max": 0.5,
+          "default": 0.3
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "radius",
+          "type": "float"
+        }
+      ],
+      "agslSource": "    uniform float2 resolution;\n    uniform float radius;\n    \nfloat sdCircle(float2 p, float r) {\n    return length(p) - r;\n}\nfloat sdBox(float2 p, float2 b, float r) {\n    float2 q = abs(p) - b;\n    return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;\n}\nfloat opSmoothUnion(float d1, float d2, float k) {\n    float h = clamp(0.5 + 0.5 * (d2 - d1) / k, 0.0, 1.0);\n    return mix(d2, d1, h) - k * h * (1.0 - h);\n}\n\n    half4 main(float2 fragCoord) {\n        \nfloat2 uv = fragCoord / resolution - 0.5;\nuv.x *= resolution.x / resolution.y;\n\n        float d = sdCircle(uv, radius);\n        float a = 1.0 - smoothstep(0.0, 0.005, d);\n        half3 col = mix(half3(0.05), half3(0.95, 0.45, 0.30), a);\n        return half4(col, 1.0);\n    }",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/sdf/SdfLessons.kt",
+        "line": 14,
+        "object": "CircleSdf"
+      }
+    },
+    {
+      "id": "sdf-02-rounded-box",
+      "title": "Rounded Box",
+      "category": "SDF",
+      "complexity": 2,
+      "conceptIntro": "Box SDF with corner radius: subtract `r` from the distance to round the edges.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Corner",
+          "uniform": "corner",
+          "min": 0,
+          "max": 0.18,
+          "default": 0.06
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "corner",
+          "type": "float"
+        }
+      ],
+      "agslSource": "    uniform float2 resolution;\n    uniform float corner;\n    \nfloat sdCircle(float2 p, float r) {\n    return length(p) - r;\n}\nfloat sdBox(float2 p, float2 b, float r) {\n    float2 q = abs(p) - b;\n    return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;\n}\nfloat opSmoothUnion(float d1, float d2, float k) {\n    float h = clamp(0.5 + 0.5 * (d2 - d1) / k, 0.0, 1.0);\n    return mix(d2, d1, h) - k * h * (1.0 - h);\n}\n\n    half4 main(float2 fragCoord) {\n        \nfloat2 uv = fragCoord / resolution - 0.5;\nuv.x *= resolution.x / resolution.y;\n\n        float d = sdBox(uv, float2(0.30, 0.18), corner);\n        float a = 1.0 - smoothstep(0.0, 0.005, d);\n        half3 col = mix(half3(0.05), half3(0.30, 0.85, 0.95), a);\n        return half4(col, 1.0);\n    }",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/sdf/SdfLessons.kt",
+        "line": 41,
+        "object": "RoundedBoxSdf"
+      }
+    },
+    {
+      "id": "sdf-03-metaballs",
+      "title": "Smooth Metaballs",
+      "category": "SDF",
+      "complexity": 3,
+      "conceptIntro": "opSmoothUnion(d1,d2,k) blends two SDFs with a smoothness factor — yielding the classic goo/metaball look.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Smoothness",
+          "uniform": "smoothness",
+          "min": 0.02,
+          "max": 0.4,
+          "default": 0.18
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": "Try smoothness 0.05 → 0.5 for a goo merge effect.",
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "time",
+          "type": "float"
+        },
+        {
+          "name": "smoothness",
+          "type": "float"
+        }
+      ],
+      "agslSource": "    uniform float2 resolution;\n    uniform float time;\n    uniform float smoothness;\n    \nfloat sdCircle(float2 p, float r) {\n    return length(p) - r;\n}\nfloat sdBox(float2 p, float2 b, float r) {\n    float2 q = abs(p) - b;\n    return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;\n}\nfloat opSmoothUnion(float d1, float d2, float k) {\n    float h = clamp(0.5 + 0.5 * (d2 - d1) / k, 0.0, 1.0);\n    return mix(d2, d1, h) - k * h * (1.0 - h);\n}\n\n    half4 main(float2 fragCoord) {\n        \nfloat2 uv = fragCoord / resolution - 0.5;\nuv.x *= resolution.x / resolution.y;\n\n        float d1 = sdCircle(uv - float2(sin(time)*0.25, cos(time)*0.25), 0.18);\n        float d2 = sdCircle(uv - float2(cos(time*1.3)*0.20, sin(time*0.7)*0.20), 0.20);\n        float d3 = sdCircle(uv - float2(sin(time*0.6)*0.30, sin(time*1.1)*0.10), 0.15);\n        float d = opSmoothUnion(opSmoothUnion(d1, d2, smoothness), d3, smoothness);\n        float a = 1.0 - smoothstep(0.0, 0.01, d);\n        half3 col = mix(half3(0.05, 0.05, 0.10), half3(0.95, 0.30, 0.65), a);\n        return half4(col, 1.0);\n    }",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/sdf/SdfLessons.kt",
+        "line": 68,
+        "object": "Metaballs"
+      }
+    },
+    {
+      "id": "sdf-04-checkerboard",
+      "title": "Checkerboard",
+      "category": "SDF",
+      "complexity": 2,
+      "conceptIntro": "floor() + mod() turn continuous space into discrete cells — the simplest periodic pattern.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Cells",
+          "uniform": "cells",
+          "min": 2,
+          "max": 32,
+          "default": 8
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "cells",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float cells;\nhalf4 main(float2 fragCoord) {\n    float2 uv = fragCoord / resolution;\n    float2 g = floor(uv * cells);\n    float c = mod(g.x + g.y, 2.0);\n    half3 col = mix(half3(0.10), half3(0.95, 0.85, 0.60), half(c));\n    return half4(col, 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/sdf/SdfLessons.kt",
+        "line": 100,
+        "object": "Checkerboard"
+      }
+    },
+    {
+      "id": "sdf-05-breathing-grid",
+      "title": "Breathing Grid",
+      "category": "SDF",
+      "complexity": 3,
+      "conceptIntro": "Tile space with fract(uv * n), then place an animated SDF in each cell.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Cells",
+          "uniform": "cells",
+          "min": 4,
+          "max": 24,
+          "default": 10
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "time",
+          "type": "float"
+        },
+        {
+          "name": "cells",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float time;\nuniform float cells;\nhalf4 main(float2 fragCoord) {\n    float2 uv = fragCoord / resolution;\n    float2 g = fract(uv * cells) - 0.5;\n    float r = 0.18 + 0.10 * sin(time * 2.0);\n    float d = length(g) - r;\n    float a = 1.0 - smoothstep(0.0, 0.02, d);\n    half3 col = mix(half3(0.04, 0.04, 0.08), half3(0.95, 0.45, 0.85), a);\n    return half4(col, 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/sdf/SdfLessons.kt",
+        "line": 126,
+        "object": "BreathingGrid"
+      }
+    },
+    {
+      "id": "sdf-06-isolines",
+      "title": "Isolines",
+      "category": "SDF",
+      "complexity": 2,
+      "conceptIntro": "fract(distance * n) produces concentric rings — a contour-line visualization.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Density",
+          "uniform": "density",
+          "min": 4,
+          "max": 40,
+          "default": 16
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "density",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float density;\nhalf4 main(float2 fragCoord) {\n    float2 uv = fragCoord / resolution - 0.5;\n    uv.x *= resolution.x / resolution.y;\n    float r = length(uv);\n    float bands = abs(fract(r * density) - 0.5);\n    float a = smoothstep(0.45, 0.5, bands);\n    half3 col = mix(half3(0.10, 0.05, 0.20), half3(0.30, 0.95, 0.85), a);\n    return half4(col, 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/sdf/SdfLessons.kt",
+        "line": 155,
+        "object": "Isolines"
+      }
+    },
+    {
+      "id": "noise-01-hash",
+      "title": "Pseudo-Random Hash",
+      "category": "NOISE",
+      "complexity": 2,
+      "conceptIntro": "fract(sin(dot(p, magic)) * big) yields cheap, deterministic per-pixel noise — the bedrock of procedural texturing.",
+      "learningNotes": [],
+      "controls": [],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        }
+      ],
+      "agslSource": "    uniform float2 resolution;\n    \nfloat hash21(float2 p) {\n    return fract(sin(dot(p, float2(12.9898, 78.233))) * 43758.5453);\n}\nfloat valueNoise(float2 p) {\n    float2 i = floor(p);\n    float2 f = fract(p);\n    float a = hash21(i);\n    float b = hash21(i + float2(1.0, 0.0));\n    float c = hash21(i + float2(0.0, 1.0));\n    float d = hash21(i + float2(1.0, 1.0));\n    float2 u = f * f * (3.0 - 2.0 * f);\n    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);\n}\nfloat fbm(float2 p) {\n    float v = 0.0;\n    float a = 0.5;\n    for (int i = 0; i < 6; i++) {\n        v += a * valueNoise(p);\n        p *= 2.0;\n        a *= 0.5;\n    }\n    return v;\n}\n\n    half4 main(float2 fragCoord) {\n        float2 uv = fragCoord / resolution;\n        float v = hash21(floor(uv * 64.0));\n        return half4(half3(v), 1.0);\n    }",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/noise/NoiseLessons.kt",
+        "line": 9,
+        "object": "HashLesson"
+      }
+    },
+    {
+      "id": "noise-02-value",
+      "title": "Value Noise",
+      "category": "NOISE",
+      "complexity": 2,
+      "conceptIntro": "Bilinear-interpolated hash gives smooth-ish noise — the ancestor of Perlin/Simplex.",
+      "learningNotes": [],
+      "controls": [],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        }
+      ],
+      "agslSource": "    uniform float2 resolution;\n    \nfloat hash21(float2 p) {\n    return fract(sin(dot(p, float2(12.9898, 78.233))) * 43758.5453);\n}\nfloat valueNoise(float2 p) {\n    float2 i = floor(p);\n    float2 f = fract(p);\n    float a = hash21(i);\n    float b = hash21(i + float2(1.0, 0.0));\n    float c = hash21(i + float2(0.0, 1.0));\n    float d = hash21(i + float2(1.0, 1.0));\n    float2 u = f * f * (3.0 - 2.0 * f);\n    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);\n}\nfloat fbm(float2 p) {\n    float v = 0.0;\n    float a = 0.5;\n    for (int i = 0; i < 6; i++) {\n        v += a * valueNoise(p);\n        p *= 2.0;\n        a *= 0.5;\n    }\n    return v;\n}\n\n    half4 main(float2 fragCoord) {\n        float2 uv = fragCoord / resolution;\n        float v = valueNoise(uv * 8.0);\n        return half4(half3(v), 1.0);\n    }",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/noise/NoiseLessons.kt",
+        "line": 31,
+        "object": "ValueNoise"
+      }
+    },
+    {
+      "id": "noise-03-fbm",
+      "title": "fBM Clouds",
+      "category": "NOISE",
+      "complexity": 3,
+      "conceptIntro": "Sum N octaves of noise, doubling frequency and halving amplitude each step. Bounded loop required for AGSL.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Octaves",
+          "uniform": "octaves",
+          "min": 1,
+          "max": 6,
+          "default": 4
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "octaves",
+          "type": "float"
+        }
+      ],
+      "agslSource": "    uniform float2 resolution;\n    uniform float octaves;\n    \nfloat hash21(float2 p) {\n    return fract(sin(dot(p, float2(12.9898, 78.233))) * 43758.5453);\n}\nfloat valueNoise(float2 p) {\n    float2 i = floor(p);\n    float2 f = fract(p);\n    float a = hash21(i);\n    float b = hash21(i + float2(1.0, 0.0));\n    float c = hash21(i + float2(0.0, 1.0));\n    float d = hash21(i + float2(1.0, 1.0));\n    float2 u = f * f * (3.0 - 2.0 * f);\n    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);\n}\nfloat fbm(float2 p) {\n    float v = 0.0;\n    float a = 0.5;\n    for (int i = 0; i < 6; i++) {\n        v += a * valueNoise(p);\n        p *= 2.0;\n        a *= 0.5;\n    }\n    return v;\n}\n\n    half4 main(float2 fragCoord) {\n        float2 uv = fragCoord / resolution;\n        float2 p = uv * 4.0;\n        float v = 0.0;\n        float amp = 0.5;\n        for (int i = 0; i < 6; i++) {\n            if (float(i) >= octaves) break;\n            v += amp * valueNoise(p);\n            p *= 2.0;\n            amp *= 0.5;\n        }\n        half3 sky = mix(half3(0.10, 0.20, 0.40), half3(0.95, 0.95, 1.00), half(v));\n        return half4(sky, 1.0);\n    }",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/noise/NoiseLessons.kt",
+        "line": 53,
+        "object": "FbmClouds"
+      }
+    },
+    {
+      "id": "noise-04-voronoi",
+      "title": "Voronoi Cells",
+      "category": "NOISE",
+      "complexity": 4,
+      "conceptIntro": "For each pixel, find the nearest jittered seed in a 3×3 neighborhood. Animate seeds with sin(time) for cellular life.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Cells",
+          "uniform": "cells",
+          "min": 4,
+          "max": 32,
+          "default": 12
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": "Record 30s with cells=12 — looks alive, very LinkedIn-friendly.",
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "time",
+          "type": "float"
+        },
+        {
+          "name": "cells",
+          "type": "float"
+        }
+      ],
+      "agslSource": "    uniform float2 resolution;\n    uniform float time;\n    uniform float cells;\n    \nfloat hash21(float2 p) {\n    return fract(sin(dot(p, float2(12.9898, 78.233))) * 43758.5453);\n}\nfloat valueNoise(float2 p) {\n    float2 i = floor(p);\n    float2 f = fract(p);\n    float a = hash21(i);\n    float b = hash21(i + float2(1.0, 0.0));\n    float c = hash21(i + float2(0.0, 1.0));\n    float d = hash21(i + float2(1.0, 1.0));\n    float2 u = f * f * (3.0 - 2.0 * f);\n    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);\n}\nfloat fbm(float2 p) {\n    float v = 0.0;\n    float a = 0.5;\n    for (int i = 0; i < 6; i++) {\n        v += a * valueNoise(p);\n        p *= 2.0;\n        a *= 0.5;\n    }\n    return v;\n}\n\n    half4 main(float2 fragCoord) {\n        float2 uv = fragCoord / resolution * cells;\n        float2 i = floor(uv);\n        float2 f = fract(uv);\n        float minDist = 1.0;\n        for (int y = -1; y <= 1; y++) {\n            for (int x = -1; x <= 1; x++) {\n                float2 g = float2(float(x), float(y));\n                float2 o = float2(hash21(i + g), hash21(i + g + 17.7));\n                o = 0.5 + 0.5 * sin(time + 6.2831 * o);\n                float2 r = g + o - f;\n                minDist = min(minDist, dot(r, r));\n            }\n        }\n        float d = sqrt(minDist);\n        half3 col = mix(half3(0.05, 0.05, 0.10), half3(0.30, 0.85, 0.95), half(d));\n        return half4(col, 1.0);\n    }",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/noise/NoiseLessons.kt",
+        "line": 86,
+        "object": "VoronoiCells"
+      }
+    },
+    {
+      "id": "noise-05-plasma",
+      "title": "Plasma",
+      "category": "NOISE",
+      "complexity": 2,
+      "conceptIntro": "Three sine sums + an HSV-like phase shift = 90s demoscene plasma in 8 lines.",
+      "learningNotes": [],
+      "controls": [],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "time",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float time;\nhalf4 main(float2 fragCoord) {\n    float2 uv = fragCoord / resolution * 6.0;\n    float v = sin(uv.x + time) + sin(uv.y + time*1.3) + sin(length(uv) + time*0.7);\n    v = 0.5 + 0.25 * v;\n    half3 col = half3(\n        half(0.5 + 0.5 * sin(v * 6.2831)),\n        half(0.5 + 0.5 * sin(v * 6.2831 + 2.094)),\n        half(0.5 + 0.5 * sin(v * 6.2831 + 4.188))\n    );\n    return half4(col, 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/noise/NoiseLessons.kt",
+        "line": 125,
+        "object": "Plasma"
+      }
+    },
+    {
+      "id": "noise-06-warped-lava",
+      "title": "Warped Lava",
+      "category": "NOISE",
+      "complexity": 5,
+      "conceptIntro": "Domain warping: feed fbm into itself. The payoff lesson — looks like a graphics textbook cover.",
+      "learningNotes": [],
+      "controls": [],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": "Record 45s of warped-lava as the showcase prelude.",
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "time",
+          "type": "float"
+        }
+      ],
+      "agslSource": "    uniform float2 resolution;\n    uniform float time;\n    \nfloat hash21(float2 p) {\n    return fract(sin(dot(p, float2(12.9898, 78.233))) * 43758.5453);\n}\nfloat valueNoise(float2 p) {\n    float2 i = floor(p);\n    float2 f = fract(p);\n    float a = hash21(i);\n    float b = hash21(i + float2(1.0, 0.0));\n    float c = hash21(i + float2(0.0, 1.0));\n    float d = hash21(i + float2(1.0, 1.0));\n    float2 u = f * f * (3.0 - 2.0 * f);\n    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);\n}\nfloat fbm(float2 p) {\n    float v = 0.0;\n    float a = 0.5;\n    for (int i = 0; i < 6; i++) {\n        v += a * valueNoise(p);\n        p *= 2.0;\n        a *= 0.5;\n    }\n    return v;\n}\n\n    half4 main(float2 fragCoord) {\n        float2 uv = fragCoord / resolution;\n        float2 p = uv * 3.0 + float2(0.0, time * 0.10);\n        float2 q = float2(fbm(p), fbm(p + 5.2));\n        float2 r = float2(fbm(p + 4.0 * q + float2(1.7, 9.2)), fbm(p + 4.0 * q + float2(8.3, 2.8)));\n        float v = fbm(p + 4.0 * r);\n        half3 lo = half3(0.10, 0.02, 0.04);\n        half3 hi = half3(1.00, 0.65, 0.10);\n        half3 col = mix(lo, hi, half(smoothstep(0.20, 0.80, v)));\n        return half4(col, 1.0);\n    }",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/noise/NoiseLessons.kt",
+        "line": 153,
+        "object": "WarpedLava"
+      }
+    },
+    {
+      "id": "motion-01-easing",
+      "title": "Easing Curves",
+      "category": "MOTION",
+      "complexity": 2,
+      "conceptIntro": "Easings reshape a 0→1 parameter over time. Compare linear, cubic-out, cubic-in-out, and back-out side by side.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Speed",
+          "uniform": "speed",
+          "min": 0.2,
+          "max": 4,
+          "default": 1
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "time",
+          "type": "float"
+        },
+        {
+          "name": "speed",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float time;\nuniform float speed;\n\nfloat easeLinear(float t)    { return t; }\nfloat easeOutCubic(float t)  { float u = 1.0 - t; return 1.0 - u*u*u; }\nfloat easeInOutCubic(float t){ return (t < 0.5) ? 4.0*t*t*t : 1.0 - pow(-2.0*t+2.0, 3.0)/2.0; }\nfloat easeOutBack(float t)   { float c = 1.70158; float u = t - 1.0; return 1.0 + (c+1.0)*u*u*u + c*u*u; }\n\nfloat dot2d(float2 p, float2 c, float r) {\n    return 1.0 - smoothstep(r, r + 0.005, length(p - c));\n}\n\nhalf4 main(float2 fragCoord) {\n    float2 uv = fragCoord / resolution;\n    float t = fract(time * speed * 0.25);\n    float rows = 4.0;\n    float row = floor(uv.y * rows);\n    float e = (row < 1.0) ? easeLinear(t)\n            : (row < 2.0) ? easeOutCubic(t)\n            : (row < 3.0) ? easeInOutCubic(t)\n                          : easeOutBack(t);\n    float yBand = (row + 0.5) / rows;\n    float a = dot2d(uv, float2(0.05 + e * 0.90, yBand), 0.025);\n    half3 col = mix(half3(0.04, 0.06, 0.12), half3(0.30, 0.95, 0.70), half(a));\n    // Faint baseline grid between rows.\n    float line = step(0.998, fract(uv.y * rows));\n    col = mix(col, half3(0.20, 0.30, 0.40), half(line));\n    return half4(col, 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/motion/MotionLessons.kt",
+        "line": 12,
+        "object": "EasingExplorer"
+      }
+    },
+    {
+      "id": "motion-02-harmonics",
+      "title": "Sine Harmonics",
+      "category": "MOTION",
+      "complexity": 3,
+      "conceptIntro": "Adding 1/k·sin(k·x) terms approximates a square wave. The Gibbs ringing is visible at the discontinuities.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Harmonics",
+          "uniform": "harmonic",
+          "min": 1,
+          "max": 12,
+          "default": 5
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": "Sweep harmonic 1 → 12 — wave sharpens visibly with each step.",
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "time",
+          "type": "float"
+        },
+        {
+          "name": "harmonic",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float time;\nuniform float harmonic;\n// Plots y = sum_{k=1..H} (1/k) * sin(k * (x + t)) — a band-limited square wave\n// approximation. Sweep harmonic to see Gibbs ringing emerge.\nhalf4 main(float2 fragCoord) {\n    float2 uv = (fragCoord / resolution) * 2.0 - 1.0;\n    uv.x *= resolution.x / resolution.y;\n    float v = 0.0;\n    for (int k = 1; k <= 12; k++) {\n        if (float(k) > harmonic) break;\n        float kf = float(k);\n        v += sin(kf * (uv.x * 3.0 + time)) / kf;\n    }\n    v *= 0.6;\n    float d = abs(uv.y - v);\n    float a = 1.0 - smoothstep(0.005, 0.020, d);\n    half3 bg = half3(0.05, 0.05, 0.10);\n    half3 fg = half3(0.30, 0.95, 0.70);\n    return half4(mix(bg, fg, half(a)), 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/motion/MotionLessons.kt",
+        "line": 59,
+        "object": "SineHarmonics"
+      }
+    },
+    {
+      "id": "motion-03-wave-train",
+      "title": "Wave Train",
+      "category": "MOTION",
+      "complexity": 2,
+      "conceptIntro": "Stack N sine rows offset in phase — each row reads the same wave at a slightly later moment.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Speed",
+          "uniform": "speed",
+          "min": 0,
+          "max": 6,
+          "default": 2
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "time",
+          "type": "float"
+        },
+        {
+          "name": "speed",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float time;\nuniform float speed;\n// Stack of horizontal sinusoids, each shifted in phase. Reads as wind on\n// a flag, or a sound waveform — the same equation does both.\nhalf4 main(float2 fragCoord) {\n    float2 uv = fragCoord / resolution;\n    float bands = 18.0;\n    float y = uv.y * bands;\n    float row = floor(y);\n    float local = fract(y) - 0.5;\n    float phase = row * 0.35;\n    float wave = sin(uv.x * 12.0 + time * speed + phase) * 0.30;\n    float d = abs(local - wave);\n    float a = 1.0 - smoothstep(0.06, 0.10, d);\n    half3 bg = half3(0.04, 0.06, 0.10);\n    half3 fg = mix(half3(0.20, 0.95, 0.65), half3(0.30, 0.55, 0.95), half(uv.y));\n    return half4(mix(bg, fg, half(a)), 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/motion/MotionLessons.kt",
+        "line": 98,
+        "object": "WaveTrain"
+      }
+    },
+    {
+      "id": "motion-04-pendulum-chain",
+      "title": "Pendulum Chain",
+      "category": "MOTION",
+      "complexity": 3,
+      "conceptIntro": "N oscillators with detuned frequencies fall in and out of phase — a hypnotic 'pendulum wave'.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Spread",
+          "uniform": "spread",
+          "min": 0.05,
+          "max": 0.4,
+          "default": 0.18
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": "Record 30s — eye sees an apparent travelling wave despite each dot moving 1D.",
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "time",
+          "type": "float"
+        },
+        {
+          "name": "spread",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float time;\nuniform float spread;\n// Five oscillators with detuned frequencies — drift apart, momentarily\n// align, drift apart again. The classic pendulum-wave installation.\nhalf4 main(float2 fragCoord) {\n    float2 uv = (fragCoord - 0.5 * resolution) / resolution.y;\n    float minD = 1.0;\n    for (int i = 0; i < 5; i++) {\n        float fi = float(i);\n        float f = 1.0 + fi * spread;\n        float x = -0.4 + fi * 0.20;\n        float y = sin(time * f) * 0.30;\n        float d = length(uv - float2(x, y));\n        minD = min(minD, d);\n    }\n    float a = 1.0 - smoothstep(0.025, 0.030, minD);\n    half3 bg = half3(0.05, 0.07, 0.12);\n    half3 fg = half3(0.95, 0.85, 0.30);\n    return half4(mix(bg, fg, half(a)), 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/motion/MotionLessons.kt",
+        "line": 134,
+        "object": "PendulumChain"
+      }
+    },
+    {
+      "id": "fractals-01-mandelbrot",
+      "title": "Mandelbrot",
+      "category": "FRACTALS",
+      "complexity": 4,
+      "conceptIntro": "Iterate z ← z² + c until |z| escapes. Smooth iteration count + cosine palette gives continuous coloring.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Zoom",
+          "uniform": "zoom",
+          "min": 0.5,
+          "max": 12,
+          "default": 1
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": "Sweep zoom 0.5 → 8 — boundary becomes increasingly intricate.",
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "zoom",
+          "type": "float"
+        }
+      ],
+      "agslSource": "    uniform float2 resolution;\n    uniform float zoom;\n    \nfloat2 cmul(float2 a, float2 b) {\n    return float2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);\n}\nfloat2 cdiv(float2 a, float2 b) {\n    float denom = b.x * b.x + b.y * b.y + 1e-6;\n    return float2(a.x * b.x + a.y * b.y, a.y * b.x - a.x * b.y) / denom;\n}\n// Smooth iteration count: takes the integer escape step and adds the\n// fractional `log(log|z|)` correction so coloring is continuous, not banded.\nfloat smoothEscape(float i, float2 z) {\n    return i - log2(max(log2(dot(z, z)), 1e-6)) + 4.0;\n}\n\n    half4 main(float2 fragCoord) {\n        float2 uv = (fragCoord - 0.5 * resolution) / resolution.y;\n        float2 c = uv / zoom + float2(-0.75, 0.0);\n        float2 z = float2(0.0);\n        float iter = 0.0;\n        const int MAX = 96;\n        for (int i = 0; i < MAX; i++) {\n            z = cmul(z, z) + c;\n            if (dot(z, z) > 256.0) { iter = float(i); break; }\n            iter = float(i);\n        }\n        float t = smoothEscape(iter, z) / float(MAX);\n        float3 col = 0.5 + 0.5 * cos(6.2831 * (t + float3(0.0, 0.10, 0.20)));\n        if (iter >= float(MAX - 1)) col = float3(0.02, 0.02, 0.06);\n        return half4(half3(col), 1.0);\n    }",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/fractals/FractalsLessons.kt",
+        "line": 9,
+        "object": "Mandelbrot"
+      }
+    },
+    {
+      "id": "fractals-02-julia",
+      "title": "Julia Set",
+      "category": "FRACTALS",
+      "complexity": 4,
+      "conceptIntro": "Same iterate as Mandelbrot, but c is fixed across the plane. Animate c to morph the set in real time.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Radius",
+          "uniform": "radius",
+          "min": 0.5,
+          "max": 0.85,
+          "default": 0.78
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": "Record 45s — set continuously morphs, irresistible to watch.",
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "time",
+          "type": "float"
+        },
+        {
+          "name": "radius",
+          "type": "float"
+        }
+      ],
+      "agslSource": "    uniform float2 resolution;\n    uniform float time;\n    uniform float radius;\n    \nfloat2 cmul(float2 a, float2 b) {\n    return float2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);\n}\nfloat2 cdiv(float2 a, float2 b) {\n    float denom = b.x * b.x + b.y * b.y + 1e-6;\n    return float2(a.x * b.x + a.y * b.y, a.y * b.x - a.x * b.y) / denom;\n}\n// Smooth iteration count: takes the integer escape step and adds the\n// fractional `log(log|z|)` correction so coloring is continuous, not banded.\nfloat smoothEscape(float i, float2 z) {\n    return i - log2(max(log2(dot(z, z)), 1e-6)) + 4.0;\n}\n\n    half4 main(float2 fragCoord) {\n        float2 uv = (fragCoord - 0.5 * resolution) / resolution.y * 1.6;\n        // c traces a slow circle in parameter space → set \"breathes\".\n        float2 c = float2(cos(time * 0.20), sin(time * 0.27)) * radius;\n        float2 z = uv;\n        float iter = 0.0;\n        const int MAX = 80;\n        for (int i = 0; i < MAX; i++) {\n            z = cmul(z, z) + c;\n            if (dot(z, z) > 64.0) { iter = float(i); break; }\n            iter = float(i);\n        }\n        float t = smoothEscape(iter, z) / float(MAX);\n        float3 col = 0.5 + 0.5 * cos(6.2831 * (t + float3(0.20, 0.40, 0.70)));\n        if (iter >= float(MAX - 1)) col = float3(0.0);\n        return half4(half3(col), 1.0);\n    }",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/fractals/FractalsLessons.kt",
+        "line": 46,
+        "object": "JuliaSet"
+      }
+    },
+    {
+      "id": "fractals-03-newton",
+      "title": "Newton's Method (z³ − 1)",
+      "category": "FRACTALS",
+      "complexity": 5,
+      "conceptIntro": "Newton iteration on z³−1 has 3 attractors. Color each pixel by the root it lands in — basins are fractal.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Zoom",
+          "uniform": "zoom",
+          "min": 0.5,
+          "max": 6,
+          "default": 1
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "zoom",
+          "type": "float"
+        }
+      ],
+      "agslSource": "    uniform float2 resolution;\n    uniform float zoom;\n    \nfloat2 cmul(float2 a, float2 b) {\n    return float2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);\n}\nfloat2 cdiv(float2 a, float2 b) {\n    float denom = b.x * b.x + b.y * b.y + 1e-6;\n    return float2(a.x * b.x + a.y * b.y, a.y * b.x - a.x * b.y) / denom;\n}\n// Smooth iteration count: takes the integer escape step and adds the\n// fractional `log(log|z|)` correction so coloring is continuous, not banded.\nfloat smoothEscape(float i, float2 z) {\n    return i - log2(max(log2(dot(z, z)), 1e-6)) + 4.0;\n}\n\n    // Newton's method on z^3 - 1 = 0. Three roots → three basins of attraction\n    // colored distinctly. Boundary is fractal because basins interlace at every scale.\n    half4 main(float2 fragCoord) {\n        float2 uv = (fragCoord - 0.5 * resolution) / resolution.y / zoom;\n        float2 z = uv;\n        const int MAX = 32;\n        for (int i = 0; i < MAX; i++) {\n            float2 z2 = cmul(z, z);\n            float2 z3 = cmul(z2, z);\n            float2 num = z3 - float2(1.0, 0.0);\n            float2 den = 3.0 * z2 + float2(1e-4, 0.0);\n            z = z - cdiv(num, den);\n        }\n        // Three roots of unity at angles 0, 2π/3, 4π/3.\n        float2 r0 = float2( 1.0, 0.0);\n        float2 r1 = float2(-0.5,  0.866);\n        float2 r2 = float2(-0.5, -0.866);\n        float d0 = distance(z, r0);\n        float d1 = distance(z, r1);\n        float d2 = distance(z, r2);\n        float3 col = (d0 < d1 && d0 < d2) ? float3(0.95, 0.30, 0.30)\n                   : (d1 < d2)            ? float3(0.30, 0.85, 0.55)\n                                          : float3(0.30, 0.55, 0.95);\n        // Fade by distance to nearest root → soft basin shading.\n        float minD = min(d0, min(d1, d2));\n        col *= 1.0 - clamp(minD, 0.0, 0.9);\n        return half4(half3(col), 1.0);\n    }",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/fractals/FractalsLessons.kt",
+        "line": 85,
+        "object": "NewtonZ3"
+      }
+    },
+    {
+      "id": "fractals-04-sierpinski",
+      "title": "Sierpinski Gasket",
+      "category": "FRACTALS",
+      "complexity": 5,
+      "conceptIntro": "Iterated function systems: zoom into the corner copy that contains the pixel, repeat, then evaluate one triangle SDF — exact geometric self-similarity.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Depth",
+          "uniform": "depth",
+          "min": 1,
+          "max": 8,
+          "default": 5
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "time",
+          "type": "float"
+        },
+        {
+          "name": "depth",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float time;\nuniform float depth;\n// Inverse IFS: the gasket is the union of three half-size copies of itself,\n// one per corner. For each pixel, pick the corner whose copy contains it and\n// zoom into that copy (p = 2p - corner). Every iteration doubles the detail;\n// afterwards a single plain triangle SDF is all that is left to evaluate.\n// Equilateral triangle, side 1, centered on the origin, apex up.\nfloat sdTri(float2 p) {\n    const float k = 1.732;\n    p.x = abs(p.x) - 0.5;\n    p.y = p.y + 0.289;\n    if (p.x + k * p.y > 0.0) p = float2(p.x - k * p.y, -k * p.x - p.y) * 0.5;\n    p.x -= clamp(p.x, -1.0, 0.0);\n    return -length(p) * sign(p.y);\n}\nhalf4 main(float2 fragCoord) {\n    float2 p = (fragCoord - 0.5 * resolution) / resolution.y * 1.2;\n    p.y = -p.y;   // apex up: fragCoord grows downwards\n    float s = 1.0;\n    for (int i = 0; i < 8; i++) {\n        if (float(i) >= depth) break;\n        // Corners: A (top), B (bottom-left), C (bottom-right). The top copy\n        // owns everything above the midline y = 0.144; below it the sign of\n        // x decides between the two bottom copies.\n        float2 corner = float2(0.0, 0.577);\n        if (p.y < 0.144) corner = (p.x < 0.0) ? float2(-0.5, -0.289) : float2(0.5, -0.289);\n        p = 2.0 * p - corner;\n        s *= 0.5;\n    }\n    float d = sdTri(p) * s;\n    float a = 1.0 - smoothstep(0.0, 0.005, d);\n    float pulse = 0.5 + 0.5 * sin(time * 1.5);\n    half3 bg = half3(0.04, 0.04, 0.10);\n    half3 fg = mix(half3(0.30, 0.85, 0.95), half3(0.95, 0.55, 0.30), half(pulse));\n    return half4(mix(bg, fg, half(a)), 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/fractals/FractalsLessons.kt",
+        "line": 133,
+        "object": "SierpinskiFold"
+      }
+    },
+    {
+      "id": "lighting-01-lambert",
+      "title": "Lambert Sphere",
+      "category": "LIGHTING",
+      "complexity": 2,
+      "conceptIntro": "Lambert: diffuse = max(dot(N, L), 0). The whole 'looks 3D' illusion in one inner product.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Ambient",
+          "uniform": "ambient",
+          "min": 0,
+          "max": 0.6,
+          "default": 0.1
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "time",
+          "type": "float"
+        },
+        {
+          "name": "ambient",
+          "type": "float"
+        }
+      ],
+      "agslSource": "    uniform float2 resolution;\n    uniform float time;\n    uniform float ambient;\n    \nfloat4 sphereSample(float2 uv) {\n    float r2 = dot(uv, uv);\n    if (r2 >= 1.0) return float4(0.0, 0.0, 1.0, 0.0);\n    float z = sqrt(1.0 - r2);\n    return float4(uv, z, 1.0);\n}\n\n    half4 main(float2 fragCoord) {\n        float2 uv = (fragCoord - 0.5 * resolution) / (0.5 * min(resolution.x, resolution.y));\n        float4 s = sphereSample(uv);\n        float3 n = s.xyz;\n        float m = s.w;\n        // Light orbits in the xy plane.\n        float3 L = normalize(float3(cos(time * 0.5), sin(time * 0.5) * 0.6, 0.7));\n        float diff = max(dot(n, L), 0.0);\n        float3 albedo = float3(0.95, 0.55, 0.35);\n        float3 col = albedo * (ambient + (1.0 - ambient) * diff);\n        float3 bg = float3(0.04, 0.05, 0.10);\n        return half4(half3(mix(bg, col, m)), 1.0);\n    }",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/lighting/LightingLessons.kt",
+        "line": 22,
+        "object": "LambertSphere"
+      }
+    },
+    {
+      "id": "lighting-02-phong",
+      "title": "Phong Highlight",
+      "category": "LIGHTING",
+      "complexity": 3,
+      "conceptIntro": "Add specular = pow(max(dot(R, V), 0), n). Shininess collapses the highlight from gloss to mirror.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Shininess",
+          "uniform": "shininess",
+          "min": 1,
+          "max": 128,
+          "default": 32
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": "Sweep shininess 4 → 96 — highlight tightens like adjusting a real flashlight.",
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "time",
+          "type": "float"
+        },
+        {
+          "name": "shininess",
+          "type": "float"
+        }
+      ],
+      "agslSource": "    uniform float2 resolution;\n    uniform float time;\n    uniform float shininess;\n    \nfloat4 sphereSample(float2 uv) {\n    float r2 = dot(uv, uv);\n    if (r2 >= 1.0) return float4(0.0, 0.0, 1.0, 0.0);\n    float z = sqrt(1.0 - r2);\n    return float4(uv, z, 1.0);\n}\n\n    half4 main(float2 fragCoord) {\n        float2 uv = (fragCoord - 0.5 * resolution) / (0.5 * min(resolution.x, resolution.y));\n        float4 s = sphereSample(uv);\n        float3 n = s.xyz;\n        float m = s.w;\n        float3 L = normalize(float3(cos(time * 0.7), sin(time * 0.7) * 0.5, 0.8));\n        float3 V = float3(0.0, 0.0, 1.0);\n        float3 R = reflect(-L, n);\n        float diff = max(dot(n, L), 0.0);\n        float spec = pow(max(dot(R, V), 0.0), shininess);\n        float3 albedo = float3(0.20, 0.45, 0.95);\n        float3 col = albedo * (0.10 + 0.85 * diff) + float3(1.0) * spec;\n        float3 bg = float3(0.04, 0.05, 0.10);\n        return half4(half3(mix(bg, col, m)), 1.0);\n    }",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/lighting/LightingLessons.kt",
+        "line": 56,
+        "object": "PhongHighlight"
+      }
+    },
+    {
+      "id": "lighting-03-rim",
+      "title": "Rim Light",
+      "category": "LIGHTING",
+      "complexity": 2,
+      "conceptIntro": "rim = pow(1 - dot(N, V), p) — sells silhouette and rescues unlit darks. Free 'subsurface' look.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Power",
+          "uniform": "power",
+          "min": 1,
+          "max": 8,
+          "default": 3
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "power",
+          "type": "float"
+        }
+      ],
+      "agslSource": "    uniform float2 resolution;\n    uniform float power;\n    \nfloat4 sphereSample(float2 uv) {\n    float r2 = dot(uv, uv);\n    if (r2 >= 1.0) return float4(0.0, 0.0, 1.0, 0.0);\n    float z = sqrt(1.0 - r2);\n    return float4(uv, z, 1.0);\n}\n\n    half4 main(float2 fragCoord) {\n        float2 uv = (fragCoord - 0.5 * resolution) / (0.5 * min(resolution.x, resolution.y));\n        float4 s = sphereSample(uv);\n        float3 n = s.xyz;\n        float m = s.w;\n        float3 V = float3(0.0, 0.0, 1.0);\n        // Rim term: bright where the surface faces away from the viewer.\n        float rim = pow(1.0 - max(dot(n, V), 0.0), power);\n        float3 base = float3(0.05, 0.07, 0.15);\n        float3 rimColor = float3(0.30, 0.95, 1.00);\n        float3 col = base + rimColor * rim;\n        float3 bg = float3(0.02, 0.03, 0.06);\n        return half4(half3(mix(bg, col, m)), 1.0);\n    }",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/lighting/LightingLessons.kt",
+        "line": 93,
+        "object": "RimLight"
+      }
+    },
+    {
+      "id": "lighting-04-terminator",
+      "title": "Day/Night Terminator",
+      "category": "LIGHTING",
+      "complexity": 3,
+      "conceptIntro": "Same Lambert dot product, but blend between *two* shaded materials. Softness widens the dawn band.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Softness",
+          "uniform": "softness",
+          "min": 0.02,
+          "max": 0.5,
+          "default": 0.12
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "time",
+          "type": "float"
+        },
+        {
+          "name": "softness",
+          "type": "float"
+        }
+      ],
+      "agslSource": "    uniform float2 resolution;\n    uniform float time;\n    uniform float softness;\n    \nfloat4 sphereSample(float2 uv) {\n    float r2 = dot(uv, uv);\n    if (r2 >= 1.0) return float4(0.0, 0.0, 1.0, 0.0);\n    float z = sqrt(1.0 - r2);\n    return float4(uv, z, 1.0);\n}\n\n    // Earth-style day/night: same N·L Lambert, but blended between two albedos\n    // (lit ocean vs city-light blue) with a softness-controlled terminator band.\n    half4 main(float2 fragCoord) {\n        float2 uv = (fragCoord - 0.5 * resolution) / (0.5 * min(resolution.x, resolution.y));\n        float4 s = sphereSample(uv);\n        float3 n = s.xyz;\n        float m = s.w;\n        float3 L = normalize(float3(cos(time * 0.30), 0.10, sin(time * 0.30)));\n        float lambert = dot(n, L);\n        float t = smoothstep(-softness, softness, lambert);\n        float3 night = float3(0.02, 0.04, 0.10) + float3(0.95, 0.85, 0.55) * 0.20 * pow(1.0 - t, 4.0);\n        float3 day = mix(float3(0.10, 0.30, 0.55), float3(0.85, 0.90, 1.00), t);\n        float3 col = mix(night, day, t);\n        float3 bg = float3(0.0);\n        return half4(half3(mix(bg, col, m)), 1.0);\n    }",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/lighting/LightingLessons.kt",
+        "line": 127,
+        "object": "DayNightTerminator"
+      }
+    },
+    {
+      "id": "interactive-01-spotlight",
+      "title": "Spotlight",
+      "category": "INTERACTIVE",
+      "complexity": 2,
+      "conceptIntro": "touchPos lands as a uniform in 0..1 UV space. Distance + smoothstep gives a soft pool of light at the cursor.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Radius",
+          "uniform": "radius",
+          "min": 0.1,
+          "max": 0.8,
+          "default": 0.35
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": "Tap-and-drag is shown as discrete taps — each tap re-anchors the spotlight.",
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "touchPos",
+          "type": "float2"
+        },
+        {
+          "name": "touchTime",
+          "type": "float"
+        },
+        {
+          "name": "radius",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float2 touchPos;\nuniform float  touchTime;\nuniform float radius;\nhalf4 main(float2 fragCoord) {\n    float2 uv = fragCoord / resolution;\n    // Fall back to screen center until first tap.\n    float2 center = (touchPos.x < 0.0) ? float2(0.5) : touchPos;\n    float aspect = resolution.x / resolution.y;\n    float2 d = uv - center;\n    d.x *= aspect;\n    float r = length(d);\n    float fall = 1.0 - smoothstep(radius * 0.6, radius, r);\n    half3 dark = half3(0.02, 0.03, 0.08);\n    half3 lit  = half3(0.95, 0.85, 0.55);\n    return half4(mix(dark, lit, half(fall)), 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/interactive/InteractiveLessons.kt",
+        "line": 15,
+        "object": "PointerSpotlight"
+      }
+    },
+    {
+      "id": "interactive-02-ripple",
+      "title": "Tap Ripple",
+      "category": "INTERACTIVE",
+      "complexity": 3,
+      "conceptIntro": "(time - touchTime) drives a Gaussian band whose radius grows. Re-tap restarts the wave.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Speed",
+          "uniform": "speed",
+          "min": 0.5,
+          "max": 4,
+          "default": 1.6
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "time",
+          "type": "float"
+        },
+        {
+          "name": "touchPos",
+          "type": "float2"
+        },
+        {
+          "name": "touchTime",
+          "type": "float"
+        },
+        {
+          "name": "speed",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float  time;\nuniform float2 touchPos;\nuniform float  touchTime;\nuniform float speed;\nhalf4 main(float2 fragCoord) {\n    float2 uv = fragCoord / resolution;\n    // Bail out cleanly until we have a tap.\n    if (touchPos.x < 0.0) return half4(0.04, 0.05, 0.10, 1.0);\n    float aspect = resolution.x / resolution.y;\n    float2 d = uv - touchPos;\n    d.x *= aspect;\n    float r = length(d);\n    float age = max(time - touchTime, 0.0);\n    // Single expanding ring that fades and softens with age.\n    float ringRadius = age * speed * 0.30;\n    float w = 0.020 + age * 0.040;\n    float band = exp(-pow((r - ringRadius) / w, 2.0));\n    float fade = exp(-age * 1.2);\n    half3 bg = half3(0.04, 0.05, 0.10);\n    half3 fg = half3(0.30, 0.85, 1.00);\n    return half4(mix(bg, fg, half(band * fade)), 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/interactive/InteractiveLessons.kt",
+        "line": 50,
+        "object": "PointerRipple"
+      }
+    },
+    {
+      "id": "interactive-03-pull-field",
+      "title": "Pull Field",
+      "category": "INTERACTIVE",
+      "complexity": 3,
+      "conceptIntro": "Distort sample coords toward the cursor with exp falloff — texture bends like a gravity well.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Strength",
+          "uniform": "strength",
+          "min": 0,
+          "max": 0.25,
+          "default": 0.1
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "touchPos",
+          "type": "float2"
+        },
+        {
+          "name": "touchTime",
+          "type": "float"
+        },
+        {
+          "name": "strength",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float2 touchPos;\nuniform float  touchTime;\nuniform float strength;\n// A static checker whose UVs are bent toward the touch point —\n// visualises a \"gravity well\" pulling the texture inward.\nhalf4 main(float2 fragCoord) {\n    float2 uv = fragCoord / resolution;\n    float2 center = (touchPos.x < 0.0) ? float2(0.5) : touchPos;\n    float2 d = uv - center;\n    float r = length(d) + 1e-4;\n    // Pull strength falls off with distance; remap UV inward by `pull`.\n    float pull = strength * exp(-r * 5.0);\n    float2 p = uv - normalize(d) * pull;\n    float2 g = floor(p * 18.0);\n    float c = mod(g.x + g.y, 2.0);\n    half3 a = half3(0.06, 0.08, 0.18);\n    half3 b = half3(0.95, 0.55, 0.30);\n    return half4(mix(a, b, half(c)), 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/interactive/InteractiveLessons.kt",
+        "line": 90,
+        "object": "PointerPullField"
+      }
+    },
+    {
+      "id": "interactive-04-heat-stripes",
+      "title": "Heat Shockwave",
+      "category": "INTERACTIVE",
+      "complexity": 4,
+      "conceptIntro": "Combine distance-to-touch with (time - touchTime) inside a sin() — phases sweep outward like a thermal pulse.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Density",
+          "uniform": "density",
+          "min": 8,
+          "max": 60,
+          "default": 24
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": "Tap repeatedly — overlapping shockwaves create rich beat patterns.",
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "time",
+          "type": "float"
+        },
+        {
+          "name": "touchPos",
+          "type": "float2"
+        },
+        {
+          "name": "touchTime",
+          "type": "float"
+        },
+        {
+          "name": "density",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float  time;\nuniform float2 touchPos;\nuniform float  touchTime;\nuniform float density;\n// Stripes whose phase offset is driven by distance to cursor *and* age\n// since the last tap — gives a heat-shockwave feel.\nhalf4 main(float2 fragCoord) {\n    float2 uv = fragCoord / resolution;\n    float2 center = (touchPos.x < 0.0) ? float2(0.5) : touchPos;\n    float aspect = resolution.x / resolution.y;\n    float2 d = uv - center;\n    d.x *= aspect;\n    float r = length(d);\n    float age = max(time - touchTime, 0.0);\n    float phase = -age * 6.0 + r * density;\n    float v = 0.5 + 0.5 * sin(phase);\n    // Heat falloff: redder near recent tap.\n    float heat = exp(-r * 4.0) * exp(-age * 0.8);\n    half3 cool = half3(0.06, 0.10, 0.20);\n    half3 warm = mix(half3(0.95, 0.85, 0.30), half3(0.95, 0.30, 0.20), half(heat));\n    half3 col = mix(cool, warm, half(v));\n    return half4(col, 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/interactive/InteractiveLessons.kt",
+        "line": 127,
+        "object": "PointerHeatStripes"
+      }
+    },
+    {
+      "id": "postfx-01-blur",
+      "title": "Box Blur",
+      "category": "POSTFX",
+      "complexity": 2,
+      "conceptIntro": "Average 9 samples around each pixel — the simplest convolution kernel. Increase radius for stronger blur.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Radius",
+          "uniform": "radius",
+          "min": 0,
+          "max": 12,
+          "default": 4
+        }
+      ],
+      "renderMode": "RENDER_EFFECT",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "content",
+          "type": "shader"
+        },
+        {
+          "name": "radius",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform shader content;\nuniform float radius;\nhalf4 main(float2 fragCoord) {\n    half4 sum = half4(0.0);\n    for (int y = -1; y <= 1; y++) {\n        for (int x = -1; x <= 1; x++) {\n            float2 o = float2(float(x), float(y)) * radius;\n            sum += content.eval(fragCoord + o);\n        }\n    }\n    return sum / 9.0;\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/posteffect/PostFxLessons.kt",
+        "line": 33,
+        "object": "Blur"
+      }
+    },
+    {
+      "id": "postfx-02-chromatic-aberration",
+      "title": "Chromatic Aberration",
+      "category": "POSTFX",
+      "complexity": 2,
+      "conceptIntro": "Sample R/G/B at offset coordinates → cheap analog-camera fringe.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Strength",
+          "uniform": "strength",
+          "min": 0,
+          "max": 12,
+          "default": 4
+        }
+      ],
+      "renderMode": "RENDER_EFFECT",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "content",
+          "type": "shader"
+        },
+        {
+          "name": "strength",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform shader content;\nuniform float strength;\nhalf4 main(float2 fragCoord) {\n    float2 dir = float2(strength, 0.0);\n    half r = content.eval(fragCoord + dir).r;\n    half g = content.eval(fragCoord).g;\n    half b = content.eval(fragCoord - dir).b;\n    return half4(r, g, b, 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/posteffect/PostFxLessons.kt",
+        "line": 61,
+        "object": "ChromaticAberration"
+      }
+    },
+    {
+      "id": "postfx-03-ripple-tap",
+      "title": "Ripple",
+      "category": "POSTFX",
+      "complexity": 3,
+      "conceptIntro": "Offset sample coords along radial direction by sin(dist - time) for a continuously-rippling pond.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Strength",
+          "uniform": "strength",
+          "min": 0,
+          "max": 30,
+          "default": 12
+        }
+      ],
+      "renderMode": "RENDER_EFFECT",
+      "screenRecordingHint": "Bump strength to 25 for the most dramatic recording.",
+      "uniforms": [
+        {
+          "name": "content",
+          "type": "shader"
+        },
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "time",
+          "type": "float"
+        },
+        {
+          "name": "strength",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform shader content;\nuniform float2 resolution;\nuniform float time;\nuniform float strength;\nhalf4 main(float2 fragCoord) {\n    float2 c = resolution * 0.5;\n    float d = distance(fragCoord, c);\n    float wave = sin(d * 0.05 - time * 4.0) * exp(-d * 0.005) * strength;\n    float2 dir = normalize(fragCoord - c + 0.001);\n    return content.eval(fragCoord + dir * wave);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/posteffect/PostFxLessons.kt",
+        "line": 86,
+        "object": "RippleTap"
+      }
+    },
+    {
+      "id": "postfx-04-dissolve",
+      "title": "Dissolve",
+      "category": "POSTFX",
+      "complexity": 4,
+      "conceptIntro": "Use fbm noise as an animated alpha mask with a glowing edge — Thanos snap on a Composable.",
+      "learningNotes": [],
+      "controls": [],
+      "renderMode": "RENDER_EFFECT",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "content",
+          "type": "shader"
+        },
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "time",
+          "type": "float"
+        }
+      ],
+      "agslSource": "    uniform shader content;\n    uniform float2 resolution;\n    uniform float time;\n    \nfloat hash21(float2 p) {\n    return fract(sin(dot(p, float2(12.9898, 78.233))) * 43758.5453);\n}\nfloat valueNoise(float2 p) {\n    float2 i = floor(p);\n    float2 f = fract(p);\n    float a = hash21(i);\n    float b = hash21(i + float2(1.0, 0.0));\n    float c = hash21(i + float2(0.0, 1.0));\n    float d = hash21(i + float2(1.0, 1.0));\n    float2 u = f * f * (3.0 - 2.0 * f);\n    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);\n}\nfloat fbm(float2 p) {\n    float v = 0.0;\n    float a = 0.5;\n    for (int i = 0; i < 6; i++) {\n        v += a * valueNoise(p);\n        p *= 2.0;\n        a *= 0.5;\n    }\n    return v;\n}\n\n    half4 main(float2 fragCoord) {\n        float2 uv = fragCoord / resolution;\n        float n = fbm(uv * 4.0);\n        float threshold = 0.5 + 0.5 * sin(time * 0.6);\n        float a = step(threshold, n);\n        half4 c = content.eval(fragCoord);\n        half edge = half(smoothstep(threshold - 0.05, threshold, n) - a);\n        return half4(mix(c.rgb, half3(1.0, 0.5, 0.1), edge), c.a * half(a));\n    }",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/posteffect/PostFxLessons.kt",
+        "line": 114,
+        "object": "Dissolve"
+      }
+    },
+    {
+      "id": "postfx-05-displacement-glass",
+      "title": "Liquid Glass Displacement",
+      "category": "POSTFX",
+      "complexity": 4,
+      "conceptIntro": "Sample the input at a noise-displaced coord — produces the iOS 26-style refractive panel feel.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Strength",
+          "uniform": "strength",
+          "min": 0,
+          "max": 1,
+          "default": 0.4
+        }
+      ],
+      "renderMode": "RENDER_EFFECT",
+      "screenRecordingHint": "0.6 strength makes the displacement pop without losing legibility.",
+      "uniforms": [
+        {
+          "name": "content",
+          "type": "shader"
+        },
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "time",
+          "type": "float"
+        },
+        {
+          "name": "strength",
+          "type": "float"
+        }
+      ],
+      "agslSource": "    uniform shader content;\n    uniform float2 resolution;\n    uniform float time;\n    uniform float strength;\n    \nfloat hash21(float2 p) {\n    return fract(sin(dot(p, float2(12.9898, 78.233))) * 43758.5453);\n}\nfloat valueNoise(float2 p) {\n    float2 i = floor(p);\n    float2 f = fract(p);\n    float a = hash21(i);\n    float b = hash21(i + float2(1.0, 0.0));\n    float c = hash21(i + float2(0.0, 1.0));\n    float d = hash21(i + float2(1.0, 1.0));\n    float2 u = f * f * (3.0 - 2.0 * f);\n    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);\n}\nfloat fbm(float2 p) {\n    float v = 0.0;\n    float a = 0.5;\n    for (int i = 0; i < 6; i++) {\n        v += a * valueNoise(p);\n        p *= 2.0;\n        a *= 0.5;\n    }\n    return v;\n}\n\n    half4 main(float2 fragCoord) {\n        float2 uv = fragCoord / resolution;\n        float2 d = float2(fbm(uv * 3.0 + time * 0.10), fbm(uv * 3.0 + 9.7));\n        d = (d - 0.5) * strength;\n        return content.eval(fragCoord + d * resolution * 0.05);\n    }",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/posteffect/PostFxLessons.kt",
+        "line": 142,
+        "object": "DisplacementGlass"
+      }
+    },
+    {
+      "id": "postfx-06-pixelate",
+      "title": "Pixelate",
+      "category": "POSTFX",
+      "complexity": 2,
+      "conceptIntro": "Snap fragCoord to a grid → mosaic. Increase cell size for chunky retro pixels.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Cell Size",
+          "uniform": "cellSize",
+          "min": 2,
+          "max": 64,
+          "default": 16
+        }
+      ],
+      "renderMode": "RENDER_EFFECT",
+      "screenRecordingHint": null,
+      "uniforms": [
+        {
+          "name": "content",
+          "type": "shader"
+        },
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "cellSize",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform shader content;\nuniform float2 resolution;\nuniform float cellSize;\nhalf4 main(float2 fragCoord) {\n    float2 q = floor(fragCoord / cellSize) * cellSize + cellSize * 0.5;\n    return content.eval(q);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/posteffect/PostFxLessons.kt",
+        "line": 170,
+        "object": "Pixelate"
+      }
+    },
+    {
+      "id": "showcase-05-ripple-on-tap",
+      "title": "Ripple on Tap",
+      "category": "SHOWCASE",
+      "complexity": 5,
+      "conceptIntro": "Multi-touch + drag emit into a 16-slot ripple ring buffer that distorts a live Compose surface (gradient + bokeh + typography). Anisotropic specular streaks along crests, chromatic refraction (R bends more than B), Schlick fresnel sky-tint, foam fringe at peaks.",
+      "learningNotes": [],
+      "controls": [],
+      "renderMode": "CUSTOM",
+      "screenRecordingHint": "Drag with two fingers for streak interference. Record portrait — the prism + foam reads instantly.",
+      "uniforms": [
+        {
+          "name": "content",
+          "type": "shader"
+        },
+        {
+          "name": "iResolution",
+          "type": "float2"
+        },
+        {
+          "name": "iTime",
+          "type": "float"
+        },
+        {
+          "name": "rip",
+          "type": "float",
+          "arraySize": 64
+        }
+      ],
+      "agslSource": "// RENDER_EFFECT-style shader: the surface beneath is a real Compose subtree\n// (see RippleBackdrop). We bind it as `uniform shader content;` and the\n// chromatic refraction samples three slightly-offset coordinates from it.\n//\n// Earlier versions of this lesson generated the backdrop procedurally in-shader\n// because attempts at content.eval() came back blank. Root cause turned out to\n// be the missing `compositingStrategy = Offscreen` on the wrapping\n// graphicsLayer — without an offscreen buffer there's nothing for the runtime\n// shader effect to sample. `Modifier.runtimeShaderEffect` (ShaderModifiers.kt)\n// sets that strategy and is what we use here.\n//\n// SLOTS deliberately not named N — local `float3 N = normalize(...)` later would\n// shadow it. SkSL accepts the shadow but it's a code smell.\nconst int SLOTS = 16;\n\nuniform shader content;\nuniform float2 iResolution;\nuniform float  iTime;\nuniform float  rip[64];\n\n// Clamp sample coords to the layer bounds — at high ripple amplitudes near the\n// edges, totalOff can pull samples past the offscreen buffer. The default\n// out-of-bounds result is transparent black, which would show as dark fringes.\nhalf3 sampleSurface(float2 coord) {\n    float2 c = clamp(coord, float2(0.0), iResolution - float2(1.0));\n    return content.eval(c).rgb;\n}\n\nhalf4 main(float2 fragCoord) {\n    float speed = 360.0;\n    float k     = 0.04;\n    float W     = 30.0;\n    float amp   = 18.0;\n    float decay = 1.3;\n\n    float2 totalOff    = float2(0.0);\n    float2 totalGrad   = float2(0.0);\n    float  totalHeight = 0.0;\n\n    for (int i = 0; i < SLOTS; i++) {\n        // AGSL requires `rip[]` indices to be a constant-multiple of the loop variable\n        // plus a constant — pre-computing `int b = i * 4;` and using `rip[b]` is rejected.\n        float rx = rip[i * 4];\n        float ry = rip[i * 4 + 1];\n        float t0 = rip[i * 4 + 2];\n        float st = rip[i * 4 + 3];\n\n        float  elapsed = iTime - t0;\n        float2 toC     = fragCoord - float2(rx, ry);\n        float  dist    = length(toC);\n        float2 dir     = dist > 0.001 ? toC / dist : float2(0.0);\n\n        float front     = elapsed * speed;\n        float frontEnv  = 1.0 - smoothstep(front - W, front + W, dist);\n        float timeEnv   = exp(-elapsed * decay);\n        float spaceEnv  = 1.0 / sqrt(max(dist, 16.0)) * 7.0;\n        float env       = frontEnv * timeEnv * spaceEnv;\n\n        float kEff  = k / pow(max(st, 0.1), 0.4);\n        float phase = kEff * dist - speed * kEff * elapsed;\n        float s     = sin(phase);\n        float c     = cos(phase);\n\n        float wave   = s * env * amp * st;\n        totalOff    += dir * wave;\n        totalHeight += wave;\n\n        // Carrier-derivative term dominates the height gradient near each crest;\n        // we drop the (denv/dd) envelope-derivative term for cleaner highlights.\n        float dWave  = c * kEff * env * amp * st;\n        totalGrad   += dir * dWave;\n    }\n\n    // Ambient micro-waves: 3-octave procedural plane-wave field. Cheap (3 sin + 3 cos).\n    // Higher spatial frequency than user ripples → frequent small glints across the\n    // surface as the pattern drifts. Each octave moves in a different direction at a\n    // different speed so the pattern never repeats. Feeds totalOff (small refraction\n    // shift, gives chromatic refraction something to pick up) and totalGrad (drives\n    // normal-based lighting → constant sparkle), but NOT totalHeight — foam stays gated\n    // on real wave interference.\n    float2 k1 = float2( 0.048,  0.034);\n    float2 k2 = float2(-0.030,  0.058);\n    float2 k3 = float2( 0.018, -0.072);\n    float p1 = dot(fragCoord, k1) - iTime * 0.55;\n    float p2 = dot(fragCoord, k2) - iTime * 0.85;\n    float p3 = dot(fragCoord, k3) - iTime * 1.10;\n    float2 ambGrad = 0.9 * cos(p1) * k1\n                   + 0.7 * cos(p2) * k2\n                   + 0.5 * cos(p3) * k3;\n    totalOff  += ambGrad * 18.0;\n    totalGrad += ambGrad * 4.5;\n\n    // Build a 3D surface normal from the accumulated gradient. The 0.6 scale tames\n    // very steep waves so the normal stays close to (0,0,1) on calm water.\n    float3 N = normalize(float3(-totalGrad * 0.6, 1.0));\n    float3 V = float3(0.0, 0.0, 1.0);\n    float3 L = normalize(float3(0.55, -0.55, 0.55));   // sun from upper-left, low-ish\n    float3 H = normalize(L + V);\n\n    float NdotH   = max(dot(N, H), 0.0);\n    float NdotV   = max(dot(N, V), 0.0);\n    float NdotL   = max(dot(N, L), 0.0);\n\n    // Anisotropic specular mask: real water glints stretch along wave crests\n    // (the surface is smooth along a crest line, rough across it). The crest\n    // tangent T is perpendicular to the height gradient. When H aligns with T\n    // the highlight is suppressed; when H is perpendicular to T (i.e. aligned\n    // with the gradient direction) the highlight is full. Multiplied with the\n    // tight isotropic Phong term, this turns each round glint into a 1D streak\n    // running along the wave crest.\n    float2 g      = totalGrad;\n    float  gLen   = length(g);\n    float2 crestT = gLen > 0.001 ? float2(-g.y, g.x) / gLen : float2(1.0, 0.0);\n    float  TdotH  = dot(crestT, H.xy);\n    float  sinTH  = sqrt(max(1.0 - TdotH * TdotH, 0.0));\n    float  aniso  = pow(sinTH, 24.0);\n\n    float spec    = pow(NdotH, 96.0) * aniso * 2.0;     // streaked glints along crests\n    float fresnel = pow(1.0 - NdotV, 5.0);              // Schlick approximation\n\n    // Chromatic refraction — R bends a touch more than B, like a prism. On flat water\n    // totalOff = 0 so all three samples coincide and the effect vanishes; magnitude\n    // scales naturally with wave strength. Now sampling the live Compose surface\n    // bound as `content` instead of a procedural pattern.\n    half3 sampleR = sampleSurface(fragCoord - totalOff * 1.05);\n    half3 sampleG = sampleSurface(fragCoord - totalOff);\n    half3 sampleB = sampleSurface(fragCoord - totalOff * 0.95);\n    half3 baseRgb = half3(sampleR.r, sampleG.g, sampleB.b);\n\n    // Fake caustics — surface that tilts toward the sun focuses light onto the floor\n    // below, brightening the underlying texture. pow(., 10) keeps it confined to the\n    // sun-facing slopes; on calm water NdotL is constant so there's no directional bias.\n    float caustic = pow(NdotL, 10.0) * 0.85;\n    baseRgb *= half(1.0 + caustic);\n\n    // Sky reflection at glancing wave faces — fades the underlying surface toward\n    // a cool sky tint where the normal turns away from the camera.\n    half3 sky = half3(0.55, 0.78, 1.0);\n    half3 col = mix(baseRgb, sky, half(fresnel * 0.55));\n\n    // Specular sun on top.\n    col += half3(spec);\n\n    // Foam: thin bright fringe along the highest crests of the summed wave field.\n    float foamAmt = smoothstep(amp * 0.85, amp * 1.20, totalHeight);\n    col += half3(foamAmt * 0.7);\n\n    // Backdrop is fully procedural and opaque, so output is always opaque.\n    return half4(col, 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/showcase/RippleOnTap.kt",
+        "line": 295,
+        "object": "RippleOnTap"
+      }
+    },
+    {
+      "id": "showcase-06-codex-splash",
+      "title": "Codex Splash",
+      "category": "SHOWCASE",
+      "complexity": 5,
+      "conceptIntro": "A procedural Codex-style splash screen: layered AGSL atmosphere, SDF icon tile, cloud glyph, terminal marks, prismatic logo glass, and an interactive water RenderEffect over the composed scene.",
+      "learningNotes": [],
+      "controls": [],
+      "renderMode": "CUSTOM",
+      "screenRecordingHint": "Tap or drag across the splash for strong water ripples over the glass logo.",
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "time",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float time;\n\nfloat hash(float2 p) {\n    return fract(sin(dot(p, float2(127.1, 311.7))) * 43758.5453);\n}\n\nfloat softEllipse(float2 p, float2 center, float2 scale, float radius) {\n    return smoothstep(radius, 0.0, length((p - center) * scale));\n}\n\nhalf4 main(float2 fragCoord) {\n    float2 uv = fragCoord / resolution;\n    float m = min(resolution.x, resolution.y);\n    float2 p = (fragCoord - resolution * 0.5) / m;\n    float shimmer = 0.5 + 0.5 * sin(time * 0.28 + uv.x * 3.0 - uv.y * 2.0);\n\n    float3 cobalt = float3(0.025, 0.20, 0.95);\n    float3 violet = float3(0.18, 0.08, 0.86);\n    float3 sky = float3(0.42, 0.72, 1.0);\n    float3 col = mix(cobalt, violet, smoothstep(0.30, 0.96, uv.x));\n\n    float horizonGlow = softEllipse(p, float2(-0.20, 0.02), float2(1.0, 2.4), 0.62);\n    float lowerGlow = softEllipse(p, float2(-0.18, 0.33), float2(1.1, 1.8), 0.48);\n    col = mix(col, sky, horizonGlow * 0.42);\n    col += float3(0.02, 0.11, 0.28) * lowerGlow;\n\n    float veil = 0.0;\n    veil += softEllipse(p, float2(-0.56, -0.28), float2(0.62, 1.65), 0.58) * 0.78;\n    veil += softEllipse(p, float2(-0.44, -0.03), float2(0.72, 1.45), 0.50) * 0.44;\n    veil += softEllipse(p, float2(-0.30, 0.22), float2(0.88, 1.90), 0.42) * 0.30;\n    veil *= smoothstep(1.05, 0.10, uv.x + uv.y * 0.18);\n    col = mix(col, float3(0.92, 0.95, 1.0), veil * (0.48 + 0.04 * shimmer));\n\n    float topBloom = softEllipse(p, float2(0.02, -0.55), float2(1.8, 0.75), 0.38);\n    float centerBloom = softEllipse(p, float2(-0.08, -0.04), float2(1.55, 1.0), 0.32);\n    col += float3(0.50, 0.45, 0.95) * topBloom * 0.30;\n    col += float3(0.10, 0.28, 0.65) * centerBloom * 0.22;\n\n    float vignette = smoothstep(0.92, 0.18, length(p * float2(1.05, 0.88)));\n    col *= 0.72 + 0.28 * vignette;\n    col += (hash(fragCoord + time * 17.0) - 0.5) * 0.018;\n\n    return half4(half3(clamp(col, 0.0, 1.0)), 1.0);\n}",
+      "extraAgslSources": [
+        "uniform float2 resolution;\nuniform float time;\n\nfloat sdRoundBox(float2 p, float2 b, float r) {\n    float2 q = abs(p) - b + float2(r);\n    return length(max(q, float2(0.0))) + min(max(q.x, q.y), 0.0) - r;\n}\n\nfloat sdSegment(float2 p, float2 a, float2 b, float r) {\n    float2 pa = p - a;\n    float2 ba = b - a;\n    float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);\n    return length(pa - ba * h) - r;\n}\n\nfloat fill(float d, float aa) {\n    return smoothstep(aa, -aa, d);\n}\n\nfloat rim(float d, float width, float softness) {\n    return exp(-abs(d - width) * softness);\n}\n\nfloat3 prism(float phase) {\n    return 0.52 + 0.48 * cos(6.2831853 * (phase + float3(0.00, 0.34, 0.67)));\n}\n\nfloat svgSegmentDistance(float2 p, float2 a, float2 b) {\n    float2 pa = p - a;\n    float2 ba = b - a;\n    float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);\n    return length(pa - ba * h);\n}\n\nfloat svgRayCross(float2 p, float2 a, float2 b) {\n    float crossesY = step(min(a.y, b.y), p.y) * (1.0 - step(max(a.y, b.y), p.y));\n    float denom = b.y - a.y;\n    float safeDenom = denom + (1.0 - step(0.0001, abs(denom))) * 0.0001;\n    float x = a.x + (p.y - a.y) * (b.x - a.x) / safeDenom;\n    return crossesY * step(p.x, x);\n}\n\nfloat2 svgEdge(float2 p, float2 a, float2 b) {\n    return float2(svgSegmentDistance(p, a, b), svgRayCross(p, a, b));\n}\n\nfloat cloudSdf(float2 p) {\n    float2 q = p / 0.02875 + float2(12.0, 12.0);\n    float d = 1000.0;\n    float crossings = 0.0;\n    float2 s = float2(0.0, 0.0);\n    s = svgEdge(q, float2(9.064, 3.344), float2(9.631, 3.153)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(9.631, 3.153), float2(10.218, 3.038)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(10.218, 3.038), float2(10.816, 3.000)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(10.816, 3.000), float2(11.413, 3.040)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(11.413, 3.040), float2(12.000, 3.155)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(12.000, 3.155), float2(12.567, 3.347)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(12.567, 3.347), float2(13.102, 3.615)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(13.102, 3.615), float2(13.599, 3.948)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(13.599, 3.948), float2(14.060, 4.328)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(14.060, 4.328), float2(14.648, 4.222)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(14.648, 4.222), float2(15.246, 4.183)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(15.246, 4.183), float2(15.843, 4.224)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(15.843, 4.224), float2(16.429, 4.342)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(16.429, 4.342), float2(16.996, 4.536)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(16.996, 4.536), float2(17.532, 4.802)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(17.532, 4.802), float2(18.029, 5.134)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(18.029, 5.134), float2(18.479, 5.529)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(18.479, 5.529), float2(18.874, 5.979)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(18.874, 5.979), float2(19.207, 6.476)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(19.207, 6.476), float2(19.471, 7.013)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(19.471, 7.013), float2(19.668, 7.578)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(19.668, 7.578), float2(19.782, 8.166)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(19.782, 8.166), float2(19.816, 8.763)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(19.816, 8.763), float2(19.784, 9.361)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(19.784, 9.361), float2(19.678, 9.949)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(19.678, 9.949), float2(20.056, 10.409)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(20.056, 10.409), float2(20.391, 10.905)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(20.391, 10.905), float2(20.656, 11.442)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(20.656, 11.442), float2(20.849, 12.008)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(20.849, 12.008), float2(20.961, 12.596)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(20.961, 12.596), float2(21.000, 13.193)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(21.000, 13.193), float2(20.964, 13.791)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(20.964, 13.791), float2(20.847, 14.378)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(20.847, 14.378), float2(20.652, 14.943)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(20.652, 14.943), float2(20.383, 15.478)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(20.383, 15.478), float2(20.052, 15.977)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(20.052, 15.977), float2(19.660, 16.429)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(19.660, 16.429), float2(19.210, 16.823)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(19.210, 16.823), float2(18.711, 17.155)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(18.711, 17.155), float2(18.174, 17.418)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(18.174, 17.418), float2(17.615, 17.625)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(17.615, 17.625), float2(17.396, 18.182)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(17.396, 18.182), float2(17.137, 18.721)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(17.137, 18.721), float2(16.805, 19.218)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(16.805, 19.218), float2(16.408, 19.667)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(16.408, 19.667), float2(15.959, 20.062)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(15.959, 20.062), float2(15.462, 20.396)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(15.462, 20.396), float2(14.925, 20.660)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(14.925, 20.660), float2(14.357, 20.849)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(14.357, 20.849), float2(13.770, 20.962)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(13.770, 20.962), float2(13.172, 21.000)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(13.172, 21.000), float2(12.575, 20.964)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(12.575, 20.964), float2(11.987, 20.849)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(11.987, 20.849), float2(11.421, 20.655)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(11.421, 20.655), float2(10.887, 20.385)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(10.887, 20.385), float2(10.392, 20.049)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(10.392, 20.049), float2(9.930, 19.672)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(9.930, 19.672), float2(9.344, 19.786)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(9.344, 19.786), float2(8.746, 19.813)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(8.746, 19.813), float2(8.148, 19.777)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(8.148, 19.777), float2(7.561, 19.662)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(7.561, 19.662), float2(6.995, 19.469)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(6.995, 19.469), float2(6.459, 19.202)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(6.459, 19.202), float2(5.962, 18.868)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(5.962, 18.868), float2(5.514, 18.471)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(5.514, 18.471), float2(5.122, 18.019)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(5.122, 18.019), float2(4.776, 17.531)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(4.776, 17.531), float2(4.522, 16.989)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(4.522, 16.989), float2(4.329, 16.422)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(4.329, 16.422), float2(4.215, 15.835)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(4.215, 15.835), float2(4.179, 15.237)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(4.179, 15.237), float2(4.220, 14.640)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(4.220, 14.640), float2(4.315, 14.053)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(4.315, 14.053), float2(3.923, 13.601)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(3.923, 13.601), float2(3.593, 13.102)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(3.593, 13.102), float2(3.332, 12.563)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(3.332, 12.563), float2(3.139, 11.997)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(3.139, 11.997), float2(3.029, 11.408)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(3.029, 11.408), float2(3.000, 10.811)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(3.000, 10.811), float2(3.038, 10.213)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(3.038, 10.213), float2(3.144, 9.624)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(3.144, 9.624), float2(3.344, 9.060)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(3.344, 9.060), float2(3.611, 8.524)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(3.611, 8.524), float2(3.944, 8.027)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(3.944, 8.027), float2(4.339, 7.578)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(4.339, 7.578), float2(4.789, 7.183)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(4.789, 7.183), float2(5.284, 6.846)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(5.284, 6.846), float2(5.822, 6.586)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(5.822, 6.586), float2(6.381, 6.380)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(6.381, 6.380), float2(6.582, 5.816)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(6.582, 5.816), float2(6.849, 5.281)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(6.849, 5.281), float2(7.185, 4.785)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(7.185, 4.785), float2(7.579, 4.335)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(7.579, 4.335), float2(8.029, 3.940)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(8.029, 3.940), float2(8.527, 3.608)); d = min(d, s.x); crossings += s.y;\n    s = svgEdge(q, float2(8.527, 3.608), float2(9.064, 3.344)); d = min(d, s.x); crossings += s.y;\n    float inside = step(0.5, mod(crossings, 2.0));\n    return mix(d, -d, inside) * 0.02875;\n}\n\nfloat2 tileNormal(float2 p) {\n    float e = 0.003;\n    return normalize(float2(\n        sdRoundBox(p + float2(e, 0.0), float2(0.345), 0.160) -\n            sdRoundBox(p - float2(e, 0.0), float2(0.345), 0.160),\n        sdRoundBox(p + float2(0.0, e), float2(0.345), 0.160) -\n            sdRoundBox(p - float2(0.0, e), float2(0.345), 0.160)\n    ));\n}\n\nhalf4 main(float2 fragCoord) {\n    float2 halfRes = resolution * 0.5;\n    float m = min(resolution.x, resolution.y);\n    float2 p = (fragCoord - halfRes) / m;\n    float aa = 2.2 / m;\n    float pulse = 0.5 + 0.5 * sin(time * 0.85);\n    float sweepCenter = mix(-0.70, 0.72, fract(time * 0.42));\n    float sweepLine = p.x * 0.86 - p.y * 0.72;\n    float glassSweep = exp(-pow((sweepLine - sweepCenter) * 7.4, 2.0));\n    float3 glassPrism = prism(sweepLine * 1.85 + time * 0.32);\n\n    float tileD = sdRoundBox(p, float2(0.345), 0.160);\n    float tile = fill(tileD, aa);\n    float shadowWide = fill(sdRoundBox(p - float2(0.000, 0.038), float2(0.350), 0.162), 0.060) * 0.20;\n    float shadowTight = fill(sdRoundBox(p - float2(0.000, 0.020), float2(0.344), 0.158), 0.022) * 0.16;\n    float glow = smoothstep(0.62, 0.12, length(p)) * (0.07 + pulse * 0.018);\n\n    float3 col = float3(0.18, 0.34, 1.0) * glow;\n    float alpha = max(glow * 0.55, max(shadowWide, shadowTight));\n    col = mix(col, float3(0.08, 0.10, 0.18), shadowWide * 0.58);\n    col = mix(col, float3(0.03, 0.04, 0.08), shadowTight * 0.45);\n\n    float2 tn = tileNormal(p);\n    float topLeftLight = clamp(dot(tn, normalize(float2(-0.75, -0.85))), 0.0, 1.0);\n    float bottomRightShade = clamp(dot(tn, normalize(float2(0.72, 0.86))), 0.0, 1.0);\n    float diag = clamp((p.x + p.y) * 1.15 + 0.5, 0.0, 1.0);\n    float centerMilk = smoothstep(0.47, 0.02, length(p * float2(1.02, 0.94)));\n    float3 tileCol = mix(float3(1.0, 1.0, 0.985), float3(0.865, 0.860, 0.835), diag);\n    tileCol = mix(tileCol, float3(1.0), centerMilk * 0.36);\n    tileCol += float3(0.11, 0.13, 0.18) * topLeftLight * rim(tileD, 0.000, 82.0);\n    tileCol -= float3(0.095, 0.092, 0.078) * bottomRightShade * rim(tileD, 0.006, 62.0);\n\n    float outerBright = rim(tileD, 0.000, 120.0) * topLeftLight;\n    float innerBevel = rim(tileD, -0.015, 78.0) * tile;\n    float cornerGlint = exp(-length((p - float2(-0.235, -0.248)) * float2(1.3, 1.0)) * 18.0) * tile;\n    float lowerEdge = exp(-abs(p.y - 0.342) * 58.0) * smoothstep(-0.29, 0.24, p.x) * tile;\n    float tileGlassEdge = clamp(rim(tileD, 0.000, 190.0) + rim(tileD, -0.024, 82.0) * tile, 0.0, 1.0);\n    float tileGlass = tileGlassEdge * (0.48 + glassSweep * 1.25);\n    tileCol += float3(0.30, 0.36, 0.46) * outerBright;\n    tileCol += float3(0.10, 0.12, 0.16) * innerBevel * topLeftLight;\n    tileCol += float3(0.18, 0.20, 0.23) * cornerGlint;\n    tileCol -= float3(0.055, 0.052, 0.045) * lowerEdge;\n    tileCol += glassPrism * tileGlass * 0.34;\n    tileCol += float3(1.0, 1.0, 1.0) * tileGlassEdge * glassSweep * 0.38;\n    col = mix(col, tileCol, tile);\n    alpha = max(alpha, tile);\n\n    float2 cp = p - float2(0.000, 0.010);\n    float cloudD = cloudSdf(cp);\n    float cloud = fill(cloudD, aa);\n    float cloudShadow = fill(cloudD - 0.018, 0.026) * tile * 0.18;\n    col = mix(col, float3(0.20, 0.22, 0.36), cloudShadow * (1.0 - cloud));\n\n    float topMix = clamp(0.52 - cp.y * 3.15 + cp.x * 0.24 + pulse * 0.025, 0.0, 1.0);\n    float midBand = exp(-pow((cp.y + 0.020) * 12.0, 2.0));\n    float lowerPool = smoothstep(-0.02, 0.19, cp.y);\n    float3 cloudCol = mix(float3(0.045, 0.130, 0.985), float3(0.42, 0.61, 1.0), 0.42);\n    cloudCol = mix(cloudCol, float3(0.765, 0.515, 1.0), topMix * 0.78);\n    cloudCol = mix(cloudCol, float3(0.120, 0.270, 1.0), midBand * 0.42);\n    cloudCol = mix(cloudCol, float3(0.020, 0.085, 0.950), lowerPool * 0.48);\n\n    float cloudTopRim = rim(cloudD, 0.000, 94.0) * smoothstep(0.040, -0.150, cp.y);\n    float cloudLeftRim = rim(cloudD, 0.000, 72.0) * smoothstep(0.050, -0.210, cp.x) * 0.70;\n    float cloudLowerShade = rim(cloudD, -0.004, 70.0) * smoothstep(0.010, 0.185, cp.y);\n    float capGlow = exp(-length((cp - float2(-0.006, -0.124)) * float2(1.15, 1.0)) * 20.0);\n    cloudCol += float3(0.24, 0.20, 0.34) * cloudTopRim;\n    cloudCol += float3(0.09, 0.24, 0.50) * cloudLeftRim;\n    cloudCol += float3(0.12, 0.06, 0.20) * capGlow;\n    cloudCol -= float3(0.05, 0.08, 0.16) * cloudLowerShade;\n    float glyphGlassEdge = clamp(rim(cloudD, 0.000, 118.0) + rim(cloudD, -0.010, 84.0) * cloud, 0.0, 1.0);\n    float glyphSweep = glassSweep * (0.62 + 0.38 * smoothstep(0.16, -0.16, cp.x));\n    cloudCol += prism(cp.x * 2.4 - cp.y * 1.6 + time * 0.36) * glyphGlassEdge * (0.34 + glyphSweep * 0.78);\n    cloudCol += float3(0.94, 0.98, 1.0) * glyphGlassEdge * glyphSweep * 0.28;\n    col = mix(col, cloudCol, cloud);\n\n    float gtA = sdSegment(cp, float2(-0.132, -0.075), float2(-0.060, 0.020), 0.018);\n    float gtB = sdSegment(cp, float2(-0.060, 0.020), float2(-0.132, 0.112), 0.018);\n    float dash = sdSegment(cp, float2(0.060, 0.056), float2(0.176, 0.056), 0.016);\n    float markD = min(min(gtA, gtB), dash);\n    float markGlow = rim(markD, 0.000, 42.0) * cloud;\n    float marks = fill(markD, aa) * cloud;\n    col += float3(0.24, 0.48, 0.95) * markGlow * 0.20;\n    col = mix(col, float3(0.955, 0.980, 1.0), marks);\n\n    return half4(half3(clamp(col, 0.0, 1.0)), half(clamp(alpha, 0.0, 1.0)));\n}",
+        "const int SLOTS = 16;\n\nuniform shader content;\nuniform float2 iResolution;\nuniform float iTime;\nuniform float rip[64];\n\nhalf3 sampleSurface(float2 coord) {\n    float2 c = clamp(coord, float2(0.0), iResolution - float2(1.0));\n    return content.eval(c).rgb;\n}\n\nhalf4 main(float2 fragCoord) {\n    float speed = 410.0;\n    float k = 0.046;\n    float W = 36.0;\n    float amp = 22.0;\n    float decay = 1.15;\n\n    float2 totalOff = float2(0.0);\n    float2 totalGrad = float2(0.0);\n    float totalHeight = 0.0;\n\n    for (int i = 0; i < SLOTS; i++) {\n        float rx = rip[i * 4];\n        float ry = rip[i * 4 + 1];\n        float t0 = rip[i * 4 + 2];\n        float st = rip[i * 4 + 3];\n\n        float elapsed = iTime - t0;\n        float2 toC = fragCoord - float2(rx, ry);\n        float dist = length(toC);\n        float2 dir = dist > 0.001 ? toC / dist : float2(0.0);\n\n        float front = elapsed * speed;\n        float frontEnv = 1.0 - smoothstep(front - W, front + W, dist);\n        float timeEnv = exp(-elapsed * decay);\n        float spaceEnv = 1.0 / sqrt(max(dist, 16.0)) * 7.5;\n        float env = frontEnv * timeEnv * spaceEnv;\n\n        float kEff = k / pow(max(st, 0.1), 0.35);\n        float phase = kEff * dist - speed * kEff * elapsed;\n        float wave = sin(phase) * env * amp * st;\n        totalOff += dir * wave;\n        totalHeight += wave;\n\n        float dWave = cos(phase) * kEff * env * amp * st;\n        totalGrad += dir * dWave;\n    }\n\n    float3 normal = normalize(float3(-totalGrad * 0.62, 1.0));\n    float3 view = float3(0.0, 0.0, 1.0);\n    float3 light = normalize(float3(0.48, -0.62, 0.62));\n    float3 halfVec = normalize(light + view);\n\n    float ndh = max(dot(normal, halfVec), 0.0);\n    float ndv = max(dot(normal, view), 0.0);\n    float ndl = max(dot(normal, light), 0.0);\n\n    float2 grad = totalGrad;\n    float gradLen = length(grad);\n    float2 crestT = gradLen > 0.001 ? float2(-grad.y, grad.x) / gradLen : float2(1.0, 0.0);\n    float tdh = dot(crestT, halfVec.xy);\n    float aniso = pow(sqrt(max(1.0 - tdh * tdh, 0.0)), 22.0);\n    float spec = pow(ndh, 88.0) * aniso * 2.25;\n    float fresnel = pow(1.0 - ndv, 5.0);\n    float caustic = pow(ndl, 9.0) * 0.78;\n\n    half3 sampleR = sampleSurface(fragCoord - totalOff * 1.10);\n    half3 sampleG = sampleSurface(fragCoord - totalOff);\n    half3 sampleB = sampleSurface(fragCoord - totalOff * 0.90);\n    half3 baseRgb = half3(sampleR.r, sampleG.g, sampleB.b);\n    baseRgb *= half(1.0 + caustic);\n\n    half3 sky = half3(0.50, 0.74, 1.0);\n    half3 col = mix(baseRgb, sky, half(fresnel * 0.50));\n    col += half3(spec);\n\n    float foamAmt = smoothstep(amp * 0.70, amp * 1.15, totalHeight);\n    col += half3(foamAmt * 0.58);\n\n    return half4(col, 1.0);\n}"
+      ],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/showcase/CodexSplashShowcase.kt",
+        "line": 79,
+        "object": "CodexSplashShowcase"
+      }
+    }
+  ]
+}

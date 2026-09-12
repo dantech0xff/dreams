@@ -16,3 +16,8 @@ local.properties
 /.idea
 /resources
 .claude/settings.local.json
+tools/shader-catalog/node_modules
+
+# AI context dump: regenerate on demand (npx repomix), never commit — it goes stale
+# immediately and duplicates the whole repo, licence text included.
+repomix-output.xml

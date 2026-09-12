@@ -1,0 +1,24 @@
+{
+  "name": "dreams-shader-catalog",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Extracts the AGSL lessons from the Kotlin sources, renders thumbnails in headless Chromium and builds the GitHub Pages gallery.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "extract": "node extract-lessons.mjs",
+    "check": "node render-thumbnails.mjs --check",
+    "check:thumbs": "node check-thumbnails.mjs",
+    "thumbs": "node render-thumbnails.mjs",
+    "site": "node build-site.mjs",
+    "readme": "node update-readme.mjs",
+    "catalog": "npm run extract && npm run readme && npm run site",
+    "verify": "npm run catalog && npm run check:thumbs && npm run check",
+    "all": "npm run extract && npm run thumbs && npm run readme && npm run site"
+  },
+  "devDependencies": {
+    "playwright": "^1.56.1"
+  }
+}

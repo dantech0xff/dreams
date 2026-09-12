@@ -136,8 +136,11 @@ object SierpinskiFold {
         uniform float2 resolution;
         uniform float time;
         uniform float depth;
-        // IFS-style fold: at each step, mirror p toward a triangle vertex and scale.
-        // Distance to triangle approximates Sierpinski-gasket SDF.
+        // Inverse IFS: the gasket is the union of three half-size copies of itself,
+        // one per corner. For each pixel, pick the corner whose copy contains it and
+        // zoom into that copy (p = 2p - corner). Every iteration doubles the detail;
+        // afterwards a single plain triangle SDF is all that is left to evaluate.
+        // Equilateral triangle, side 1, centered on the origin, apex up.
         float sdTri(float2 p) {
             const float k = 1.732;
             p.x = abs(p.x) - 0.5;
@@ -148,14 +151,17 @@ object SierpinskiFold {
         }
         half4 main(float2 fragCoord) {
             float2 p = (fragCoord - 0.5 * resolution) / resolution.y * 1.2;
+            p.y = -p.y;   // apex up: fragCoord grows downwards
             float s = 1.0;
             for (int i = 0; i < 8; i++) {
                 if (float(i) >= depth) break;
-                p = abs(p);
-                p.x -= 0.5 * s;
-                if (p.x < 0.0) p.x = -p.x;
+                // Corners: A (top), B (bottom-left), C (bottom-right). The top copy
+                // owns everything above the midline y = 0.144; below it the sign of
+                // x decides between the two bottom copies.
+                float2 corner = float2(0.0, 0.577);
+                if (p.y < 0.144) corner = (p.x < 0.0) ? float2(-0.5, -0.289) : float2(0.5, -0.289);
+                p = 2.0 * p - corner;
                 s *= 0.5;
-                p *= 2.0;
             }
             float d = sdTri(p) * s;
             float a = 1.0 - smoothstep(0.0, 0.005, d);
@@ -169,8 +175,8 @@ object SierpinskiFold {
     init {
         LessonRegistry.register(
             LessonModel(
-                id = id, title = "Sierpinski Fold", category = LessonCategory.FRACTALS, complexity = 5,
-                conceptIntro = "Iterated function systems: fold and scale space repeatedly, then evaluate one SDF — exact geometric self-similarity.",
+                id = id, title = "Sierpinski Gasket", category = LessonCategory.FRACTALS, complexity = 5,
+                conceptIntro = "Iterated function systems: zoom into the corner copy that contains the pixel, repeat, then evaluate one triangle SDF — exact geometric self-similarity.",
                 agslSource = SOURCE,
                 controls = persistentListOf(LessonControl.FloatRange("Depth", "depth", 1f, 8f, 5f)),
             )

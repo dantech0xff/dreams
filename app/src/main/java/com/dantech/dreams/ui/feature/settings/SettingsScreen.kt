@@ -89,7 +89,7 @@ fun SettingsScreen(
                     }
                 },
             )
-            LinkRow(title = "License", trailing = "Apache-2.0", onClick = { licenseOpen = true })
+            LinkRow(title = "License", trailing = "MIT", onClick = { licenseOpen = true })
 
             Spacer(Modifier.height(24.dp))
         }
@@ -129,7 +129,7 @@ private fun LicenseSheet(onDismiss: () -> Unit) {
             Text("License", style = MaterialTheme.typography.titleLarge)
             Spacer(Modifier.height(8.dp))
             Text(
-                "Apache-2.0 — see the LICENSE file in the repository for the full text.",
+                "MIT — see the LICENSE file in the repository for the full text.",
                 style = MaterialTheme.typography.bodyMedium,
             )
             Spacer(Modifier.height(16.dp))

@@ -23,8 +23,8 @@ object HerringboneTiles {
             float stripe = abs(fract((p.x + p.y) * 3.0) - 0.5);
             float line = 1.0 - smoothstep(width, width + 0.035, stripe);
             float joint = max(
-                1.0 - smoothstep(0.46, 0.49, abs(cell.x)),
-                1.0 - smoothstep(0.46, 0.49, abs(cell.y))
+                smoothstep(0.46, 0.49, abs(cell.x)),
+                smoothstep(0.46, 0.49, abs(cell.y))
             );
             half3 grout = half3(0.04, 0.05, 0.08);
             half3 woodA = half3(0.92, 0.58, 0.25);
