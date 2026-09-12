@@ -339,7 +339,7 @@ npm run check    # only compile every lesson under WebGL2
 
 ### GitHub Pages
 
-The gallery is the `docs/` folder. Enable **Settings → Pages → Source: GitHub Actions** once; [`pages.yml`](.github/workflows/pages.yml) deploys on every push to `master` that touches `docs/`.
+The gallery is the `docs/` folder, deployed by [`pages.yml`](.github/workflows/pages.yml) on every push to `master` that touches it. The workflow calls `actions/configure-pages` with `enablement: true`, so it points the repository's Pages source at GitHub Actions on its first run — a fork needs no setup. If Pages is left on the default *Deploy from a branch* source, GitHub serves a Jekyll rendering of this README instead and every `docs/` asset 404s.
 
 ## Contributing
 
