@@ -32,6 +32,7 @@ export const THUMB_STATES = {
     'sdf-07-heartbeat': { time: 0.88 },           // mid-lub: full pulse + ring
     'interactive-05-lens-flare': { time: 1.6, touch: { x: 0.68, y: 0.38, t: 0.9 } },
     'noise-07-aurora-borealis': { time: 3.4 },
+    'fractals-05-burning-ship': { time: 2.0 },
     'showcase-07-warp-voyage': { time: 3.2, touch: { x: 0.60, y: 0.44, t: 2.0 } },
     'showcase-08-chrome-flow': { time: 2.6, touch: { x: 0.60, y: 0.42, t: 2.35 } },
     'showcase-05-ripple-on-tap': {

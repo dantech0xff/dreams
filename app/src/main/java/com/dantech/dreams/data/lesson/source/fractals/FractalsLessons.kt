@@ -196,7 +196,11 @@ object BurningShip {
         // a molten hull — no other two-line change produces this much drama.
         half4 main(float2 fragCoord) {
             float2 uv = (fragCoord - 0.5 * resolution) / resolution.y;
-            float2 c = uv * (2.6 / zoom) + float2(-0.45, -0.55);
+            // The wide view centers on the ship's body; as the zoom slider
+            // increases the target eases toward a filament boundary point so
+            // deep zooms land on structure instead of the black interior.
+            float2 ctr = mix(float2(-0.45, -0.55), float2(-0.9965, -0.5490), clamp((zoom - 1.0) / 14.0, 0.0, 1.0));
+            float2 c = uv * (2.6 / zoom) + ctr;
             float2 z = float2(0.0);
             float iter = 0.0;
             const int MAX = 96;
