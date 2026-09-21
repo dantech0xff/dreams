@@ -28,6 +28,7 @@ import com.dantech.dreams.data.lesson.LessonModel
 import com.dantech.dreams.data.lesson.LessonRegistry
 import com.dantech.dreams.data.lesson.LessonRenderMode
 import com.dantech.dreams.data.lesson.source.noise.NOISE_HELPERS
+import kotlin.math.exp
 
 private const val FOCUS_MIN_X = 0.30f
 private const val FOCUS_MAX_X = 0.70f
@@ -45,6 +46,7 @@ uniform float2 resolution;
 uniform float time;
 uniform float2 touchPos;
 uniform float touchTime;
+uniform float warpPhase;
 $NOISE_HELPERS
 
 half4 main(float2 fragCoord) {
@@ -71,7 +73,9 @@ half4 main(float2 fragCoord) {
         float fL = float(L);
         float spiral = a / 6.2831853 + log(r) * (0.24 + fL * 0.07) + fL * 0.37;
         float sector = floor(spiral * (52.0 + fL * 26.0));
-        float z = log(r) * (2.6 + fL * 0.4) - time * (0.55 + fL * 0.30) * boost + fL * 9.1;
+        // warpPhase is integrated on the Compose side (dt * boost per frame),
+        // so drags accelerate the tunnel without teleporting the star field.
+        float z = log(r) * (2.6 + fL * 0.4) - warpPhase * (0.55 + fL * 0.30) + fL * 9.1;
         float ring = floor(z);
         float s = fract(z);
         float h = hash21(float2(sector + fL * 131.0, ring - fL * 57.0));
@@ -103,6 +107,8 @@ fun WarpVoyageDemo() {
     val target = remember { floatArrayOf(0.5f, 0.44f) }
     val focus = remember { floatArrayOf(0.5f, 0.44f) }
     val lastSteer = remember { floatArrayOf(-1f) }
+    val warpPhase = remember { floatArrayOf(0f) }
+    val prevTime = remember { floatArrayOf(-1f) }
 
     Box(
         Modifier
@@ -131,10 +137,17 @@ fun WarpVoyageDemo() {
             .drawBehind {
                 focus[0] += (target[0] - focus[0]) * FOCUS_LERP
                 focus[1] += (target[1] - focus[1]) * FOCUS_LERP
+                val dt = if (prevTime[0] < 0f) 0f else (time - prevTime[0]).coerceIn(0f, 0.1f)
+                prevTime[0] = time
+                val boost =
+                    if (lastSteer[0] < 0f) 1f
+                    else 1f + 1.8f * exp(-(time - lastSteer[0]).coerceAtLeast(0f) * 1.4f)
+                warpPhase[0] += dt * boost
                 shader.setFloatUniform("resolution", size.width, size.height)
                 shader.setFloatUniform("time", time)
                 shader.setFloatUniform("touchPos", focus[0], focus[1])
                 shader.setFloatUniform("touchTime", lastSteer[0])
+                shader.setFloatUniform("warpPhase", warpPhase[0])
                 drawRect(brush)
             },
     ) {
