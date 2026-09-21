@@ -6,5 +6,6 @@ object MotionBootstrap {
         SineHarmonics.id
         WaveTrain.id
         PendulumChain.id
+        LissajousTrail.id
     }
 }

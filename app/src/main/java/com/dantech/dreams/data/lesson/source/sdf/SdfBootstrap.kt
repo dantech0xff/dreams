@@ -8,5 +8,6 @@ object SdfBootstrap {
         Checkerboard.id
         BreathingGrid.id
         Isolines.id
+        Heartbeat.id
     }
 }

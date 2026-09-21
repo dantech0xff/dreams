@@ -8,5 +8,7 @@ object PostFxBootstrap {
         Dissolve.id
         DisplacementGlass.id
         Pixelate.id
+        Glitch.id
+        CrtScreen.id
     }
 }

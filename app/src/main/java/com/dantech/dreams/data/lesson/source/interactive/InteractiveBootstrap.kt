@@ -6,5 +6,6 @@ object InteractiveBootstrap {
         PointerRipple.id
         PointerPullField.id
         PointerHeatStripes.id
+        PointerLensFlare.id
     }
 }

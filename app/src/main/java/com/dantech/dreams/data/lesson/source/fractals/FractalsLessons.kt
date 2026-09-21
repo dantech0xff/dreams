@@ -183,3 +183,57 @@ object SierpinskiFold {
         )
     }
 }
+
+object BurningShip {
+    val id = "fractals-05-burning-ship"
+    private val SOURCE = """
+        uniform float2 resolution;
+        uniform float zoom;
+        uniform float heat;
+        $FRACTAL_HELPERS
+        // Burning Ship: Mandelbrot with abs() folded in before each squaring.
+        // The fold mirrors the plane into itself, stacking jagged "masts" over
+        // a molten hull — no other two-line change produces this much drama.
+        half4 main(float2 fragCoord) {
+            float2 uv = (fragCoord - 0.5 * resolution) / resolution.y;
+            // The wide view centers on the ship's body; as the zoom slider
+            // increases the target eases toward a filament boundary point so
+            // deep zooms land on structure instead of the black interior.
+            float2 ctr = mix(float2(-0.45, -0.55), float2(-0.9965, -0.5490), clamp((zoom - 1.0) / 14.0, 0.0, 1.0));
+            float2 c = uv * (2.6 / zoom) + ctr;
+            float2 z = float2(0.0);
+            float iter = 0.0;
+            const int MAX = 96;
+            for (int i = 0; i < MAX; i++) {
+                float2 az = abs(z);
+                z = cmul(az, az) + c;
+                if (dot(z, z) > 256.0) { iter = float(i); break; }
+                iter = float(i);
+            }
+            float t = smoothEscape(iter, z) / float(MAX);
+            t = clamp(t * heat, 0.0, 1.0);
+            // Fire ramp: ember red → hot orange → pale yellow. Fast-escaping
+            // space gets a faint coal-red ambient so the frame never goes flat.
+            float3 col = mix(float3(0.10, 0.02, 0.01), float3(0.48, 0.07, 0.02), smoothstep(0.0, 0.22, t));
+            col = mix(col, float3(1.0, 0.45, 0.05), smoothstep(0.22, 0.62, t));
+            col = mix(col, float3(1.0, 0.92, 0.55), smoothstep(0.62, 1.0, t));
+            if (iter >= float(MAX - 1)) col = float3(0.01, 0.0, 0.0);
+            return half4(half3(col), 1.0);
+        }
+    """.trimIndent()
+
+    init {
+        LessonRegistry.register(
+            LessonModel(
+                id = id, title = "Burning Ship", category = LessonCategory.FRACTALS, complexity = 4,
+                conceptIntro = "abs(z) before z² + c folds the plane every iteration — Mandelbrot's evil twin, all fire and rigging.",
+                agslSource = SOURCE,
+                controls = persistentListOf(
+                    LessonControl.FloatRange("Zoom", "zoom", 0.5f, 40f, 1f),
+                    LessonControl.FloatRange("Heat", "heat", 0.6f, 2.2f, 1.15f),
+                ),
+                screenRecordingHint = "Sweep Zoom to ~8 at the ship's waterline (heat 1.4) for maximum drama.",
+            )
+        )
+    }
+}

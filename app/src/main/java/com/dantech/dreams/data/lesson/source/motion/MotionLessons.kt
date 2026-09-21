@@ -169,3 +169,51 @@ object PendulumChain {
         )
     }
 }
+
+object LissajousTrail {
+    val id = "motion-05-lissajous-trail"
+    private val SOURCE = """
+        uniform float2 resolution;
+        uniform float time;
+        uniform float speed;
+        uniform float ratio;
+        uniform float trail;
+        // A bead rides a Lissajous curve (x = sin 2t, y = sin ratio·t); ghosts
+        // sampled at earlier times fake phosphor persistence — no framebuffer
+        // feedback needed.
+        half4 main(float2 fragCoord) {
+            float2 uv = (fragCoord - 0.5 * resolution) / resolution.y;
+            half3 col = half3(0.015, 0.020, 0.055);
+            const int N = 56;
+            for (int i = 0; i < N; i++) {
+                // Ghosts are spaced tightly in time so the trail reads as one
+                // continuous ribbon, brightest at the head.
+                float back = float(i) / float(N) * trail;
+                float tt = (time * speed - back) * 2.0;
+                float2 p = 0.60 * float2(sin(tt + 1.5707), sin(tt * ratio));
+                float d = length(uv - p);
+                float w = 1.0 - float(i) / float(N);
+                float g = exp(-d * 22.0) * w;
+                // Hue drifts slowly along the tail.
+                col += half3(0.55 + 0.45 * cos(6.2831 * (float(i) / float(N) * 0.9 + time * 0.04) + half3(0.0, 0.35, 0.70))) * half(g * 1.6);
+            }
+            return half4(col, 1.0);
+        }
+    """.trimIndent()
+
+    init {
+        LessonRegistry.register(
+            LessonModel(
+                id = id, title = "Lissajous Trail", category = LessonCategory.MOTION, complexity = 3,
+                conceptIntro = "Sample the curve's past positions each frame and additively glow them — a neon phosphor trail with zero state.",
+                agslSource = SOURCE,
+                controls = persistentListOf(
+                    LessonControl.FloatRange("Speed", "speed", 0f, 3f, 1f),
+                    LessonControl.FloatRange("Ratio", "ratio", 1f, 5f, 3f),
+                    LessonControl.FloatRange("Trail", "trail", 0.2f, 1.6f, 0.7f),
+                ),
+                screenRecordingHint = "Ratio 3, trail 1.8 — the knot pattern writes itself.",
+            )
+        )
+    }
+}

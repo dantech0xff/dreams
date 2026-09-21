@@ -4,5 +4,7 @@ object ShowcaseBootstrap {
     fun touch() {
         RippleOnTap.id
         CodexSplashShowcase.id
+        WarpVoyage.id
+        ChromeFlow.id
     }
 }

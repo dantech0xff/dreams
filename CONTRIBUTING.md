@@ -1,6 +1,6 @@
 # Contributing to Dreams
 
-Thanks for helping make Dreams a better place to learn AGSL. The repo is an Android app (Kotlin, Jetpack Compose) whose content is 56 runnable shader lessons, plus the Node tooling that turns those lessons into the README catalog, the thumbnails and the web gallery. This guide is about adding to it without breaking the pieces that hold it together.
+Thanks for helping make Dreams a better place to learn AGSL. The repo is an Android app (Kotlin, Jetpack Compose) whose content is 65 runnable shader lessons, plus the Node tooling that turns those lessons into the README catalog, the thumbnails and the web gallery. This guide is about adding to it without breaking the pieces that hold it together.
 
 - [What we are looking for](#what-we-are-looking-for)
 - [Before you start](#before-you-start)
