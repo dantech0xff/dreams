@@ -53,12 +53,12 @@ nav.links a.primary{background:var(--green);color:#04100B;border-color:var(--gre
   box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 0 1px var(--line);background:var(--high)}
 .stage canvas,.stage img{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:pointer}
 .stage .cap{position:absolute;left:14px;right:14px;bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;
-  padding:10px 14px;border-radius:14px;background:rgba(4,16,11,.72);backdrop-filter:blur(10px);font-family:var(--mono);font-size:12px;color:var(--mute);pointer-events:none}
+  padding:10px 14px;border-radius:14px;background:rgba(4,16,11,.72);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);font-family:var(--mono);font-size:12px;color:var(--mute);pointer-events:none}
 .stage .cap b{color:var(--ink);font-family:var(--sans);font-size:14px}
 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green)}
 .live{display:inline-flex;align-items:center;gap:6px}
 
-.toolbar{position:sticky;top:0;z-index:5;background:rgba(4,16,11,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:12px 0}
+.toolbar{position:sticky;top:0;z-index:5;background:rgba(4,16,11,.85);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:12px 0}
 .toolbar .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .chips{display:flex;gap:6px;flex-wrap:wrap;flex:1}
 .chip{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer;display:inline-flex;gap:8px;align-items:center}
@@ -82,18 +82,24 @@ section.cat p.tag{margin:0 0 14px;color:var(--mute)}
 .card p{margin:0;color:var(--mute);font-size:12.5px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--acc)}
 .bolts span{opacity:.25}.bolts span.on{opacity:1}
-.badge{position:absolute;top:10px;left:10px;padding:3px 8px;border-radius:999px;background:rgba(4,16,11,.7);backdrop-filter:blur(6px);font-family:var(--mono);font-size:10.5px;color:var(--ink)}
+.badge{position:absolute;top:10px;left:10px;padding:3px 8px;border-radius:999px;background:rgba(4,16,11,.7);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);font-family:var(--mono);font-size:10.5px;color:var(--ink)}
 .empty{color:var(--mute);padding:40px 0;text-align:center}
 
 /* modal */
-.modal{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.72);backdrop-filter:blur(6px)}
+.modal{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.72);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 .modal.open{display:flex}
-.sheet{position:relative;width:min(1140px,100%);max-height:100%;overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:24px;
+.sheet{position:relative;width:min(1140px,100%);max-height:100%;overflow:auto;overscroll-behavior:contain;background:var(--surface);border:1px solid var(--line);border-radius:24px;
   display:grid;grid-template-columns:minmax(300px,520px) 1fr;gap:0}
-@media (max-width:900px){.sheet{grid-template-columns:1fr}}
-.pane{padding:22px}
+/* Single column only when the screen is tall enough to scroll the stack —
+   landscape phones (short viewports) keep two compact columns instead. */
+@media (max-width:900px) and (min-height:521px){.sheet{grid-template-columns:1fr}}
+@media (max-width:900px) and (max-height:520px){.sheet{grid-template-columns:minmax(240px,320px) 1fr}}
+/* min-width:0 lets the panes shrink below the code block's longest line;
+   without it pre.code's min-content forces the column wider than the sheet. */
+.pane{padding:22px;min-width:0}
 .pane.left{border-right:1px solid var(--line);background:var(--low)}
-@media (max-width:900px){.pane.left{border-right:0;border-bottom:1px solid var(--line)}}
+@media (max-width:900px) and (min-height:521px){.pane.left{border-right:0;border-bottom:1px solid var(--line)}}
+@media (max-height:520px){.view{width:min(100%,calc(100vh - 150px));margin-inline:auto}}
 .view{position:relative;aspect-ratio:1;border-radius:20px;overflow:hidden;background:linear-gradient(var(--highest),var(--high));box-shadow:0 18px 40px rgba(0,0,0,.4)}
 .view canvas{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
 .view .hint{position:absolute;left:12px;bottom:12px;padding:6px 10px;border-radius:10px;background:rgba(4,16,11,.7);font-family:var(--mono);font-size:11px;color:var(--mute);pointer-events:none}
@@ -127,6 +133,45 @@ footer{padding:36px 0 50px;color:var(--mute);font-size:13px;border-top:1px solid
 footer .row{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 kbd{font-family:var(--mono);font-size:11px;padding:1px 5px;border:1px solid var(--line);border-radius:4px;color:var(--mute)}
 .nowebgl{display:none;margin:10px 0 0;padding:10px 12px;border:1px solid var(--amber);border-radius:12px;color:var(--amber);font-size:13px}
+
+/* ---- tablets & phones ---- */
+@media (max-width:900px){
+  .chips{flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;padding-bottom:4px}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:0 0 auto}
+  /* Pin the close button to the viewport so it stays reachable while the
+     sheet scrolls (on narrow screens the sheet is nearly full-width). */
+  .close{position:fixed;top:14px;right:14px}
+}
+@media (max-height:520px){.modal{padding:8px}}
+@media (max-width:700px){
+  .wrap{padding:0 14px}
+  header.top{flex-wrap:wrap;padding:12px 0;row-gap:10px}
+  nav.links{flex-wrap:nowrap;overflow-x:auto;max-width:100%;scrollbar-width:none}
+  nav.links::-webkit-scrollbar{display:none}
+  nav.links a{flex:0 0 auto;padding:6px 11px}
+  .hero{padding:26px 0 18px;gap:18px}
+  .hero p.lead{font-size:15.5px}
+  .stats{gap:14px;margin:14px 0 18px}
+  .stat b{font-size:20px}
+  .toolbar{padding:10px 0}
+  .search{flex:1 1 100%;min-width:0}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+  .modal{padding:8px}
+  .sheet{border-radius:18px}
+  .pane{padding:14px}
+  .pane.right h2{font-size:21px}
+  pre.code{max-height:42vh;font-size:12px}
+  .rowbtns .mini{flex:1 1 auto;text-align:center}
+}
+@media (pointer:coarse){
+  .card,.chip,.mini,.btn,.tab,.close,nav.links a{touch-action:manipulation}
+  .ctl input[type=range]{height:30px}
+  .ctl input[type=color]{width:52px;height:36px}
+  .chip{padding:8px 14px}
+  .mini{padding:9px 12px}
+  .tab{padding:10px 12px}
+}
 </style>
 </head>
 <body>
@@ -871,6 +916,7 @@ void main() {
     $('lnkPerma').href = '#' + l.id;
     $('mErr').style.display = 'none';
     renderTabs();
+    $('sheet').scrollTop = 0;
     $('modal').classList.add('open');
     document.body.style.overflow = 'hidden';
     if (player.available) {
