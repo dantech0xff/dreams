@@ -1,10 +1,12 @@
 name: Deploy gallery to GitHub Pages
 
 # Publishes docs/ (the live WebGL lesson gallery + thumbnails + markdown docs).
-# No manual setup needed: configure-pages runs with `enablement: true`, so the first
-# run switches the repository's Pages source to "GitHub Actions" by itself. Leaving it
-# on the default "Deploy from a branch" source would serve a Jekyll rendering of the
-# root README instead of the gallery, and every docs/ asset would 404.
+# `enablement: true` only auto-creates a Pages site that doesn't exist yet — it does
+# NOT switch an existing site away from "Deploy from a branch". If the repo's Pages
+# source is left on the legacy branch build, every push to master triggers a Jekyll
+# build that serves the root README and races this deployment; the repo-root
+# index.html + .nojekyll redirect to docs/ covers that case. For the canonical fix,
+# set Settings → Pages → Source to "GitHub Actions".
 on:
   push:
     branches: [master]
@@ -33,9 +35,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # enablement: true creates the Pages site (or moves it to workflow builds) using
-      # the `pages: write` permission above, so a fork gets a working gallery with no
-      # clicks in Settings.
+      # enablement: true creates the Pages site using the `pages: write` permission
+      # above, so a fork gets a working gallery with no clicks in Settings. It does
+      # not override an existing "Deploy from a branch" source.
       - uses: actions/configure-pages@v5
         with:
           enablement: true
