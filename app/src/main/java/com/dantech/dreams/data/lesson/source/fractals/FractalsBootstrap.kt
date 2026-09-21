@@ -6,5 +6,6 @@ object FractalsBootstrap {
         JuliaSet.id
         NewtonZ3.id
         SierpinskiFold.id
+        BurningShip.id
     }
 }

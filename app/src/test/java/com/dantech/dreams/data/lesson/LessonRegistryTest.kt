@@ -41,14 +41,14 @@ class LessonRegistryTest {
         assertEquals(6, repo.byCategory(LessonCategory.BASICS).size)
         assertEquals(10, repo.byCategory(LessonCategory.PATTERNS).size)
         assertEquals(4, repo.byCategory(LessonCategory.COLOR).size)
-        assertEquals(6, repo.byCategory(LessonCategory.SDF).size)
-        assertEquals(6, repo.byCategory(LessonCategory.NOISE).size)
-        assertEquals(4, repo.byCategory(LessonCategory.MOTION).size)
-        assertEquals(4, repo.byCategory(LessonCategory.FRACTALS).size)
+        assertEquals(7, repo.byCategory(LessonCategory.SDF).size)
+        assertEquals(7, repo.byCategory(LessonCategory.NOISE).size)
+        assertEquals(5, repo.byCategory(LessonCategory.MOTION).size)
+        assertEquals(5, repo.byCategory(LessonCategory.FRACTALS).size)
         assertEquals(4, repo.byCategory(LessonCategory.LIGHTING).size)
-        assertEquals(4, repo.byCategory(LessonCategory.INTERACTIVE).size)
-        assertEquals(6, repo.byCategory(LessonCategory.POSTFX).size)
-        assertEquals(2, repo.byCategory(LessonCategory.SHOWCASE).size)
+        assertEquals(5, repo.byCategory(LessonCategory.INTERACTIVE).size)
+        assertEquals(8, repo.byCategory(LessonCategory.POSTFX).size)
+        assertEquals(4, repo.byCategory(LessonCategory.SHOWCASE).size)
     }
 
     @Test

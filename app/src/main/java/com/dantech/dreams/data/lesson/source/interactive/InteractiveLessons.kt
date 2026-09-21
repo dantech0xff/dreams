@@ -165,3 +165,69 @@ object PointerHeatStripes {
         )
     }
 }
+
+object PointerLensFlare {
+    val id = "interactive-05-lens-flare"
+    private val SOURCE = """
+        uniform float2 resolution;
+        uniform float  time;
+        uniform float2 touchPos;
+        uniform float  touchTime;
+        uniform float intensity;
+        // Classic anamorphic lens flare: a hot core at the touch point plus a
+        // row of ghost circles strung along the touch→centre axis, mirroring
+        // how real lens elements reflect across the optical axis.
+        half4 main(float2 fragCoord) {
+            float2 uv = fragCoord / resolution;
+            float aspect = resolution.x / resolution.y;
+            // Until the first tap the sun drifts on a slow figure-eight.
+            float2 sun = (touchPos.x < 0.0)
+                ? float2(0.5 + 0.20 * sin(time * 0.21), 0.46 + 0.13 * sin(time * 0.34))
+                : touchPos;
+            float2 axis = float2(0.5) - sun;
+            float2 d = (uv - sun) * float2(aspect, 1.0);
+            float r = length(d);
+
+            half3 col = mix(half3(0.015, 0.020, 0.045), half3(0.030, 0.022, 0.055), half(uv.y));
+
+            // Hot core + wide halo; a fresh tap adds a flash that decays fast.
+            float flash = (touchTime < 0.0) ? 0.0 : exp(-max(time - touchTime, 0.0) * 2.4);
+            float core = exp(-r * r * 320.0) * (1.6 + 2.4 * flash);
+            float halo = exp(-r * 4.5) * 0.35;
+            col += half3(1.0, 0.92, 0.78) * half(core);
+            col += half3(0.55, 0.45, 0.90) * half(halo);
+
+            // Five ghosts strung through the screen centre at fixed axis steps.
+            for (int i = 0; i < 5; i++) {
+                float fi = float(i);
+                float ts = -0.55 + fi * 0.36;
+                float2 gp = sun + axis * ts;
+                float2 gd = (uv - gp) * float2(aspect, 1.0);
+                float gr = 0.028 + 0.055 * fract(fi * 0.618);
+                // Hollow ring ghosts read better than discs.
+                float ring = exp(-abs(length(gd) - gr) * 42.0) * (0.30 + 0.25 * fract(fi * 0.377));
+                half3 tint = half3(0.5) + half3(0.5) * cos(6.2831 * (fi * 0.29 + half3(0.0, 0.33, 0.67)));
+                col += tint * half(ring);
+            }
+
+            // Anamorphic streak: a thin horizontal blade through the sun.
+            float blade = exp(-abs(uv.y - sun.y) * 90.0) * exp(-abs(uv.x - sun.x) * 1.9);
+            col += half3(0.35, 0.60, 1.0) * half(blade * 0.8);
+
+            col *= half(intensity);
+            return half4(col, 1.0);
+        }
+    """.trimIndent()
+
+    init {
+        LessonRegistry.register(
+            LessonModel(
+                id = id, title = "Lens Flare", category = LessonCategory.INTERACTIVE, complexity = 4,
+                conceptIntro = "Ghosts placed at fixed fractions along the touch→centre axis mimic internal lens reflections; tap flash = exp(-age).",
+                agslSource = SOURCE,
+                controls = persistentListOf(LessonControl.FloatRange("Intensity", "intensity", 0f, 2.5f, 1.1f)),
+                screenRecordingHint = "Tap a corner, then near centre — the ghost train pivots through the middle.",
+            )
+        )
+    }
+}

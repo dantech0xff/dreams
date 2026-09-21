@@ -25,25 +25,25 @@
       "name": "SDF",
       "displayName": "SDF",
       "tagline": "Crisp geometry sculpted from equations",
-      "count": 6
+      "count": 7
     },
     {
       "name": "NOISE",
       "displayName": "Noise",
       "tagline": "Random fields that read as plasma, lava, smoke",
-      "count": 6
+      "count": 7
     },
     {
       "name": "MOTION",
       "displayName": "Motion",
       "tagline": "Time-driven curves, easing, and oscillators",
-      "count": 4
+      "count": 5
     },
     {
       "name": "FRACTALS",
       "displayName": "Fractals",
       "tagline": "Self-similar worlds at every zoom",
-      "count": 4
+      "count": 5
     },
     {
       "name": "LIGHTING",
@@ -55,19 +55,19 @@
       "name": "INTERACTIVE",
       "displayName": "Interactive",
       "tagline": "Touch-driven shader experiments",
-      "count": 4
+      "count": 5
     },
     {
       "name": "POSTFX",
       "displayName": "Post-FX",
       "tagline": "Bend, blur, and dissolve real Compose UI",
-      "count": 6
+      "count": 8
     },
     {
       "name": "SHOWCASE",
       "displayName": "Showcase",
       "tagline": "Cinema-mode shaders, ready for the recorder",
-      "count": 2
+      "count": 4
     }
   ],
   "lessons": [
@@ -1345,6 +1345,59 @@
       }
     },
     {
+      "id": "sdf-07-heartbeat",
+      "title": "Heartbeat",
+      "category": "SDF",
+      "complexity": 4,
+      "conceptIntro": "An analytic heart SDF driven by a two-bump lub-dub envelope — scale, rim glow and a pressure ring all read the same pulse.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "BPM",
+          "uniform": "bpm",
+          "min": 40,
+          "max": 160,
+          "default": 76
+        },
+        {
+          "type": "float",
+          "name": "Glow",
+          "uniform": "glow",
+          "min": 0,
+          "max": 2,
+          "default": 1
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": "Push BPM to 140 and Glow to 1.6 — the ring reads as a shockwave.",
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "time",
+          "type": "float"
+        },
+        {
+          "name": "bpm",
+          "type": "float"
+        },
+        {
+          "name": "glow",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float time;\nuniform float bpm;\nuniform float glow;\n// iq's analytic heart: two lobe circles plus a V-shaped bottom edge.\nfloat sdHeart(float2 p) {\n    p.x = abs(p.x);\n    if (p.y + p.x > 1.0) {\n        return sqrt(dot(p - float2(0.25, 0.75), p - float2(0.25, 0.75))) - 0.3536;\n    }\n    return sqrt(min(dot(p - float2(0.0, 1.0), p - float2(0.0, 1.0)),\n                    dot(p - 0.5 * max(p.x + p.y, 0.0), p - 0.5 * max(p.x + p.y, 0.0)))) * sign(p.x - p.y);\n}\nhalf4 main(float2 fragCoord) {\n    float2 uv = (fragCoord - 0.5 * resolution) / resolution.y;\n    // Lub-dub envelope: strong beat at ~12% of the cycle, softer echo at ~42%.\n    float bt = fract(time * bpm / 60.0);\n    float pulse = exp(-pow((bt - 0.12) * 7.0, 2.0)) + 0.55 * exp(-pow((bt - 0.42) * 7.0, 2.0));\n\n    // sdHeart space is y-up with the tip at the origin; flip y so the\n    // tip points down-screen, scale about the tip so each beat pushes\n    // the lobes outward.\n    float2 hp = float2(uv.x, -uv.y) * (2.0 - pulse * 0.20) + float2(0.0, 0.65);\n    float d = sdHeart(hp);\n    float aa = 2.0 / resolution.y * 2.15;\n    float fillAmt = smoothstep(aa, -aa, d);\n\n    half3 col = mix(half3(0.050, 0.012, 0.040), half3(0.016, 0.006, 0.024), half(smoothstep(0.2, 1.4, length(uv))));\n    half3 heart = mix(half3(0.72, 0.04, 0.18), half3(1.0, 0.34, 0.48), half(clamp(hp.y * 0.8 + 0.15, 0.0, 1.0)));\n    // Fake top-left sheen inside the silhouette.\n    heart += half3(0.22, 0.10, 0.14) * half(smoothstep(0.6, -0.4, hp.x + hp.y));\n    col = mix(col, heart, half(fillAmt));\n\n    // Rim glow hugging the outside edge, swelling on each beat.\n    float rimAmt = exp(-max(d, 0.0) * 9.0) * (0.20 + 0.80 * pulse) * glow;\n    col += half3(1.0, 0.25, 0.35) * half(rimAmt) * (1.0 - half(fillAmt));\n\n    // An expanding pressure ring rides out on every lub.\n    float r = length(uv);\n    float ring = exp(-abs(r - bt * 2.4) * 26.0) * exp(-bt * 3.2) * 0.35 * glow;\n    col += half3(1.0, 0.30, 0.45) * half(ring);\n    return half4(col, 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/sdf/SdfLessons.kt",
+        "line": 183,
+        "object": "Heartbeat"
+      }
+    },
+    {
       "id": "noise-01-hash",
       "title": "Pseudo-Random Hash",
       "category": "NOISE",
@@ -1527,6 +1580,59 @@
       }
     },
     {
+      "id": "noise-07-aurora-borealis",
+      "title": "Aurora Borealis",
+      "category": "NOISE",
+      "complexity": 4,
+      "conceptIntro": "Layered curtains hung from wandering fbm ridge lines, gated into vertical rays by a second high-frequency fbm.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Drift",
+          "uniform": "drift",
+          "min": 0,
+          "max": 3,
+          "default": 1
+        },
+        {
+          "type": "float",
+          "name": "Curtains",
+          "uniform": "curtains",
+          "min": 0.3,
+          "max": 2,
+          "default": 1
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": "Drift 1.4 with Curtains 1.3 is the postcard look.",
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "time",
+          "type": "float"
+        },
+        {
+          "name": "drift",
+          "type": "float"
+        },
+        {
+          "name": "curtains",
+          "type": "float"
+        }
+      ],
+      "agslSource": "    uniform float2 resolution;\n    uniform float time;\n    uniform float drift;\n    uniform float curtains;\n    \nfloat hash21(float2 p) {\n    return fract(sin(dot(p, float2(12.9898, 78.233))) * 43758.5453);\n}\nfloat valueNoise(float2 p) {\n    float2 i = floor(p);\n    float2 f = fract(p);\n    float a = hash21(i);\n    float b = hash21(i + float2(1.0, 0.0));\n    float c = hash21(i + float2(0.0, 1.0));\n    float d = hash21(i + float2(1.0, 1.0));\n    float2 u = f * f * (3.0 - 2.0 * f);\n    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);\n}\nfloat fbm(float2 p) {\n    float v = 0.0;\n    float a = 0.5;\n    for (int i = 0; i < 6; i++) {\n        v += a * valueNoise(p);\n        p *= 2.0;\n        a *= 0.5;\n    }\n    return v;\n}\n\n    // fbm feeds the ridge line of each curtain; a second, high-frequency\n    // fbm gates it into vertical light rays — the two together read as\n    // real aurora drapery instead of a soft glow blob.\n    half4 main(float2 fragCoord) {\n        float2 uv = fragCoord / resolution;\n        float t = time * drift;\n\n        // Night sky, deepening toward the top of the frame.\n        half3 col = mix(half3(0.008, 0.020, 0.060), half3(0.002, 0.004, 0.018), half(smoothstep(0.05, 1.0, uv.y)));\n\n        // Star field: sparse hashed grid points with slow twinkle, kept\n        // out of the lower sky where the aurora will sit.\n        float2 sg = float2(uv.x * resolution.x / resolution.y, uv.y) * 42.0;\n        float2 cell = floor(sg);\n        float hs = hash21(cell);\n        float2 sp = float2(hash21(cell + 11.0), hash21(cell + 27.0));\n        float sd = length(fract(sg) - sp);\n        float tw = 0.55 + 0.45 * sin(time * (1.0 + hs * 3.0) + hs * 40.0);\n        float star = (1.0 - smoothstep(0.0, 0.05, sd)) * step(0.968, hs) * tw;\n        col += half3(0.85, 0.92, 1.0) * half(star * 1.4) * half(smoothstep(0.30, 0.55, uv.y));\n\n        // Three parallax curtains. Each hangs from an fbm ridge that drifts\n        // over x; brightness peaks just under the ridge and fades upward.\n        for (int i = 0; i < 3; i++) {\n            float fi = float(i);\n            float ridge = fbm(float2(uv.x * (1.8 + fi * 0.9) + fi * 17.0, t * 0.11 + fi * 3.0));\n            float base = 0.42 + fi * 0.085 + (ridge - 0.5) * 0.30;\n            float d = uv.y - base;\n            // Above the ridge the light decays exponentially; just below it,\n            // a short skirt of spill keeps the edge soft.\n            float rise = exp(-max(d, 0.0) * (11.0 - fi * 2.0));\n            float skirt = exp(-max(-d, 0.0) * 30.0) * 0.45;\n            float rays = 0.40 + 0.60 * fbm(float2(uv.x * (16.0 + fi * 6.0), t * 0.32 + fi * 9.0));\n            float layer = (rise + skirt) * rays * (1.0 - fi * 0.18);\n            // Green near the ridge fading to violet higher up — the real\n            // altitude gradient of oxygen emission.\n            half3 aurora = mix(half3(0.10, 0.95, 0.45), half3(0.40, 0.22, 0.90), half(clamp(d * 4.0 + 0.30 + fi * 0.16, 0.0, 1.0)));\n            col += aurora * half(layer * curtains * 0.42);\n        }\n\n        // Cold horizon haze anchoring the bottom of the frame.\n        col += half3(0.04, 0.08, 0.15) * half(smoothstep(0.32, 0.0, uv.y)) * 0.4;\n        return half4(col, 1.0);\n    }",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/noise/NoiseLessons.kt",
+        "line": 183,
+        "object": "AuroraBorealis"
+      }
+    },
+    {
       "id": "motion-01-easing",
       "title": "Easing Curves",
       "category": "MOTION",
@@ -1691,6 +1797,71 @@
       }
     },
     {
+      "id": "motion-05-lissajous-trail",
+      "title": "Lissajous Trail",
+      "category": "MOTION",
+      "complexity": 3,
+      "conceptIntro": "Sample the curve's past positions each frame and additively glow them — a neon phosphor trail with zero state.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Speed",
+          "uniform": "speed",
+          "min": 0,
+          "max": 3,
+          "default": 1
+        },
+        {
+          "type": "float",
+          "name": "Ratio",
+          "uniform": "ratio",
+          "min": 1,
+          "max": 5,
+          "default": 3
+        },
+        {
+          "type": "float",
+          "name": "Trail",
+          "uniform": "trail",
+          "min": 0.2,
+          "max": 1.6,
+          "default": 0.7
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": "Ratio 3, trail 1.8 — the knot pattern writes itself.",
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "time",
+          "type": "float"
+        },
+        {
+          "name": "speed",
+          "type": "float"
+        },
+        {
+          "name": "ratio",
+          "type": "float"
+        },
+        {
+          "name": "trail",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float time;\nuniform float speed;\nuniform float ratio;\nuniform float trail;\n// A bead rides a Lissajous curve (x = sin 2t, y = sin ratio·t); ghosts\n// sampled at earlier times fake phosphor persistence — no framebuffer\n// feedback needed.\nhalf4 main(float2 fragCoord) {\n    float2 uv = (fragCoord - 0.5 * resolution) / resolution.y;\n    half3 col = half3(0.015, 0.020, 0.055);\n    const int N = 56;\n    for (int i = 0; i < N; i++) {\n        // Ghosts are spaced tightly in time so the trail reads as one\n        // continuous ribbon, brightest at the head.\n        float back = float(i) / float(N) * trail;\n        float tt = (time * speed - back) * 2.0;\n        float2 p = 0.60 * float2(sin(tt + 1.5707), sin(tt * ratio));\n        float d = length(uv - p);\n        float w = 1.0 - float(i) / float(N);\n        float g = exp(-d * 22.0) * w;\n        // Hue drifts slowly along the tail.\n        col += half3(0.55 + 0.45 * cos(6.2831 * (float(i) / float(N) * 0.9 + time * 0.04) + half3(0.0, 0.35, 0.70))) * half(g * 1.6);\n    }\n    return half4(col, 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/motion/MotionLessons.kt",
+        "line": 173,
+        "object": "LissajousTrail"
+      }
+    },
+    {
       "id": "fractals-01-mandelbrot",
       "title": "Mandelbrot",
       "category": "FRACTALS",
@@ -1844,6 +2015,55 @@
         "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/fractals/FractalsLessons.kt",
         "line": 133,
         "object": "SierpinskiFold"
+      }
+    },
+    {
+      "id": "fractals-05-burning-ship",
+      "title": "Burning Ship",
+      "category": "FRACTALS",
+      "complexity": 4,
+      "conceptIntro": "abs(z) before z² + c folds the plane every iteration — Mandelbrot's evil twin, all fire and rigging.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Zoom",
+          "uniform": "zoom",
+          "min": 0.5,
+          "max": 40,
+          "default": 1
+        },
+        {
+          "type": "float",
+          "name": "Heat",
+          "uniform": "heat",
+          "min": 0.6,
+          "max": 2.2,
+          "default": 1.15
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": "Sweep Zoom to ~8 at the ship's waterline (heat 1.4) for maximum drama.",
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "zoom",
+          "type": "float"
+        },
+        {
+          "name": "heat",
+          "type": "float"
+        }
+      ],
+      "agslSource": "    uniform float2 resolution;\n    uniform float zoom;\n    uniform float heat;\n    \nfloat2 cmul(float2 a, float2 b) {\n    return float2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);\n}\nfloat2 cdiv(float2 a, float2 b) {\n    float denom = b.x * b.x + b.y * b.y + 1e-6;\n    return float2(a.x * b.x + a.y * b.y, a.y * b.x - a.x * b.y) / denom;\n}\n// Smooth iteration count: takes the integer escape step and adds the\n// fractional `log(log|z|)` correction so coloring is continuous, not banded.\nfloat smoothEscape(float i, float2 z) {\n    return i - log2(max(log2(dot(z, z)), 1e-6)) + 4.0;\n}\n\n    // Burning Ship: Mandelbrot with abs() folded in before each squaring.\n    // The fold mirrors the plane into itself, stacking jagged \"masts\" over\n    // a molten hull — no other two-line change produces this much drama.\n    half4 main(float2 fragCoord) {\n        float2 uv = (fragCoord - 0.5 * resolution) / resolution.y;\n        float2 c = uv * (2.6 / zoom) + float2(-0.45, -0.55);\n        float2 z = float2(0.0);\n        float iter = 0.0;\n        const int MAX = 96;\n        for (int i = 0; i < MAX; i++) {\n            float2 az = abs(z);\n            z = cmul(az, az) + c;\n            if (dot(z, z) > 256.0) { iter = float(i); break; }\n            iter = float(i);\n        }\n        float t = smoothEscape(iter, z) / float(MAX);\n        t = clamp(t * heat, 0.0, 1.0);\n        // Fire ramp: ember red → hot orange → pale yellow. Fast-escaping\n        // space gets a faint coal-red ambient so the frame never goes flat.\n        float3 col = mix(float3(0.10, 0.02, 0.01), float3(0.48, 0.07, 0.02), smoothstep(0.0, 0.22, t));\n        col = mix(col, float3(1.0, 0.45, 0.05), smoothstep(0.22, 0.62, t));\n        col = mix(col, float3(1.0, 0.92, 0.55), smoothstep(0.62, 1.0, t));\n        if (iter >= float(MAX - 1)) col = float3(0.01, 0.0, 0.0);\n        return half4(half3(col), 1.0);\n    }",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/fractals/FractalsLessons.kt",
+        "line": 187,
+        "object": "BurningShip"
       }
     },
     {
@@ -2195,6 +2415,55 @@
       }
     },
     {
+      "id": "interactive-05-lens-flare",
+      "title": "Lens Flare",
+      "category": "INTERACTIVE",
+      "complexity": 4,
+      "conceptIntro": "Ghosts placed at fixed fractions along the touch→centre axis mimic internal lens reflections; tap flash = exp(-age).",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Intensity",
+          "uniform": "intensity",
+          "min": 0,
+          "max": 2.5,
+          "default": 1.1
+        }
+      ],
+      "renderMode": "BRUSH",
+      "screenRecordingHint": "Tap a corner, then near centre — the ghost train pivots through the middle.",
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "time",
+          "type": "float"
+        },
+        {
+          "name": "touchPos",
+          "type": "float2"
+        },
+        {
+          "name": "touchTime",
+          "type": "float"
+        },
+        {
+          "name": "intensity",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float  time;\nuniform float2 touchPos;\nuniform float  touchTime;\nuniform float intensity;\n// Classic anamorphic lens flare: a hot core at the touch point plus a\n// row of ghost circles strung along the touch→centre axis, mirroring\n// how real lens elements reflect across the optical axis.\nhalf4 main(float2 fragCoord) {\n    float2 uv = fragCoord / resolution;\n    float aspect = resolution.x / resolution.y;\n    // Until the first tap the sun drifts on a slow figure-eight.\n    float2 sun = (touchPos.x < 0.0)\n        ? float2(0.5 + 0.20 * sin(time * 0.21), 0.46 + 0.13 * sin(time * 0.34))\n        : touchPos;\n    float2 axis = float2(0.5) - sun;\n    float2 d = (uv - sun) * float2(aspect, 1.0);\n    float r = length(d);\n\n    half3 col = mix(half3(0.015, 0.020, 0.045), half3(0.030, 0.022, 0.055), half(uv.y));\n\n    // Hot core + wide halo; a fresh tap adds a flash that decays fast.\n    float flash = (touchTime < 0.0) ? 0.0 : exp(-max(time - touchTime, 0.0) * 2.4);\n    float core = exp(-r * r * 320.0) * (1.6 + 2.4 * flash);\n    float halo = exp(-r * 4.5) * 0.35;\n    col += half3(1.0, 0.92, 0.78) * half(core);\n    col += half3(0.55, 0.45, 0.90) * half(halo);\n\n    // Five ghosts strung through the screen centre at fixed axis steps.\n    for (int i = 0; i < 5; i++) {\n        float fi = float(i);\n        float ts = -0.55 + fi * 0.36;\n        float2 gp = sun + axis * ts;\n        float2 gd = (uv - gp) * float2(aspect, 1.0);\n        float gr = 0.028 + 0.055 * fract(fi * 0.618);\n        // Hollow ring ghosts read better than discs.\n        float ring = exp(-abs(length(gd) - gr) * 42.0) * (0.30 + 0.25 * fract(fi * 0.377));\n        half3 tint = half3(0.5) + half3(0.5) * cos(6.2831 * (fi * 0.29 + half3(0.0, 0.33, 0.67)));\n        col += tint * half(ring);\n    }\n\n    // Anamorphic streak: a thin horizontal blade through the sun.\n    float blade = exp(-abs(uv.y - sun.y) * 90.0) * exp(-abs(uv.x - sun.x) * 1.9);\n    col += half3(0.35, 0.60, 1.0) * half(blade * 0.8);\n\n    col *= half(intensity);\n    return half4(col, 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/interactive/InteractiveLessons.kt",
+        "line": 169,
+        "object": "PointerLensFlare"
+      }
+    },
+    {
       "id": "postfx-01-blur",
       "title": "Box Blur",
       "category": "POSTFX",
@@ -2432,6 +2701,108 @@
       }
     },
     {
+      "id": "postfx-07-glitch",
+      "title": "Glitch",
+      "category": "POSTFX",
+      "complexity": 4,
+      "conceptIntro": "Hash-driven row slices + chromatic split on a quantized clock — the composable looks like a corrupted signal.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Amount",
+          "uniform": "amount",
+          "min": 0,
+          "max": 1,
+          "default": 0.55
+        }
+      ],
+      "renderMode": "RENDER_EFFECT",
+      "screenRecordingHint": "0.75 amount with a fast time tick is maximum chaos.",
+      "uniforms": [
+        {
+          "name": "content",
+          "type": "shader"
+        },
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "time",
+          "type": "float"
+        },
+        {
+          "name": "amount",
+          "type": "float"
+        }
+      ],
+      "agslSource": "    uniform shader content;\n    uniform float2 resolution;\n    uniform float time;\n    uniform float amount;\n    \nfloat hash21(float2 p) {\n    return fract(sin(dot(p, float2(12.9898, 78.233))) * 43758.5453);\n}\nfloat valueNoise(float2 p) {\n    float2 i = floor(p);\n    float2 f = fract(p);\n    float a = hash21(i);\n    float b = hash21(i + float2(1.0, 0.0));\n    float c = hash21(i + float2(0.0, 1.0));\n    float d = hash21(i + float2(1.0, 1.0));\n    float2 u = f * f * (3.0 - 2.0 * f);\n    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);\n}\nfloat fbm(float2 p) {\n    float v = 0.0;\n    float a = 0.5;\n    for (int i = 0; i < 6; i++) {\n        v += a * valueNoise(p);\n        p *= 2.0;\n        a *= 0.5;\n    }\n    return v;\n}\n\n    // Quantise time into ~11 fps \"glitch ticks\", then let a hashed fraction\n    // of horizontal rows jump sideways with a matching RGB split.\n    half4 main(float2 fragCoord) {\n        float2 uv = fragCoord / resolution;\n        float qt = floor(time * 11.0);\n        float row = floor(fragCoord.y / 18.0);\n        float seed = hash21(float2(row, qt));\n        float live = step(1.0 - amount * 0.42, seed);\n        float shift = (hash21(float2(row, qt + 7.7)) - 0.5) * live * amount * 0.30;\n\n        float2 c = fragCoord + float2(shift * resolution.x, 0.0);\n        float split = amount * (1.5 + 30.0 * abs(shift));\n        half r = content.eval(c + float2(split, 0.0)).r;\n        half g = content.eval(c).g;\n        half b = content.eval(c - float2(split, 0.0)).b;\n        half3 col = half3(r, g, b);\n\n        // Dimmer scanline shimmer on the shifted rows.\n        col *= half(1.0 - live * 0.12 * (0.5 + 0.5 * sin(fragCoord.y * 3.14159)));\n        // Slow rolling band sweeping top → bottom like a bad VHS head.\n        col += half3(0.06 * amount) * half(exp(-pow((uv.y - fract(time * 0.13)) * 9.0, 2.0)));\n        return half4(col, 1.0);\n    }",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/posteffect/PostFxLessons.kt",
+        "line": 193,
+        "object": "Glitch"
+      }
+    },
+    {
+      "id": "postfx-08-crt-screen",
+      "title": "CRT Screen",
+      "category": "POSTFX",
+      "complexity": 3,
+      "conceptIntro": "Barrel warp + scanline ridges + a 3-px aperture grille turn any composable into a curved phosphor tube.",
+      "learningNotes": [],
+      "controls": [
+        {
+          "type": "float",
+          "name": "Curvature",
+          "uniform": "curvature",
+          "min": 0,
+          "max": 1,
+          "default": 0.45
+        },
+        {
+          "type": "float",
+          "name": "Scanlines",
+          "uniform": "scanlines",
+          "min": 0,
+          "max": 1,
+          "default": 0.8
+        }
+      ],
+      "renderMode": "RENDER_EFFECT",
+      "screenRecordingHint": "Curvature 0.8, Scanlines 1.0 for full retro-TV.",
+      "uniforms": [
+        {
+          "name": "content",
+          "type": "shader"
+        },
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "time",
+          "type": "float"
+        },
+        {
+          "name": "curvature",
+          "type": "float"
+        },
+        {
+          "name": "scanlines",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform shader content;\nuniform float2 resolution;\nuniform float time;\nuniform float curvature;\nuniform float scanlines;\n// CRT glass: barrel-warp the content, then lay scanlines and an\n// aperture-grille stripe mask over it — instant phosphor nostalgia.\nhalf4 main(float2 fragCoord) {\n    float2 uv = fragCoord / resolution * 2.0 - 1.0;\n    float2 w = uv * (1.0 + curvature * 0.14 * dot(uv, uv));\n    float2 c = (w * 0.5 + 0.5) * resolution;\n\n    float inside = step(0.0, c.x) * step(c.x, resolution.x)\n                 * step(0.0, c.y) * step(c.y, resolution.y);\n    half4 px = content.eval(clamp(c, float2(0.0), resolution - 1.0));\n    half3 col = px.rgb;\n\n    // Scanlines: darkening ridges across the tube, depth via control.\n    float sl = mix(1.0, 0.70 + 0.30 * (0.5 + 0.5 * sin(c.y * 2.094)), scanlines);\n    col *= half(sl);\n    // Aperture grille: RGB sub-pixels on a 3-px vertical lattice.\n    float gp = mod(c.x, 3.0);\n    half3 grille = half3(\n        (gp < 1.0) ? 1.0 : 0.70,\n        (gp >= 1.0 && gp < 2.0) ? 1.0 : 0.70,\n        (gp >= 2.0) ? 1.0 : 0.70);\n    col = mix(col, col * grille, half(0.55 * scanlines));\n    // Phosphor vignette + 43 Hz flicker.\n    float vig = smoothstep(2.0, 0.35, dot(uv, uv) * (1.0 + curvature * 0.4));\n    col *= half(mix(0.45, 1.0, vig));\n    col *= half(0.97 + 0.03 * sin(time * 43.0));\n\n    half3 bezel = half3(0.012, 0.014, 0.018);\n    return half4(mix(bezel, col, half(inside)), 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/posteffect/PostFxLessons.kt",
+        "line": 238,
+        "object": "CrtScreen"
+      }
+    },
+    {
       "id": "showcase-05-ripple-on-tap",
       "title": "Ripple on Tap",
       "category": "SHOWCASE",
@@ -2497,6 +2868,78 @@
         "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/showcase/CodexSplashShowcase.kt",
         "line": 79,
         "object": "CodexSplashShowcase"
+      }
+    },
+    {
+      "id": "showcase-07-warp-voyage",
+      "title": "Warp Voyage",
+      "category": "SHOWCASE",
+      "complexity": 5,
+      "conceptIntro": "A steerable hyperspace tunnel: log-polar star cells become radial comet streaks over a domain-warped fbm nebula, with a decaying speed boost after every drag.",
+      "learningNotes": [],
+      "controls": [],
+      "renderMode": "CUSTOM",
+      "screenRecordingHint": "Drag slowly in a circle — the tunnel bends and surges behind your finger.",
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "time",
+          "type": "float"
+        },
+        {
+          "name": "touchPos",
+          "type": "float2"
+        },
+        {
+          "name": "touchTime",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float time;\nuniform float2 touchPos;\nuniform float touchTime;\n\n    float hash21(float2 p) {\n        return fract(sin(dot(p, float2(12.9898, 78.233))) * 43758.5453);\n    }\n    float valueNoise(float2 p) {\n        float2 i = floor(p);\n        float2 f = fract(p);\n        float a = hash21(i);\n        float b = hash21(i + float2(1.0, 0.0));\n        float c = hash21(i + float2(0.0, 1.0));\n        float d = hash21(i + float2(1.0, 1.0));\n        float2 u = f * f * (3.0 - 2.0 * f);\n        return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);\n    }\n    float fbm(float2 p) {\n        float v = 0.0;\n        float a = 0.5;\n        for (int i = 0; i < 6; i++) {\n            v += a * valueNoise(p);\n            p *= 2.0;\n            a *= 0.5;\n        }\n        return v;\n    }\n\n\nhalf4 main(float2 fragCoord) {\n    float2 focus = (touchPos.x < 0.0) ? float2(0.5, 0.44) : touchPos;\n    float2 uv = (fragCoord - focus * resolution) / resolution.y;\n    float r = length(uv) + 1e-4;\n    float a = atan(uv.y, uv.x);\n\n    float age = time - touchTime;\n    float boost = 1.0 + ((touchTime < 0.0) ? 0.0 : 1.8 * exp(-max(age, 0.0) * 1.4));\n\n    // Nebula bed: two domain-warped fbm layers, indigo to teal.\n    float2 np = uv * 1.6;\n    float2 q = float2(fbm(np + float2(0.0, time * 0.020)),\n                      fbm(np + float2(4.7, 1.3) - time * 0.016));\n    float neb = fbm(np + 2.4 * q + float2(0.0, time * 0.035));\n    half3 col = mix(half3(0.010, 0.014, 0.050), half3(0.17, 0.07, 0.36), half(smoothstep(0.28, 0.85, neb)));\n    col = mix(col, half3(0.05, 0.34, 0.42), half(smoothstep(0.62, 0.95, fbm(np * 1.7 - q))) * 0.55);\n\n    // Three parallax star layers. `spiral` folds the angle by log(r) so\n    // streaks wind slightly; z's log term makes rings expand outward.\n    float3 stars = float3(0.0);\n    for (int L = 0; L < 3; L++) {\n        float fL = float(L);\n        float spiral = a / 6.2831853 + log(r) * (0.24 + fL * 0.07) + fL * 0.37;\n        float sector = floor(spiral * (52.0 + fL * 26.0));\n        float z = log(r) * (2.6 + fL * 0.4) - time * (0.55 + fL * 0.30) * boost + fL * 9.1;\n        float ring = floor(z);\n        float s = fract(z);\n        float h = hash21(float2(sector + fL * 131.0, ring - fL * 57.0));\n        float on = step(0.90 - fL * 0.02, h);\n        float streak = pow(s, 7.0) * (0.55 + h);\n        // Keep the core clear and fade the far rim.\n        float gate = smoothstep(0.015, 0.20, r) * smoothstep(3.2, 1.1, r);\n        float3 tint = 0.60 + 0.40 * cos(6.2831 * (h + fL * 0.19 + float3(0.0, 0.25, 0.55)));\n        stars += tint * (on * streak * gate);\n    }\n    col += half3(stars) * half(0.9 + 0.5 * (boost - 1.0));\n\n    // Hyperspace core glow + gentle vignette.\n    col += half3(0.62, 0.85, 1.0) * half(exp(-r * 3.2) * (0.50 + 0.30 * boost));\n    col *= half(1.0 - 0.35 * smoothstep(1.4, 2.6, r));\n    return half4(col, 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/showcase/WarpVoyage.kt",
+        "line": 165,
+        "object": "WarpVoyage"
+      }
+    },
+    {
+      "id": "showcase-08-chrome-flow",
+      "title": "Liquid Chrome",
+      "category": "SHOWCASE",
+      "complexity": 5,
+      "conceptIntro": "Molten metal: a warped fbm height map becomes a normal field, a cosine palette on the reflected ray paints iridescent bands, and drags stir the surface like mercury.",
+      "learningNotes": [],
+      "controls": [],
+      "renderMode": "CUSTOM",
+      "screenRecordingHint": "Slow figure-eight drags leave swirling wakes in the metal.",
+      "uniforms": [
+        {
+          "name": "resolution",
+          "type": "float2"
+        },
+        {
+          "name": "time",
+          "type": "float"
+        },
+        {
+          "name": "touchPos",
+          "type": "float2"
+        },
+        {
+          "name": "touchTime",
+          "type": "float"
+        }
+      ],
+      "agslSource": "uniform float2 resolution;\nuniform float time;\nuniform float2 touchPos;\nuniform float touchTime;\n\n    float hash21(float2 p) {\n        return fract(sin(dot(p, float2(12.9898, 78.233))) * 43758.5453);\n    }\n    float valueNoise(float2 p) {\n        float2 i = floor(p);\n        float2 f = fract(p);\n        float a = hash21(i);\n        float b = hash21(i + float2(1.0, 0.0));\n        float c = hash21(i + float2(0.0, 1.0));\n        float d = hash21(i + float2(1.0, 1.0));\n        float2 u = f * f * (3.0 - 2.0 * f);\n        return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);\n    }\n    float fbm(float2 p) {\n        float v = 0.0;\n        float a = 0.5;\n        for (int i = 0; i < 6; i++) {\n            v += a * valueNoise(p);\n            p *= 2.0;\n            a *= 0.5;\n        }\n        return v;\n    }\n\n\nhalf4 main(float2 fragCoord) {\n    float2 uv = (fragCoord - 0.5 * resolution) / resolution.y;\n    float2 p = uv * 2.3;\n\n    // Stir: a vortex impulse around the last touch position. Freshness comes\n    // from touchTime — while the finger moves the stir stays at full strength,\n    // after release it ebbs away.\n    if (touchPos.x >= 0.0) {\n        float2 tp = (touchPos - 0.5) * float2(resolution.x / resolution.y, 1.0);\n        float2 d = uv - tp;\n        float r = length(d) + 1e-3;\n        float stir = 1.7 * exp(-max(time - touchTime, 0.0) * 0.9) * exp(-r * 2.0);\n        p += (float2(-d.y, d.x) + d * 0.4) / r * stir * 0.35;\n    }\n\n    // Domain-warped height field: fbm(fbm-warped fbm) gives folded, molten bands.\n    float drift = time * 0.10;\n    float2 q = float2(fbm(p + drift), fbm(p + float2(5.2, 1.3) - drift * 0.8));\n    float2 w = p + 2.6 * q + float2(0.0, time * 0.05);\n    float h = fbm(w);\n\n    // Height → normal via two extra taps of the same warped field.\n    float e = 0.014;\n    float hx = fbm(w + float2(e, 0.0)) - h;\n    float hy = fbm(w + float2(0.0, e)) - h;\n    float3 n = normalize(float3(-hx / e * 1.15, -hy / e * 1.15, 1.0));\n\n    // Chrome look: an environment read off the reflected ray — alternating\n    // dark/silver bands with an iridescent fringe where bands transition.\n    float3 refl = reflect(float3(0.0, 0.0, -1.0), n);\n    float bandCoord = refl.y * 7.0 + refl.x * 1.2 + h * 2.2 + time * 0.06;\n    float stripe = 0.5 + 0.5 * sin(bandCoord);\n    float3 metal = mix(float3(0.03, 0.04, 0.10), float3(0.88, 0.94, 1.05), pow(stripe, 1.6));\n    float3 fringe = 0.5 + 0.5 * cos(6.2831 * (bandCoord * 0.13 + float3(0.0, 0.33, 0.67)));\n    metal += fringe * stripe * (1.0 - stripe) * 1.3;\n\n    half3 col = half3(0.018, 0.018, 0.028);\n    col += half3(metal) * half(0.30 + 0.70 * smoothstep(0.15, 0.90, h));\n\n    // Sun glint + cool fresnel sheen on steep slopes.\n    float3 l = normalize(float3(0.4, -0.6, 0.7));\n    float spec = pow(max(dot(refl, l), 0.0), 24.0);\n    col += half3(1.0, 0.95, 0.85) * half(spec * 0.9);\n    float fres = pow(1.0 - max(n.z, 0.0), 3.0);\n    col += half3(0.35, 0.55, 0.90) * half(fres * 0.45);\n\n    col *= half(1.0 - 0.40 * smoothstep(0.8, 1.9, length(uv)));\n    return half4(col, 1.0);\n}",
+      "extraAgslSources": [],
+      "source": {
+        "file": "app/src/main/java/com/dantech/dreams/data/lesson/source/showcase/ChromeFlow.kt",
+        "line": 166,
+        "object": "ChromeFlow"
       }
     }
   ]

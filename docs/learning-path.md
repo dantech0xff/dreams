@@ -1,12 +1,12 @@
 # Learning path
 
-A guided route through all 56 lessons in Dreams, from "return one colour" to a multi-touch water surface refracting live Compose UI. Stages are ordered by concept dependency; inside a stage, lessons appear in the same order as in the app.
+A guided route through all 65 lessons in Dreams, from "return one colour" to a multi-touch water surface refracting live Compose UI. Stages are ordered by concept dependency; inside a stage, lessons appear in the same order as in the app.
 
 ## How to use the app
 
 - **Lesson tab** → pick one of 10 category cards → pick a lesson. Each card shows the lesson's complexity (1–5) as bolts.
 - **Lesson detail** shows, top to bottom: the live preview (square; tap it in Interactive lessons), the concept intro, controls (sliders and colour swatches, with a reset), a "What to notice" box when the lesson has learning notes (currently Basics and Patterns), an optional "Recording hint", and the AGSL source viewer (expanded by default for Basics).
-- **Showcase tab** → the two fullscreen demos.
+- **Showcase tab** → the four fullscreen demos.
 - Slider and swatch values are written as uniforms of the same name. The runtime only writes uniforms the shader actually declares (it regex-scans the source in `ShaderUniformBindings.kt`), so a control whose uniform you delete simply stops doing anything. `resolution` (float2, device px) and `time` (float, seconds) are written automatically when declared.
 - To experiment, edit the `SOURCE` string inside a lesson's Kotlin `object` and rebuild with `./gradlew :app:assembleDebug`. `./gradlew test` asserts the per-category lesson counts and that every control targets a declared uniform, so adding a lesson means updating `LessonRegistryTest.kt` too.
 
@@ -72,7 +72,7 @@ By the end of this stage you can read any lesson's `main`: it turns `fragCoord` 
 
 ## 3. Shape (SDF)
 
-*SDF — 6 lessons.* Signed distance fields describe geometry as "how far am I from the edge". Threshold with `smoothstep` for antialiasing, combine with `opSmoothUnion`, tile with `fract`.
+*SDF — 7 lessons.* Signed distance fields describe geometry as "how far am I from the edge". Threshold with `smoothstep` for antialiasing, combine with `opSmoothUnion`, tile with `fract`.
 
 | Preview | Lesson | What it teaches | AGSL idea introduced | What to tweak |
 |---|---|---|---|---|
@@ -82,6 +82,7 @@ By the end of this stage you can read any lesson's `main`: it turns `fragCoord` 
 | ![Checkerboard](gallery/sdf-04-checkerboard.png) | [Checkerboard](../app/src/main/java/com/dantech/dreams/data/lesson/source/sdf/SdfLessons.kt)<br>`sdf-04-checkerboard` · 2/5 | Turn continuous space into discrete cells. | `floor`, `mod(x + y, 2.0)` | Cells (`cells`) |
 | ![Breathing Grid](gallery/sdf-05-breathing-grid.png) | [Breathing Grid](../app/src/main/java/com/dantech/dreams/data/lesson/source/sdf/SdfLessons.kt)<br>`sdf-05-breathing-grid` · 3/5 | Tile space and animate one SDF per cell. | `fract(uv * cells) - 0.5`, `sin(time)`-driven radius | Cells (`cells`) |
 | ![Isolines](gallery/sdf-06-isolines.png) | [Isolines](../app/src/main/java/com/dantech/dreams/data/lesson/source/sdf/SdfLessons.kt)<br>`sdf-06-isolines` · 2/5 | Contour rings from the fractional part of distance. | `abs(fract(r * density) - 0.5)` | Density (`density`) |
+|| ![Heartbeat](gallery/sdf-07-heartbeat.png) | [Heartbeat](../app/src/main/java/com/dantech/dreams/data/lesson/source/sdf/SdfLessons.kt)<br>`sdf-07-heartbeat` · 4/5 | A two-lobe heart SDF scaled by a lub-dub pulse built from two Gaussian bumps; the rim and a pressure ring glow with the beat. | `sdHeart`, `exp(-pow(x, 2.0))` pulse synthesis, rim `exp(-max(d, 0) * k)` | BPM (`bpm`), Glow (`glow`) |
 
 The helpers `sdCircle`, `sdBox` and `opSmoothUnion` are shared through `SDF_HELPERS` in `SdfHelpers.kt`; Checkerboard, Breathing Grid and Isolines inline their own math.
 
@@ -98,7 +99,7 @@ The helpers `sdCircle`, `sdBox` and `opSmoothUnion` are shared through `SDF_HELP
 
 ## 5. Signal and noise
 
-*Noise — 6 lessons.* From a one-line hash to domain-warped fBM. `NOISE_HELPERS` in `NoiseHelpers.kt` (`hash21`, `valueNoise`, `fbm`) is prepended to every lesson here except Plasma, and reused by Truchet Tiles, Dissolve and Liquid Glass Displacement.
+*Noise — 7 lessons.* From a one-line hash to domain-warped fBM. `NOISE_HELPERS` in `NoiseHelpers.kt` (`hash21`, `valueNoise`, `fbm`) is prepended to every lesson here except Plasma, and reused by Truchet Tiles, Dissolve and Liquid Glass Displacement.
 
 | Preview | Lesson | What it teaches | AGSL idea introduced | What to tweak |
 |---|---|---|---|---|
@@ -108,10 +109,11 @@ The helpers `sdCircle`, `sdBox` and `opSmoothUnion` are shared through `SDF_HELP
 | ![Voronoi Cells](gallery/noise-04-voronoi.png) | [Voronoi Cells](../app/src/main/java/com/dantech/dreams/data/lesson/source/noise/NoiseLessons.kt)<br>`noise-04-voronoi` · 4/5 | Nearest jittered seed in a 3×3 neighbourhood; seeds orbit with `sin(time)`. | nested loops, `dot(r, r)` min-distance, `sqrt` | Cells (`cells`) |
 | ![Plasma](gallery/noise-05-plasma.png) | [Plasma](../app/src/main/java/com/dantech/dreams/data/lesson/source/noise/NoiseLessons.kt)<br>`noise-05-plasma` · 2/5 | Three sine sums and a phase-shifted RGB mapping. | `sin` sums, 2π/3 channel phase offsets | — |
 | ![Warped Lava](gallery/noise-06-warped-lava.png) | [Warped Lava](../app/src/main/java/com/dantech/dreams/data/lesson/source/noise/NoiseLessons.kt)<br>`noise-06-warped-lava` · 5/5 | Domain warping: feed `fbm` into itself twice. | `fbm(p + 4.0 * r)` | — |
+|| ![Aurora Borealis](gallery/noise-07-aurora-borealis.png) | [Aurora Borealis](../app/src/main/java/com/dantech/dreams/data/lesson/source/noise/NoiseLessons.kt)<br>`noise-07-aurora-borealis` · 5/5 | Three parallax light curtains hang from drifting fbm ridges, with exponential falloff above the ridge and a high-frequency ray texture — over a hashed star field. | layered fbm ridges, `exp` falloff, `hash21` twinkle | Drift (`drift`), Curtains (`curtains`) |
 
 ## 6. Motion
 
-*Motion — 4 lessons.* Time as a design material: easing curves, Fourier sums, phase offsets and detuned oscillators.
+*Motion — 5 lessons.* Time as a design material: easing curves, Fourier sums, phase offsets and detuned oscillators.
 
 | Preview | Lesson | What it teaches | AGSL idea introduced | What to tweak |
 |---|---|---|---|---|
@@ -119,6 +121,7 @@ The helpers `sdCircle`, `sdBox` and `opSmoothUnion` are shared through `SDF_HELP
 | ![Sine Harmonics](gallery/motion-02-harmonics.png) | [Sine Harmonics](../app/src/main/java/com/dantech/dreams/data/lesson/source/motion/MotionLessons.kt)<br>`motion-02-harmonics` · 3/5 | Sum `1/k · sin(k·x)` terms toward a square wave; Gibbs ringing appears. | loop with `break` on `harmonic` | Harmonics (`harmonic`) |
 | ![Wave Train](gallery/motion-03-wave-train.png) | [Wave Train](../app/src/main/java/com/dantech/dreams/data/lesson/source/motion/MotionLessons.kt)<br>`motion-03-wave-train` · 2/5 | Stack sine rows offset in phase; each row reads the wave slightly later. | `floor`/`fract` row split, per-row phase | Speed (`speed`) |
 | ![Pendulum Chain](gallery/motion-04-pendulum-chain.png) | [Pendulum Chain](../app/src/main/java/com/dantech/dreams/data/lesson/source/motion/MotionLessons.kt)<br>`motion-04-pendulum-chain` · 3/5 | Detuned oscillators drift out of and back into phase. | `sin(time * f)` with `f = 1 + i·spread`, `min` over dots | Spread (`spread`) |
+|| ![Lissajous Trail](gallery/motion-05-lissajous-trail.png) | [Lissajous Trail](../app/src/main/java/com/dantech/dreams/data/lesson/source/motion/MotionLessons.kt)<br>`motion-05-lissajous-trail` · 4/5 | Sample one parametric curve at 56 staggered time offsets so the ghosts merge into a comet ribbon; a cosine palette drifts the hue along the trail. | `p = a · float2(sin(tt), sin(tt * ratio))`, `exp` glow, `0.5 + 0.5·cos` palette | Speed (`speed`), Ratio (`ratio`), Trail (`trail`) |
 
 ## 7. Light
 
@@ -133,7 +136,7 @@ The helpers `sdCircle`, `sdBox` and `opSmoothUnion` are shared through `SDF_HELP
 
 ## 8. Fractals
 
-*Fractals — 4 lessons.* Bounded loops doing complex arithmetic. `cmul`, `cdiv` and `smoothEscape` come from `FRACTAL_HELPERS` in `FractalsHelpers.kt`; Sierpinski swaps escape-time for an inverse IFS.
+*Fractals — 5 lessons.* Bounded loops doing complex arithmetic. `cmul`, `cdiv` and `smoothEscape` come from `FRACTAL_HELPERS` in `FractalsHelpers.kt`; Sierpinski swaps escape-time for an inverse IFS.
 
 | Preview | Lesson | What it teaches | AGSL idea introduced | What to tweak |
 |---|---|---|---|---|
@@ -141,12 +144,13 @@ The helpers `sdCircle`, `sdBox` and `opSmoothUnion` are shared through `SDF_HELP
 | ![Julia Set](gallery/fractals-02-julia.png) | [Julia Set](../app/src/main/java/com/dantech/dreams/data/lesson/source/fractals/FractalsLessons.kt)<br>`fractals-02-julia` · 4/5 | Same iteration, but `c` is fixed per frame and orbits with `time`, so the set morphs. | `cmul`, `time`-driven parameter | Radius (`radius`) |
 | ![Newton's Method (z³ − 1)](gallery/fractals-03-newton.png) | [Newton's Method (z³ − 1)](../app/src/main/java/com/dantech/dreams/data/lesson/source/fractals/FractalsLessons.kt)<br>`fractals-03-newton` · 5/5 | Newton iteration on `z³ − 1`; colour each pixel by the root it converges to. | `cdiv`, nearest-root selection with `distance` | Zoom (`zoom`) |
 | ![Sierpinski Gasket](gallery/fractals-04-sierpinski.png) | [Sierpinski Gasket](../app/src/main/java/com/dantech/dreams/data/lesson/source/fractals/FractalsLessons.kt)<br>`fractals-04-sierpinski` · 5/5 | Inverse IFS: zoom into the corner copy containing the pixel, repeat, then evaluate one triangle SDF. | `p = 2.0 * p - corner`, `sdTri`, `sign` | Depth (`depth`) |
+|| ![Burning Ship](gallery/fractals-05-burning-ship.png) | [Burning Ship](../app/src/main/java/com/dantech/dreams/data/lesson/source/fractals/FractalsLessons.kt)<br>`fractals-05-burning-ship` · 4/5 | Iterate `z ← |z|² + c` — abs-folding the orbit folds the plane into a ship silhouette — coloured with a three-stop fire ramp on the smooth escape count. | `cmul(abs(z), abs(z))`, `smoothEscape`, multi-stop `mix` ramp | Zoom (`zoom`), Heat (`heat`) |
 
 AGSL only compiles loops with compile-time-constant bounds, so every fractal loop runs to a fixed bound (`const int MAX` in Mandelbrot, Julia and Newton; a literal `8` in Sierpinski). Mandelbrot, Julia and Sierpinski `break` early — the same pattern fBM Clouds and Sine Harmonics use to let a slider control the iteration count — while Newton always runs all 32 steps.
 
 ## 9. Interaction
 
-*Interactive — 4 lessons.* Tap the preview: the runtime writes `touchPos` (0..1 UV, `(-1,-1)` before any tap) and `touchTime` (seconds, `-1` before any tap). Every lesson here degrades gracefully before the first tap.
+*Interactive — 5 lessons.* Tap the preview: the runtime writes `touchPos` (0..1 UV, `(-1,-1)` before any tap) and `touchTime` (seconds, `-1` before any tap). Every lesson here degrades gracefully before the first tap.
 
 | Preview | Lesson | What it teaches | AGSL idea introduced | What to tweak |
 |---|---|---|---|---|
@@ -154,10 +158,11 @@ AGSL only compiles loops with compile-time-constant bounds, so every fractal loo
 | ![Tap Ripple](gallery/interactive-02-ripple.png) | [Tap Ripple](../app/src/main/java/com/dantech/dreams/data/lesson/source/interactive/InteractiveLessons.kt)<br>`interactive-02-ripple` · 3/5 | `time - touchTime` grows a Gaussian ring; re-tapping restarts it. | `uniform float touchTime`, `exp(-pow(x, 2.0))` | Speed (`speed`) |
 | ![Pull Field](gallery/interactive-03-pull-field.png) | [Pull Field](../app/src/main/java/com/dantech/dreams/data/lesson/source/interactive/InteractiveLessons.kt)<br>`interactive-03-pull-field` · 3/5 | Bend sample coordinates toward the touch point like a gravity well. | `normalize(d) * pull`, `exp` falloff | Strength (`strength`) |
 | ![Heat Shockwave](gallery/interactive-04-heat-stripes.png) | [Heat Shockwave](../app/src/main/java/com/dantech/dreams/data/lesson/source/interactive/InteractiveLessons.kt)<br>`interactive-04-heat-stripes` · 4/5 | Distance and tap age inside one `sin` sweep phase outward. | `sin(-age * 6.0 + r * density)` | Density (`density`) |
+|| ![Lens Flare](gallery/interactive-05-lens-flare.png) | [Lens Flare](../app/src/main/java/com/dantech/dreams/data/lesson/source/interactive/InteractiveLessons.kt)<br>`interactive-05-lens-flare` · 4/5 | `touchPos` is the sun: a core glow plus five ring ghosts mirrored through the screen centre, an anamorphic blade flare, and a tap flash that decays with `touchTime`. Before any tap the sun wanders on a figure-eight. | ghost chain along `sun + axis * t`, anamorphic `exp(-|dy| * 90)`, `time - touchTime` decay | Intensity (`intensity`) |
 
 ## 10. Post-FX on real UI
 
-*Post-FX — 6 lessons.* These run as a `RenderEffect` over a real Compose card (`SampleContent`). `uniform shader content` is the UI beneath; `content.eval(coord)` reads it. `fragCoord` is in device pixels here, so Box Blur's `radius`, Chromatic Aberration's `strength` and Pixelate's `cellSize` are pixel offsets.
+*Post-FX — 8 lessons.* These run as a `RenderEffect` over a real Compose card (`SampleContent`). `uniform shader content` is the UI beneath; `content.eval(coord)` reads it. `fragCoord` is in device pixels here, so Box Blur's `radius`, Chromatic Aberration's `strength` and Pixelate's `cellSize` are pixel offsets.
 
 | Preview | Lesson | What it teaches | AGSL idea introduced | What to tweak |
 |---|---|---|---|---|
@@ -167,24 +172,28 @@ AGSL only compiles loops with compile-time-constant bounds, so every fractal loo
 | ![Dissolve](gallery/postfx-04-dissolve.png) | [Dissolve](../app/src/main/java/com/dantech/dreams/data/lesson/source/posteffect/PostFxLessons.kt)<br>`postfx-04-dissolve` · 4/5 | `fbm` as an animated alpha mask with a glowing edge. | `step(threshold, n)`, writing `c.a * half(a)` to alpha | — |
 | ![Liquid Glass Displacement](gallery/postfx-05-displacement-glass.png) | [Liquid Glass Displacement](../app/src/main/java/com/dantech/dreams/data/lesson/source/posteffect/PostFxLessons.kt)<br>`postfx-05-displacement-glass` · 4/5 | Sample the input at noise-displaced coordinates for a refractive panel. | `fbm` offset scaled by `resolution` | Strength (`strength`) |
 | ![Pixelate](gallery/postfx-06-pixelate.png) | [Pixelate](../app/src/main/java/com/dantech/dreams/data/lesson/source/posteffect/PostFxLessons.kt)<br>`postfx-06-pixelate` · 2/5 | Snap `fragCoord` to a grid and sample cell centres. | `floor(fragCoord / cellSize) * cellSize` | Cell Size (`cellSize`) |
+|| ![Glitch](gallery/postfx-07-glitch.png) | [Glitch](../app/src/main/java/com/dantech/dreams/data/lesson/source/posteffect/PostFxLessons.kt)<br>`postfx-07-glitch` · 4/5 | Quantise time, hash each 18-px row, and let `amount` decide which rows shear sideways — with an RGB split that widens with the shift and a rolling brightness band. | per-row `floor(fragCoord.y / 18)` hash, per-channel `content.eval`, `step` gating | Amount (`amount`) |
+|| ![CRT Screen](gallery/postfx-08-crt-screen.png) | [CRT Screen](../app/src/main/java/com/dantech/dreams/data/lesson/source/posteffect/PostFxLessons.kt)<br>`postfx-08-crt-screen` · 4/5 | Barrel-warp the sample coordinate, clamp out-of-bounds pixels to a bezel, then multiply in scanlines, a 3-px aperture grille, vignette and 43 Hz flicker. | `uv * (1 + k·dot(uv, uv))` warp, `mod(c.x, 3.0)` grille, multiplicative masks | Curvature (`curvature`), Scanlines (`scanlines`) |
 
 On the Compose side this is `Modifier.runtimeShaderEffect` in `core/agsl/ShaderModifiers.kt`: `compositingStrategy = Offscreen` is mandatory (otherwise there is no buffer for `content` to sample) and the effect is rebuilt every frame because Skia freezes uniform values when the effect is created.
 
 ## 11. Showcases
 
-*Showcase — 2 lessons.* Fullscreen, `CUSTOM` render mode: each showcase owns its shader, time, gestures and backdrop. Read these after Interaction and Post-FX.
+*Showcase — 4 lessons.* Fullscreen, `CUSTOM` render mode: each showcase owns its shader, time, gestures and backdrop. Read these after Interaction and Post-FX.
 
 | Preview | Lesson | What it teaches | AGSL idea introduced | What to tweak |
 |---|---|---|---|---|
 | ![Ripple on Tap](gallery/showcase-05-ripple-on-tap.png) | [Ripple on Tap](../app/src/main/java/com/dantech/dreams/data/lesson/source/showcase/RippleOnTap.kt)<br>`showcase-05-ripple-on-tap` · 5/5 | Multi-touch ripples in a 16-slot ring buffer refract a live Compose backdrop, with anisotropic specular, Schlick fresnel, caustics and foam. | `uniform float rip[64]`, constant-stride array indexing, `content.eval` refraction | — |
 | ![Codex Splash](gallery/showcase-06-codex-splash.png) | [Codex Splash](../app/src/main/java/com/dantech/dreams/data/lesson/source/showcase/CodexSplashShowcase.kt)<br>`showcase-06-codex-splash` · 5/5 | Three shaders layered: atmosphere background, SDF icon tile, and an interactive water RenderEffect over the composed scene. | `extraAgslSources`, `ShaderBrush` layers + RenderEffect | — |
+|| ![Warp Voyage](gallery/showcase-07-warp-voyage.png) | [Warp Voyage](../app/src/main/java/com/dantech/dreams/data/lesson/source/showcase/WarpVoyage.kt)<br>`showcase-07-warp-voyage` · 5/5 | A steerable hyperspace tunnel: three parallax log-polar star layers stretch into comet streaks over a domain-warped fbm nebula; every drag gives a decaying speed boost. | log-polar `log(r)` cell space, domain-warped `fbm`, Kotlin-side smoothed `focus` steering | — |
+|| ![Liquid Chrome](gallery/showcase-08-chrome-flow.png) | [Liquid Chrome](../app/src/main/java/com/dantech/dreams/data/lesson/source/showcase/ChromeFlow.kt)<br>`showcase-08-chrome-flow` · 5/5 | Molten metal: a warped fbm height map becomes a normal field, the reflected ray reads alternating silver/dark bands with an iridescent fringe, and drags stir the surface like mercury. | numeric gradient → `reflect`, `pow` specular + fresnel, vortex stirring from `touchPos`/`touchTime` | — |
 
 Ripple on Tap binds its backdrop (`RippleBackdrop.kt`) as `content`, keeps 16 ripple slots of `(x, y, t0, strength)` in one `float[64]` uniform, and notes an AGSL rule worth knowing: array indices inside a loop must be a constant multiple of the loop variable plus a constant (`rip[i * 4 + 1]`), not a precomputed variable. Codex Splash registers three sources: the background is `agslSource`, the icon and water shaders are `extraAgslSources` (`CodexSplashShaders.kt`, `CodexSplashWaterSurface.kt`).
 
 ## Suggested detours
 
 - Short on time? Do Foundations, then `patterns-01-diagonal-stripes`, `sdf-01-circle`, `noise-03-fbm`, `lighting-01-lambert`, `interactive-01-spotlight`, `postfx-01-blur`. That is one lesson per core idea.
-- Want visuals fast? The catalog's hero picks are `noise-06-warped-lava`, `fractals-02-julia`, `patterns-06-kaleidoscope-fold`, `sdf-03-metaballs`, `lighting-02-phong`, `noise-04-voronoi`, `patterns-04-truchet`, `color-01-cosine-palette`, `fractals-03-newton`, `postfx-05-displacement-glass` and the two showcases (`tools/shader-catalog/thumb-states.mjs`).
+- Want visuals fast? The catalog's hero picks are `noise-06-warped-lava`, `fractals-02-julia`, `showcase-07-warp-voyage`, `sdf-03-metaballs`, `lighting-02-phong`, `showcase-06-codex-splash`, `noise-07-aurora-borealis`, `patterns-06-kaleidoscope-fold`, `color-01-cosine-palette`, `fractals-05-burning-ship`, `postfx-05-displacement-glass` and `showcase-08-chrome-flow` (`tools/shader-catalog/thumb-states.mjs`).
 - Building a real UI effect? Go straight to Post-FX, then read `ShaderModifiers.kt` and `RippleOnTap.kt`.
 
 ## Concept index
@@ -206,27 +215,27 @@ Ripple on Tap binds its backdrop (`RippleBackdrop.kt`) as `content`, keeps 16 ri
 | `abs` as a mirror | `patterns-06-kaleidoscope-fold`, `patterns-08-herringbone-tiles`, `sdf-06-isolines` |
 | `clamp` | `basics-03-linear-gradient`, `patterns-07-plaid-weave`, `color-04-aces-tonemap` |
 | `pow` (bias, specular, rim) | `color-03-gradient-stops`, `lighting-02-phong`, `lighting-03-rim` |
-| `exp` (falloff) | `color-04-aces-tonemap`, `interactive-02-ripple`, `interactive-03-pull-field`, `postfx-03-ripple-tap` |
+| `exp` (falloff) | `color-04-aces-tonemap`, `interactive-02-ripple`, `interactive-03-pull-field`, `postfx-03-ripple-tap`, `interactive-05-lens-flare`, `sdf-07-heartbeat`, `motion-05-lissajous-trail` |
 | `normalize`, `reflect` | `lighting-01-lambert`, `lighting-02-phong`, `interactive-03-pull-field` |
-| Vector `cos` palettes | `color-01-cosine-palette`, `fractals-01-mandelbrot`, `fractals-02-julia` |
+| Vector `cos` palettes | `color-01-cosine-palette`, `fractals-01-mandelbrot`, `fractals-02-julia`, `motion-05-lissajous-trail`, `showcase-08-chrome-flow` |
 | HSV → RGB | `color-02-hsv-wheel` |
 | Tone mapping (ACES) | `color-04-aces-tonemap` |
-| Hash (`hash21`) | `noise-01-hash`, `patterns-04-truchet`, `patterns-10-brick-bond` |
+| Hash (`hash21`) | `noise-01-hash`, `patterns-04-truchet`, `patterns-10-brick-bond`, `noise-07-aurora-borealis`, `postfx-07-glitch` |
 | Value noise | `noise-02-value` |
-| fBM (octave loop) | `noise-03-fbm`, `postfx-04-dissolve`, `postfx-05-displacement-glass` |
-| Domain warping | `noise-06-warped-lava` |
+| fBM (octave loop) | `noise-03-fbm`, `postfx-04-dissolve`, `postfx-05-displacement-glass`, `noise-07-aurora-borealis`, `showcase-07-warp-voyage`, `showcase-08-chrome-flow` |
+| Domain warping | `noise-06-warped-lava`, `showcase-07-warp-voyage`, `showcase-08-chrome-flow` |
 | Voronoi / nearest seed | `noise-04-voronoi` |
-| SDF primitives (`sdCircle`, `sdBox`, `sdTri`) | `sdf-01-circle`, `sdf-02-rounded-box`, `fractals-04-sierpinski` |
+| SDF primitives (`sdCircle`, `sdBox`, `sdTri`, `sdHeart`) | `sdf-01-circle`, `sdf-02-rounded-box`, `fractals-04-sierpinski`, `sdf-07-heartbeat` |
 | `opSmoothUnion` | `sdf-03-metaballs` |
-| Bounded loops with early `break` | `noise-03-fbm`, `motion-02-harmonics`, `fractals-01-mandelbrot`, `fractals-04-sierpinski` |
+| Bounded loops with early `break` | `noise-03-fbm`, `motion-02-harmonics`, `fractals-01-mandelbrot`, `fractals-04-sierpinski`, `fractals-05-burning-ship` |
 | Nested loops (neighbourhood / kernel) | `noise-04-voronoi`, `postfx-01-blur` |
 | Easing functions | `motion-01-easing` |
 | Fourier sums, phase offsets, detuning | `motion-02-harmonics`, `motion-03-wave-train`, `motion-04-pendulum-chain` |
-| Complex arithmetic (`cmul`, `cdiv`, `smoothEscape`) | `fractals-01-mandelbrot`, `fractals-02-julia`, `fractals-03-newton` |
+| Complex arithmetic (`cmul`, `cdiv`, `smoothEscape`) | `fractals-01-mandelbrot`, `fractals-02-julia`, `fractals-03-newton`, `fractals-05-burning-ship` |
 | Iterated function systems | `fractals-04-sierpinski` |
 | Implicit sphere normal | `lighting-01-lambert`, `lighting-02-phong`, `lighting-03-rim`, `lighting-04-terminator` |
-| `touchPos` / `touchTime` | `interactive-01-spotlight`, `interactive-02-ripple`, `interactive-03-pull-field`, `interactive-04-heat-stripes` |
-| `uniform shader content` + `content.eval` | `postfx-01-blur` … `postfx-06-pixelate`, `showcase-05-ripple-on-tap`, `showcase-06-codex-splash` |
+| `touchPos` / `touchTime` | `interactive-01-spotlight`, `interactive-02-ripple`, `interactive-03-pull-field`, `interactive-04-heat-stripes`, `interactive-05-lens-flare`, `showcase-07-warp-voyage`, `showcase-08-chrome-flow` |
+| `uniform shader content` + `content.eval` | `postfx-01-blur` … `postfx-08-crt-screen`, `showcase-05-ripple-on-tap`, `showcase-06-codex-splash` |
 | Writing alpha from a shader | `postfx-04-dissolve` |
 | Uniform float arrays | `showcase-05-ripple-on-tap`, `showcase-06-codex-splash` |
 | Multiple shaders per lesson (`extraAgslSources`) | `showcase-06-codex-splash` |

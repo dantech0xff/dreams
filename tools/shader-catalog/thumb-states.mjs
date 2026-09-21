@@ -28,6 +28,12 @@ export const THUMB_STATES = {
     'postfx-03-ripple-tap': { time: 1.3 },
     'postfx-04-dissolve': { time: 5.1 },
     'postfx-05-displacement-glass': { time: 2.0 },
+    'postfx-07-glitch': { time: 2.35, values: { amount: 0.8 } },
+    'sdf-07-heartbeat': { time: 0.88 },           // mid-lub: full pulse + ring
+    'interactive-05-lens-flare': { time: 1.6, touch: { x: 0.68, y: 0.38, t: 0.9 } },
+    'noise-07-aurora-borealis': { time: 3.4 },
+    'showcase-07-warp-voyage': { time: 3.2, touch: { x: 0.60, y: 0.44, t: 2.0 } },
+    'showcase-08-chrome-flow': { time: 2.6, touch: { x: 0.60, y: 0.42, t: 2.35 } },
     'showcase-05-ripple-on-tap': {
       time: 3.0,
       gaze: [0.35, 0.25],
@@ -46,10 +52,10 @@ export const THUMB_STATES = {
     },
   },
   hero: [
-    'noise-06-warped-lava', 'fractals-02-julia', 'patterns-06-kaleidoscope-fold', 'sdf-03-metaballs',
+    'noise-06-warped-lava', 'fractals-02-julia', 'showcase-07-warp-voyage', 'sdf-03-metaballs',
     'lighting-02-phong', 'showcase-06-codex-splash',
-    'noise-04-voronoi', 'patterns-04-truchet', 'color-01-cosine-palette', 'fractals-03-newton',
-    'postfx-05-displacement-glass', 'showcase-05-ripple-on-tap',
+    'noise-07-aurora-borealis', 'patterns-06-kaleidoscope-fold', 'color-01-cosine-palette', 'fractals-05-burning-ship',
+    'postfx-05-displacement-glass', 'showcase-08-chrome-flow',
   ],
 };
 

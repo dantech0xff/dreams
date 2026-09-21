@@ -28,7 +28,7 @@
 ├──────────────────────┤              ├─────────────────┤
 │ LessonRepositoryImpl  │              │ RuntimeShader   │
 │ • LessonRegistry     │              │ • AGSL utils    │
-│ • 56 lessons         │              │ • Uniforms      │
+│ • 65 lessons         │              │ • Uniforms      │
 │ • showcases()        │              │                 │
 │                      │              │ Motion          │
 │ UserPrefsRepoImpl     │              │ • Reduced-motion│
@@ -250,7 +250,7 @@ internal object LessonRegistry {
 
 **Why internal + interface:** Hides singleton, prevents direct mutation, testable via fakes.
 
-**Idempotency guard:** `if (all.isEmpty())` before loading 56 lessons; safe for test restart.
+**Idempotency guard:** `if (all.isEmpty())` before loading 65 lessons; safe for test restart.
 
 ### UserPrefsRepository
 ```kotlin
@@ -506,7 +506,7 @@ fun AGSLRenderer(
 | Aspect | Measurement | Target |
 |--------|-------------|--------|
 | **App startup** | Lesson bootstrap + first Gallery frame | <2s |
-| **Lesson bootstrap** | Load 56 lessons from sources | <500ms |
+| **Lesson bootstrap** | Load 65 lessons from sources | <500ms |
 | **Gallery tab switch** | Recompose + list layout | <100ms |
 | **Slider update** | SnapshotStateMap write → frame render | <16ms (60 FPS) |
 | **DataStore write** | Debounce + persist param override | <300ms (200ms debounce + 100ms write) |

@@ -18,10 +18,10 @@ app/src/main/java/com/dantech/dreams/
 │   ├── lesson/                     # LessonRepositoryImpl, Lesson entity, showcases() accessor
 │   │   └── source/                 # Lesson sources (10 educational + 1 showcase categories)
 │   │       ├── basics/             # 6 basic AGSL lessons
-│   │       ├── sdf/                # 6 SDF lessons
-│   │       ├── noise/              # 6 noise lessons
-│   │       ├── posteffect/         # 5 post-effect lessons
-│   │       └── showcase/           # 2 showcase demos
+│   │       ├── sdf/                # 7 SDF lessons
+│   │       ├── noise/              # 7 noise lessons
+│   │       ├── posteffect/         # 8 post-effect lessons
+│   │       └── showcase/           # 4 showcase demos
 │   └── prefs/                      # UserPrefsRepositoryImpl + UserPrefs + ThemeMode
 ├── domain/                         # Domain layer (interfaces only)
 │   └── lesson/                     # LessonRepository interface
@@ -91,7 +91,7 @@ interface LessonRepository {
 **LessonRepositoryImpl** (data/lesson/)
 - Wraps internal `LessonRegistry` singleton
 - Idempotency guard: `if (all.isEmpty()) bootstrap()`
-- Loads 56 lessons from 11 source categories on first instantiation
+- Loads 65 lessons from 11 source categories on first instantiation
 
 **UserPrefsRepository** (interface + impl in data/prefs/)
 ```kotlin
@@ -199,7 +199,7 @@ Immutable state classes used by Composables:
 - lesson, paramValues (SnapshotStateMap), isLoading, error
 
 **ShowcaseListUiState**
-- showcases (2 items), isLoading, error
+- showcases (4 items), isLoading, error
 
 **ShowcaseUiState**
 - lesson, paramValues, isLoading, error
@@ -251,16 +251,16 @@ Lessons loaded once on app startup via LessonRepositoryImpl init:
 - **basics/:** 6 lessons (uniforms, time, fragCoord, gradients, polar, smoothstep)
 - **patterns/:** 10 lessons (stripes, dots, hex grid, truchet, moire, kaleidoscope, plaid, herringbone, burst, brick)
 - **colorlab/:** 4 lessons (palettes, HSV, gradients, tone mapping)
-- **sdf/:** 6 lessons (circle, rounded box, metaballs, breathing grid, combine, invert)
-- **noise/:** 6 lessons (hash, value noise, fBM, voronoi, plasma, lava)
-- **motion/:** 4 lessons (easing, harmonics, wave trains, pendulum chains)
-- **fractals/:** 4 lessons (Mandelbrot, Julia, Newton, Sierpinski)
+- **sdf/:** 7 lessons (circle, rounded box, metaballs, breathing grid, isolines, heartbeat)
+- **noise/:** 7 lessons (hash, value noise, fBM, voronoi, plasma, lava, aurora)
+- **motion/:** 5 lessons (easing, harmonics, wave trains, pendulum chains, lissajous trail)
+- **fractals/:** 5 lessons (Mandelbrot, Julia, Newton, Sierpinski, burning ship)
 - **lighting/:** 4 lessons (Lambert, Phong, rim, terminator)
-- **interactive/:** 4 lessons (touch spotlight, ripple, pull field, shockwave)
-- **posteffect/:** 6 lessons (blur, aberration, ripple-tap, dissolve, glass, pixelate)
-- **showcase/:** 2 demos (ripple-on-tap, codex-splash)
+- **interactive/:** 5 lessons (touch spotlight, ripple, pull field, shockwave, lens flare)
+- **posteffect/:** 8 lessons (blur, aberration, ripple-tap, dissolve, glass, pixelate, glitch, CRT)
+- **showcase/:** 4 demos (ripple-on-tap, codex-splash, warp-voyage, chrome-flow)
 
-**Total:** 56 lessons (54 educational + 2 showcases)
+**Total:** 65 lessons (61 educational + 4 showcases)
 
 ---
 
@@ -302,7 +302,7 @@ Lessons loaded once on app startup via LessonRepositoryImpl init:
 | **Min SDK** | 33 | RuntimeShader requirement |
 | **Target SDK** | 36 | Latest stable |
 | **JVM** | 11+ | Coroutines, Flow, Collections |
-| **Lesson bootstrap** | <500ms | 56 lessons loaded on app start |
+| **Lesson bootstrap** | <500ms | 65 lessons loaded on app start |
 | **Slider response** | <16ms | SnapshotStateMap per-frame update (60 FPS) |
 | **Persistence debounce** | 200ms | Slider stops → persist to DataStore |
 | **AGSL execution** | GPU (Android 13+) | ShaderBrush via RuntimeShader |
@@ -327,7 +327,7 @@ Lessons loaded once on app startup via LessonRepositoryImpl init:
 | Concern | Package | Notes |
 |---------|---------|-------|
 | **DI Setup** | core/di | 3 modules (app, data, feature); includes new lesson/showcase/settings VMs |
-| **Lesson Data** | data/lesson + domain/lesson | Repo interface + impl + 56 lessons + showcases() accessor |
+| **Lesson Data** | data/lesson + domain/lesson | Repo interface + impl + 65 lessons + showcases() accessor |
 | **Preferences** | data/prefs | UserPrefs entity, ThemeMode enum, repo interface + impl |
 | **Navigation Shell** | ui/feature/nav | MainShell, TopLevelBackStack, DreamsBottomBar, TabKey, Route (3-tab bottom nav) |
 | **Lesson Screens** | ui/feature/lessonlist | LessonCategoriesScreen/VM/UiState, LessonListScreen/VM/UiState |

@@ -179,3 +179,67 @@ object Isolines {
         )
     }
 }
+
+object Heartbeat {
+    val id = "sdf-07-heartbeat"
+    private val SOURCE = """
+        uniform float2 resolution;
+        uniform float time;
+        uniform float bpm;
+        uniform float glow;
+        // iq's analytic heart: two lobe circles plus a V-shaped bottom edge.
+        float sdHeart(float2 p) {
+            p.x = abs(p.x);
+            if (p.y + p.x > 1.0) {
+                return sqrt(dot(p - float2(0.25, 0.75), p - float2(0.25, 0.75))) - 0.3536;
+            }
+            return sqrt(min(dot(p - float2(0.0, 1.0), p - float2(0.0, 1.0)),
+                            dot(p - 0.5 * max(p.x + p.y, 0.0), p - 0.5 * max(p.x + p.y, 0.0)))) * sign(p.x - p.y);
+        }
+        half4 main(float2 fragCoord) {
+            float2 uv = (fragCoord - 0.5 * resolution) / resolution.y;
+            // Lub-dub envelope: strong beat at ~12% of the cycle, softer echo at ~42%.
+            float bt = fract(time * bpm / 60.0);
+            float pulse = exp(-pow((bt - 0.12) * 7.0, 2.0)) + 0.55 * exp(-pow((bt - 0.42) * 7.0, 2.0));
+
+            // sdHeart space is y-up with the tip at the origin; flip y so the
+            // tip points down-screen, scale about the tip so each beat pushes
+            // the lobes outward.
+            float2 hp = float2(uv.x, -uv.y) * (2.0 - pulse * 0.20) + float2(0.0, 0.65);
+            float d = sdHeart(hp);
+            float aa = 2.0 / resolution.y * 2.15;
+            float fillAmt = smoothstep(aa, -aa, d);
+
+            half3 col = mix(half3(0.050, 0.012, 0.040), half3(0.016, 0.006, 0.024), half(smoothstep(0.2, 1.4, length(uv))));
+            half3 heart = mix(half3(0.72, 0.04, 0.18), half3(1.0, 0.34, 0.48), half(clamp(hp.y * 0.8 + 0.15, 0.0, 1.0)));
+            // Fake top-left sheen inside the silhouette.
+            heart += half3(0.22, 0.10, 0.14) * half(smoothstep(0.6, -0.4, hp.x + hp.y));
+            col = mix(col, heart, half(fillAmt));
+
+            // Rim glow hugging the outside edge, swelling on each beat.
+            float rimAmt = exp(-max(d, 0.0) * 9.0) * (0.20 + 0.80 * pulse) * glow;
+            col += half3(1.0, 0.25, 0.35) * half(rimAmt) * (1.0 - half(fillAmt));
+
+            // An expanding pressure ring rides out on every lub.
+            float r = length(uv);
+            float ring = exp(-abs(r - bt * 2.4) * 26.0) * exp(-bt * 3.2) * 0.35 * glow;
+            col += half3(1.0, 0.30, 0.45) * half(ring);
+            return half4(col, 1.0);
+        }
+    """.trimIndent()
+
+    init {
+        LessonRegistry.register(
+            LessonModel(
+                id = id, title = "Heartbeat", category = LessonCategory.SDF, complexity = 4,
+                conceptIntro = "An analytic heart SDF driven by a two-bump lub-dub envelope — scale, rim glow and a pressure ring all read the same pulse.",
+                agslSource = SOURCE,
+                controls = persistentListOf(
+                    LessonControl.FloatRange("BPM", "bpm", 40f, 160f, 76f),
+                    LessonControl.FloatRange("Glow", "glow", 0f, 2f, 1f),
+                ),
+                screenRecordingHint = "Push BPM to 140 and Glow to 1.6 — the ring reads as a shockwave.",
+            )
+        )
+    }
+}

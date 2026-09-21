@@ -8,5 +8,6 @@ object NoiseBootstrap {
         VoronoiCells.id
         Plasma.id
         WarpedLava.id
+        AuroraBorealis.id
     }
 }
